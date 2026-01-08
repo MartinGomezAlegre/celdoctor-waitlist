@@ -4,7 +4,7 @@ import { useState } from "react";
 import { 
   Stethoscope, Baby, Brain, Heart, Eye, Activity, 
   ChevronDown, ChevronUp, Pill, Microscope, 
-  Smile, UserCheck, Syringe, Ear
+  UserCheck, Ear
 } from "lucide-react";
 
 export default function SpecialtiesSection() {
@@ -17,7 +17,7 @@ export default function SpecialtiesSection() {
     { name: "Psicología", icon: Brain },
     { name: "Oftalmología", icon: Eye },
     { name: "Nutrición", icon: Activity },
-    { name: "Dermatología", icon: UserCheck }, // Extras
+    { name: "Dermatología", icon: UserCheck },
     { name: "Ginecología", icon: UserCheck },
     { name: "Traumatología", icon: Activity },
     { name: "Otorrino", icon: Ear },
@@ -25,18 +25,23 @@ export default function SpecialtiesSection() {
     { name: "Psiquiatría", icon: Pill },
   ];
 
-  // Mostramos solo 6 al principio, o todas si showAll es true
   const visibleSpecialties = showAll ? allSpecialties : allSpecialties.slice(0, 6);
 
   return (
-    <section id="especialidades" className="bg-slate-50 border-y border-slate-200 py-24">
-      <div className="max-w-7xl mx-auto px-6">
+    // CAMBIO 1: Fondo violeta oscuro y quitamos los bordes grises
+    <section id="especialidades" className="bg-[#1e0b4b] py-24 relative overflow-hidden">
+      
+      {/* Decoración opcional de fondo (luz sutil) */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#4C1D95]/30 rounded-full blur-[150px] pointer-events-none"/>
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-[#7C3AED] font-bold text-xs uppercase tracking-wider mb-2 block">Cartilla Digital</span>
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+          {/* CAMBIO 2: Textos en blanco y violeta claro */}
+          <span className="text-[#a78bfa] font-bold text-xs uppercase tracking-wider mb-2 block">Cartilla Digital</span>
+          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
             Especialistas al instante.
           </h2>
-          <p className="text-slate-600 text-lg">
+          <p className="text-white/70 text-lg">
             Accedé a consultas programadas o de guardia sin derivaciones previas.
           </p>
         </div>
@@ -44,25 +49,28 @@ export default function SpecialtiesSection() {
         {/* GRID INTERACTIVO */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {visibleSpecialties.map((esp, i) => (
-            <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-[#7C3AED] hover:shadow-lg transition-all group cursor-pointer text-center flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-300">
-              <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center text-slate-500 group-hover:text-[#7C3AED] group-hover:bg-[#7C3AED]/5 transition-colors">
+            // CAMBIO 3: Tarjetas oscuras translúcidas
+            <div key={i} className="bg-white/5 p-6 rounded-2xl border border-white/10 hover:border-[#a78bfa]/50 hover:bg-white/10 hover:shadow-lg hover:shadow-[#4C1D95]/20 transition-all group cursor-pointer text-center flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-300">
+              {/* Icono: Fondo claro sutil, se prende en violeta al pasar el mouse */}
+              <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center text-[#a78bfa] group-hover:text-white group-hover:bg-[#4C1D95] transition-colors border border-white/5">
                 <esp.icon size={28} strokeWidth={1.5} />
               </div>
-              <h3 className="font-semibold text-slate-900 text-sm">{esp.name}</h3>
+              <h3 className="font-semibold text-white text-sm">{esp.name}</h3>
             </div>
           ))}
         </div>
         
         <div className="mt-12 text-center">
+           {/* CAMBIO 4: Botón estilo "Outline" blanco */}
            <button 
              onClick={() => setShowAll(!showAll)}
-             className="inline-flex items-center gap-2 text-slate-600 font-semibold text-sm hover:text-[#7C3AED] transition-colors bg-white px-6 py-3 rounded-full border border-slate-200 hover:border-[#7C3AED]"
+             className="inline-flex items-center gap-2 text-white font-semibold text-sm hover:bg-white/10 transition-colors bg-transparent px-6 py-3 rounded-full border border-white/20 hover:border-white"
            >
-              {showAll ? (
-                <>Ver menos especialidades <ChevronUp size={16}/></>
-              ) : (
-                <>Ver todas las especialidades (+6) <ChevronDown size={16}/></>
-              )}
+             {showAll ? (
+               <>Ver menos especialidades <ChevronUp size={16}/></>
+             ) : (
+               <>Ver todas las especialidades (+6) <ChevronDown size={16}/></>
+             )}
            </button>
         </div>
       </div>

@@ -20,7 +20,7 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-600">
             <a href="#especialidades" className="hover:text-[#4C1D95] transition-colors">Especialidades</a>
             <a href="#como-funciona" className="hover:text-[#4C1D95] transition-colors">Cómo funciona</a>
-            <a href="#planes" className="hover:text-[#4C1D95] transition-colors">Empresas</a>
+            <a href="#planes" className="hover:text-[#4C1D95] transition-colors">Planes</a>
           </div>
 
           {/* Botones de Acción (Agregado Ver Demo) */}

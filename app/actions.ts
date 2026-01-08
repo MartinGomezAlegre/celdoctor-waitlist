@@ -3,34 +3,36 @@
 export async function submitToWaitlist(prevState: any, formData: FormData) {
   const GOOGLE_URL = process.env.GOOGLE_SHEETS_URL;
 
+  console.log("INTENTANDO ENVIAR DATOS...");
+  console.log("URL DETECTADA:", GOOGLE_URL ? "Sí, existe" : "NO, ES NULL/UNDEFINED");
+
   if (!GOOGLE_URL) {
     return { success: false, message: "Error de configuración del servidor" };
   }
 
-  // 1. HONEYPOT: Seguridad simple anti-bots
-  // Si un bot llena este campo invisible, rechazamos la petición.
+  // 1. HONEYPOT
   const honeypot = formData.get("website_url"); 
   if (honeypot) {
     return { success: false, message: "Bot detectado" };
   }
 
   try {
-    // 2. Preparar los datos para Google
-    // Google Script espera datos como si fueran un formulario HTML clásico
-    // así que no podemos mandar JSON directo, hay que convertirlo.
+    // 2. Preparar los datos
+    // Ahora capturamos 'tipo' y 'detalle' en lugar de solo 'plan'
     const rawData = {
-      plan: formData.get("plan") as string,
+      tipo: formData.get("tipo_usuario") as string, // "paciente", "medico", "empresa"
+      detalle: formData.get("detalle") as string,   // "Plan Familiar", "Cardiología", "Tech Solutions SA"
       nombre: formData.get("nombre") as string,
-      edad: formData.get("edad") as string,
+      edad: formData.get("edad") as string,         // Edad o Cantidad de empleados
       email: formData.get("email") as string,
       whatsapp: formData.get("whatsapp") as string,
-      provincia: formData.get("provincia") as string,
+      provincia: formData.get("provincia") as string || "No especificada",
       fecha: new Date().toISOString()
     };
 
-    // Validacion básica (opcional pero recomendada)
-    if (!rawData.email || !rawData.nombre) {
-        return { success: false, message: "Faltan datos obligatorios" };
+    // Validacion básica
+    if (!rawData.email || !rawData.nombre || !rawData.tipo || !rawData.detalle) {
+        return { success: false, message: "Por favor, completa todos los campos obligatorios." };
     }
 
     // Convertimos a URLSearchParams para enviarlo a Google
@@ -39,11 +41,10 @@ export async function submitToWaitlist(prevState: any, formData: FormData) {
         params.append(key, value);
     });
 
-    // 3. Enviar a Google desde el Servidor (Backend to Backend)
+    // 3. Enviar a Google
     const response = await fetch(GOOGLE_URL, {
       method: "POST",
       body: params,
-      // Al ser servidor a servidor, no necesitamos 'no-cors' y podemos leer la respuesta real
     });
 
     if (!response.ok) {
