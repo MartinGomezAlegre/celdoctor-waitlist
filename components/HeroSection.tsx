@@ -51,7 +51,7 @@ export default function HeroSection() {
                 href="#waitlist"
                 className="relative z-20 inline-flex justify-center items-center px-8 py-4 bg-[#4C1D95] text-white rounded-xl font-bold text-base hover:bg-[#3b1675] transition-all shadow-xl shadow-[#4C1D95]/20 hover:-translate-y-1 active:scale-95"
                >
-                Unirme a la Waitlist
+                Unirme a la lista de espera
                </a>
                
                {/* Botón Demo Destacado (CORREGIDO) */}
