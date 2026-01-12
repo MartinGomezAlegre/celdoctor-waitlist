@@ -31,9 +31,12 @@ export default function Navbar() {
              
             <a 
               href="#waitlist" 
-              className="bg-[#4C1D95] text-white px-6 py-2.5 rounded-lg text-xs font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25 hover:-translate-y-0.5"
+              // En móvil usamos px-4 (menos relleno) y en PC md:px-6
+              className="bg-[#4C1D95] text-white px-4 md:px-6 py-2.5 rounded-lg text-xs font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25 hover:-translate-y-0.5 whitespace-nowrap"
             >
-              Unirme a la lista de espera
+              {/* TRUCO: Texto cambiante según dispositivo */}
+              <span className="md:hidden">Unirme a la lista de espera</span> {/* Se ve solo en Celular */}
+              <span className="hidden md:inline">Unirme a la lista de espera</span> {/* Se ve solo en PC */}
             </a>
           </div>
         </div>
