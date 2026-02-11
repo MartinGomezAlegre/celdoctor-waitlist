@@ -11,11 +11,6 @@ export default function JsonLd() {
       "priceCurrency": "ARS"
     },
     "description": "Aplicación de telemedicina para consultas médicas inmediatas y recetas digitales en Argentina.",
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "ratingCount": "2000"
-    },
     "author": {
       "@type": "Organization",
       "name": "CelDoctor Argentina",

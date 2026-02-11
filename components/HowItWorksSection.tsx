@@ -20,7 +20,7 @@ export default function HowItWorksSection() {
                       <step.icon size={36} strokeWidth={1.5} />
                    </div>
                    <h3 className="text-xl font-bold text-slate-900 mb-3">{step.title}</h3>
-                   <p className="text-slate-500 text-sm leading-relaxed max-w-[250px]">{step.desc}</p>
+                   <p className="text-slate-500 text-sm leading-relaxed max-w-62.5">{step.desc}</p>
                 </div>
              ))}
           </div>
