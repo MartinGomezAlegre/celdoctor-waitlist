@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 export default function Footer() {
    return (
@@ -17,25 +18,30 @@ export default function Footer() {
 
                </div>
                <div>
-                  <h4 className="font-bold text-slate-900 mb-5">Plataforma</h4>
+                  <h4 className="font-bold text-slate-900 mb-5">Atención Médica</h4>
                   <ul className="space-y-3 text-slate-500 text-xs md:text-sm">
-                     <li><a href="#especialidades" className="hover:text-[#4C1D95] transition-colors">Especialidades Médicas</a></li>
-                     <li><a href="#planes" className="hover:text-[#4C1D95] transition-colors">Planes y Cobertura</a></li>
-                     <li><a href="#waitlist" className="hover:text-[#4C1D95] transition-colors">Unirme a la Lista de Espera</a></li>
+                     <li><Link href="/atencion-medica/especialidades-medicas" className="hover:text-[#4C1D95] transition-colors">Especialidades Médicas</Link></li>
+                     <li><Link href="/atencion-medica/videollamada-inmediata" className="hover:text-[#4C1D95] transition-colors">Videollamada Inmediata</Link></li>
+                     <li><Link href="/atencion-medica/receta-medica" className="hover:text-[#4C1D95] transition-colors">Receta Digital</Link></li>
+                     <li><Link href="/atencion-medica/descuentos-farmacias" className="hover:text-[#4C1D95] transition-colors">Descuentos en Farmacias</Link></li>
                   </ul>
                </div>
                <div>
-                  <h4 className="font-bold text-slate-900 mb-5">Empresa</h4>
+                  <h4 className="font-bold text-slate-900 mb-5">Planes</h4>
                   <ul className="space-y-3 text-slate-500 text-xs md:text-sm">
-                     <li><a href="#empresas" className="hover:text-[#4C1D95] transition-colors">Soluciones Corporativas</a></li>
-                     <li><a href="#como-funciona" className="hover:text-[#4C1D95] transition-colors">Cómo Funciona</a></li>
+                     <li><Link href="/planes/personales-familiares" className="hover:text-[#4C1D95] transition-colors">Planes Personales</Link></li>
+                     <li><Link href="/planes/familiares" className="hover:text-[#4C1D95] transition-colors">Planes Familiares</Link></li>
+                     <li><Link href="/planes/corporativos" className="hover:text-[#4C1D95] transition-colors">Planes Corporativos</Link></li>
+                     <li><Link href="/app/como-funciona" className="hover:text-[#4C1D95] transition-colors">Cómo Funciona</Link></li>
                   </ul>
                </div>
                <div>
-                  <h4 className="font-bold text-slate-900 mb-5">Contacto</h4>
+                  <h4 className="font-bold text-slate-900 mb-5">Blog & Contacto</h4>
                   <ul className="space-y-3 text-slate-500 text-xs md:text-sm">
+                     <li><Link href="/blog/preguntas-frecuentes" className="hover:text-[#4C1D95] transition-colors">Preguntas Frecuentes</Link></li>
+                     <li><Link href="/blog/noticias" className="hover:text-[#4C1D95] transition-colors">Noticias</Link></li>
                      <li><a href="mailto:info@celdoctor.com" className="hover:text-[#4C1D95] transition-colors">info@celdoctor.com</a></li>
-                     <li><a href="#waitlist" className="hover:text-[#4C1D95] transition-colors">Enviarnos un mensaje</a></li>
+                     <li><Link href="/#waitlist" className="hover:text-[#4C1D95] transition-colors">Lista de Espera</Link></li>
                   </ul>
                </div>
             </div>

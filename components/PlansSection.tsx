@@ -25,6 +25,10 @@ export default function PlansSection() {
                      </div>
                      <h3 className="text-2xl font-bold text-white">Personal</h3>
                      <p className="text-white/60 text-sm mt-2">Cobertura ágil para vos. Sin vueltas.</p>
+                     <div className="mt-4">
+                        <span className="text-3xl font-bold text-white">$4.500</span>
+                        <span className="text-white/50 text-sm ml-1">/mes</span>
+                     </div>
                   </div>
 
                   <div className="space-y-4 mb-8 flex-1">
@@ -56,6 +60,10 @@ export default function PlansSection() {
                      </div>
                      <h3 className="text-2xl font-bold text-white">Familiar</h3>
                      <p className="text-white/80 text-sm mt-2">Protección total para tus seres queridos.</p>
+                     <div className="mt-4">
+                        <span className="text-3xl font-bold text-white">$12.500</span>
+                        <span className="text-white/60 text-sm ml-1">/mes</span>
+                     </div>
                   </div>
 
                   <div className="space-y-4 mb-8 flex-1">
@@ -89,6 +97,9 @@ export default function PlansSection() {
                      </div>
                      <h3 className="text-2xl font-bold text-white">Corporativo</h3>
                      <p className="text-white/60 text-sm mt-2">Potenciá la salud de tu equipo.</p>
+                     <div className="mt-4">
+                        <span className="text-2xl font-bold text-[#a78bfa]">A medida</span>
+                     </div>
                   </div>
 
                   <div className="space-y-4 mb-8 flex-1">

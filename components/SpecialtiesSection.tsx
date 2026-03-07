@@ -1,15 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import {
   Stethoscope, Baby, Brain, Heart, Eye, Activity,
-  ChevronDown, ChevronUp, Pill, Microscope,
-  UserCheck, Ear
+  Pill, Microscope, UserCheck, Ear, ArrowRight
 } from "lucide-react";
 
 export default function SpecialtiesSection() {
-  const [showAll, setShowAll] = useState(false);
-
   const allSpecialties = [
     { name: "Clínica Médica", icon: Stethoscope },
     { name: "Pediatría", icon: Baby },
@@ -25,7 +22,8 @@ export default function SpecialtiesSection() {
     { name: "Psiquiatría", icon: Pill },
   ];
 
-  const visibleSpecialties = showAll ? allSpecialties : allSpecialties.slice(0, 6);
+  // Show first 6 on the homepage cards
+  const visibleSpecialties = allSpecialties.slice(0, 6);
 
   return (
     <section id="especialidades" className="bg-[#1e0b4b] py-24 relative overflow-hidden">
@@ -44,10 +42,10 @@ export default function SpecialtiesSection() {
           </p>
         </div>
 
-        {/* GRID INTERACTIVO */}
+        {/* GRID DE ESPECIALIDADES */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {visibleSpecialties.map((esp, i) => (
-            <div key={i} className="bg-white/5 p-6 rounded-2xl border border-white/10 hover:border-[#a78bfa]/50 hover:bg-white/10 hover:shadow-lg hover:shadow-[#4C1D95]/20 transition-all group cursor-pointer text-center flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-300">
+            <div key={i} className="bg-white/5 p-6 rounded-2xl border border-white/10 hover:border-[#a78bfa]/50 hover:bg-white/10 hover:shadow-lg hover:shadow-[#4C1D95]/20 transition-all group cursor-pointer text-center flex flex-col items-center gap-4">
               <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center text-[#a78bfa] group-hover:text-white group-hover:bg-[#4C1D95] transition-colors border border-white/5">
                 <esp.icon size={28} strokeWidth={1.5} />
               </div>
@@ -56,19 +54,15 @@ export default function SpecialtiesSection() {
           ))}
         </div>
 
+        {/* CTA ÚNICO */}
         <div className="mt-12 text-center">
-          <button
-            onClick={() => setShowAll(!showAll)}
-            aria-expanded={showAll}
-            aria-label={showAll ? "Ver menos especialidades" : "Ver todas las especialidades"}
-            className="inline-flex items-center gap-2 text-white font-semibold text-sm hover:bg-white/10 transition-colors bg-transparent px-6 py-3 rounded-full border border-white/20 hover:border-white"
+          <Link
+            href="/atencion-medica/especialidades-medicas"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-[#4C1D95] text-white rounded-xl font-bold text-base hover:bg-[#3b1675] transition-all shadow-xl shadow-[#4C1D95]/20 hover:-translate-y-1 active:scale-95"
           >
-            {showAll ? (
-              <>Ver menos especialidades <ChevronUp size={16} /></>
-            ) : (
-              <>Ver todas las especialidades (+6) <ChevronDown size={16} /></>
-            )}
-          </button>
+            Ver todas las especialidades (+6)
+            <ArrowRight size={18} />
+          </Link>
         </div>
       </div>
     </section>
