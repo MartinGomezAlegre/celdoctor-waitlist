@@ -1,130 +1,150 @@
-import React from "react";
-import { User, CheckCircle2, Users, Building2 } from "lucide-react";
+"use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { CheckCircle2 } from "lucide-react";
+import { obtenerPlanes, type Plan } from "@/lib/api";
+
+// ─── Fallback hardcodeado (se usa si la API no responde) ──────────────────────
+const FALLBACK_PLANES: Plan[] = [
+    {
+        id: 1,
+        nombre: "Personal",
+        descripcion: "Cobertura ágil para vos. Sin vueltas.",
+        precio_mensual: 4500,
+        max_beneficiarios: 1,
+    },
+    {
+        id: 2,
+        nombre: "Familiar",
+        descripcion: "Protección total para tus seres queridos.",
+        precio_mensual: 12500,
+        max_beneficiarios: 4,
+    },
+    {
+        id: 3,
+        nombre: "Corporativo",
+        descripcion: "Potenciá la salud de tu equipo.",
+        precio_mensual: 0,
+        max_beneficiarios: null,
+    },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function formatBeneficiarios(max: number | null): string {
+    if (max === null) return "Beneficiarios ilimitados";
+    if (max === 1) return "1 beneficiario";
+    return `Hasta ${max} beneficiarios`;
+}
+
+// ─── Skeleton card ────────────────────────────────────────────────────────────
+function SkeletonPlanCard() {
+    return (
+        <div className="p-8 rounded-3xl bg-white/5 border border-white/10 flex flex-col animate-pulse">
+            <div className="w-14 h-14 bg-white/10 rounded-2xl mb-4" />
+            <div className="h-6 bg-white/10 rounded w-1/2 mb-2" />
+            <div className="h-4 bg-white/10 rounded w-3/4 mb-6" />
+            <div className="h-10 bg-white/10 rounded w-1/3 mb-6" />
+            <div className="space-y-3 flex-1">
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-4 bg-white/10 rounded w-full" />
+                ))}
+            </div>
+            <div className="h-12 bg-white/10 rounded-xl mt-8" />
+        </div>
+    );
+}
+
+// ─── Card de plan dinámico ────────────────────────────────────────────────────
+function PlanCard({ plan, destacado }: { plan: Plan; destacado?: boolean }) {
+    const baseCard = destacado
+        ? "bg-linear-to-b from-[#4C1D95] to-[#2E1065] border-[#6D28D9] border shadow-2xl shadow-[#4C1D95]/40 hover:scale-[1.02]"
+        : "bg-white/5 border border-white/10 hover:border-[#a78bfa]/50 hover:bg-white/10";
+
+    return (
+        <div className={`p-8 rounded-3xl transition-all flex flex-col group ${baseCard}`}>
+            <div className="mb-6">
+                <h3 className="text-2xl font-bold text-white mb-1">{plan.nombre}</h3>
+                <p className={`text-sm mt-1 ${destacado ? "text-white/80" : "text-white/60"}`}>
+                    {plan.descripcion}
+                </p>
+                <div className="mt-4">
+                    {plan.precio_mensual === 0 ? (
+                        <span className="text-2xl font-bold text-[#a78bfa]">A consultar</span>
+                    ) : (
+                        <>
+                            <span className="text-3xl font-bold text-white">
+                                ${plan.precio_mensual.toLocaleString("es-AR")}
+                            </span>
+                            <span className={`text-sm ml-1 ${destacado ? "text-white/60" : "text-white/50"}`}>
+                                /mes
+                            </span>
+                        </>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex-1 mb-8">
+                <p className={`text-sm flex items-center gap-2 ${destacado ? "text-white" : "text-white/80"}`}>
+                    <CheckCircle2
+                        size={16}
+                        className={destacado ? "text-white shrink-0" : "text-[#a78bfa] shrink-0"}
+                    />
+                    {formatBeneficiarios(plan.max_beneficiarios)}
+                </p>
+            </div>
+
+            <Link
+                href="/registro"
+                className={`w-full py-4 text-center rounded-xl font-bold block transition-all ${
+                    destacado
+                        ? "bg-white text-[#2E1065] hover:bg-slate-100 shadow-lg"
+                        : "border border-white/20 text-white hover:bg-white hover:text-[#2E1065]"
+                }`}
+            >
+                Contratar ahora
+            </Link>
+        </div>
+    );
+}
+
+// ─── Sección principal ────────────────────────────────────────────────────────
 export default function PlansSection() {
-   return (
-      // Fondo violeta oscuro y borde superior sutil
-      <section id="planes" className="py-24 bg-[#1e0b4b] border-t border-white/5 relative overflow-hidden">
+    const [planes, setPlanes] = useState<Plan[]>([]);
+    const [cargando, setCargando] = useState(true);
 
-         {/* Decoración de fondo */}
-         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-250 h-150 bg-[#4C1D95]/20 rounded-full blur-[120px] pointer-events-none" />
+    useEffect(() => {
+        obtenerPlanes().then((data) => {
+            setPlanes(data.length > 0 ? data : FALLBACK_PLANES);
+            setCargando(false);
+        });
+    }, []);
 
-         <div className="max-w-7xl mx-auto px-6 relative z-10">
-            <div className="text-center mb-16">
-               <h2 className="text-3xl font-bold text-white">Elegí tu cobertura</h2>
-               <p className="text-white/60 mt-2">Planes flexibles diseñados para cada etapa.</p>
+    // El plan del medio (índice 1) se muestra destacado
+    const planDestacadoId = planes[1]?.id;
+
+    return (
+        <section id="planes" className="py-24 bg-[#1e0b4b] border-t border-white/5 relative overflow-hidden">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-250 h-150 bg-[#4C1D95]/20 rounded-full blur-[120px] pointer-events-none" />
+
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl font-bold text-white">Elegí tu cobertura</h2>
+                    <p className="text-white/60 mt-2">Planes flexibles diseñados para cada etapa.</p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+                    {cargando
+                        ? [1, 2, 3].map((i) => <SkeletonPlanCard key={i} />)
+                        : planes.map((plan) => (
+                              <PlanCard
+                                  key={plan.id}
+                                  plan={plan}
+                                  destacado={plan.id === planDestacadoId}
+                              />
+                          ))}
+                </div>
             </div>
-
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
-
-               {/* 1. PLAN PERSONAL */}
-               <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-[#a78bfa]/50 hover:bg-white/10 transition-all flex flex-col group">
-                  <div className="mb-6">
-                     <div className="w-14 h-14 bg-[#4C1D95]/30 rounded-2xl flex items-center justify-center text-[#a78bfa] mb-4 group-hover:bg-[#4C1D95] group-hover:text-white transition-colors border border-white/10">
-                        <User size={28} />
-                     </div>
-                     <h3 className="text-2xl font-bold text-white">Personal</h3>
-                     <p className="text-white/60 text-sm mt-2">Cobertura ágil para vos. Sin vueltas.</p>
-                     <div className="mt-4">
-                        <span className="text-3xl font-bold text-white">$4.500</span>
-                        <span className="text-white/50 text-sm ml-1">/mes</span>
-                     </div>
-                  </div>
-
-                  <div className="space-y-4 mb-8 flex-1">
-                     <ul className="space-y-3">
-                        {[
-                           "Consultas médicas ilimitadas",
-                           "Guardia 24/7 sin espera",
-                           "Recetas digitales al instante",
-                           "Historia clínica en la App",
-                           "Sin copagos sorpresa"
-                        ].map((item, i) => (
-                           <li key={i} className="flex items-start gap-3 text-sm text-white/80">
-                              <CheckCircle2 size={18} className="text-[#a78bfa] shrink-0 mt-0.5" />
-                              {item}
-                           </li>
-                        ))}
-                     </ul>
-                  </div>
-                  <a href="#waitlist" className="w-full py-4 text-center border border-white/20 text-white rounded-xl font-bold hover:bg-white hover:text-[#2E1065] transition-all">
-                     Solicitar Alta
-                  </a>
-               </div>
-
-               {/* 2. PLAN FAMILIAR (Destacado) */}
-               <div className="p-8 rounded-3xl bg-linear-to-b from-[#4C1D95] to-[#2E1065] border border-[#6D28D9] shadow-2xl shadow-[#4C1D95]/40 hover:scale-[1.02] transition-all flex flex-col group relative overflow-hidden">
-                  <div className="mb-6">
-                     <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white mb-4 transition-colors border border-white/20">
-                        <Users size={28} />
-                     </div>
-                     <h3 className="text-2xl font-bold text-white">Familiar</h3>
-                     <p className="text-white/80 text-sm mt-2">Protección total para tus seres queridos.</p>
-                     <div className="mt-4">
-                        <span className="text-3xl font-bold text-white">$12.500</span>
-                        <span className="text-white/60 text-sm ml-1">/mes</span>
-                     </div>
-                  </div>
-
-                  <div className="space-y-4 mb-8 flex-1">
-                     <ul className="space-y-3">
-                        {[
-                           "Hasta 4 integrantes incluidos",
-                           "Pediatría prioritaria",
-                           "Certificados escolares/deportivos",
-                           "Consultas simultáneas",
-                           "Todo lo del plan personal"
-                        ].map((item, i) => (
-                           <li key={i} className="flex items-start gap-3 text-sm text-white">
-                              <CheckCircle2 size={18} className="text-white shrink-0 mt-0.5" />
-                              {item}
-                           </li>
-                        ))}
-                     </ul>
-                  </div>
-                  <a href="#waitlist" className="w-full py-4 text-center bg-white text-[#2E1065] rounded-xl font-bold hover:bg-slate-100 transition-all shadow-lg">
-                     Cotizar Familia
-                  </a>
-               </div>
-
-               {/* 3. PLAN CORPORATIVO */}
-               <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-[#a78bfa]/50 hover:bg-white/10 transition-all flex flex-col group relative overflow-hidden">
-                  <div className="absolute top-0 right-0 bg-[#4C1D95] text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-xl uppercase tracking-wider border-l border-b border-white/10">Empresas</div>
-
-                  <div className="mb-6">
-                     <div className="w-14 h-14 bg-[#4C1D95]/30 rounded-2xl flex items-center justify-center text-[#a78bfa] mb-4 group-hover:bg-[#4C1D95] group-hover:text-white transition-colors border border-white/10">
-                        <Building2 size={28} />
-                     </div>
-                     <h3 className="text-2xl font-bold text-white">Corporativo</h3>
-                     <p className="text-white/60 text-sm mt-2">Potenciá la salud de tu equipo.</p>
-                     <div className="mt-4">
-                        <span className="text-2xl font-bold text-[#a78bfa]">A medida</span>
-                     </div>
-                  </div>
-
-                  <div className="space-y-4 mb-8 flex-1">
-                     <ul className="space-y-3">
-                        {[
-                           "Dashboard de gestión de ausentismo",
-                           "Factura A discriminada",
-                           "Account Manager dedicado",
-                           "Chequeo anual ejecutivo",
-                           "Altas y bajas en 1 click"
-                        ].map((item, i) => (
-                           <li key={i} className="flex items-start gap-3 text-sm text-white/80">
-                              <CheckCircle2 size={18} className="text-[#a78bfa] shrink-0 mt-0.5" />
-                              {item}
-                           </li>
-                        ))}
-                     </ul>
-                  </div>
-                  <a href="#waitlist" className="w-full py-4 text-center border border-white/20 text-white rounded-xl font-bold hover:bg-white hover:text-[#2E1065] transition-all">
-                     Cotizar Empresa
-                  </a>
-               </div>
-
-            </div>
-         </div>
-      </section>
-   );
+        </section>
+    );
 }

@@ -1,9 +1,7 @@
-"use client";
-
 import React from "react";
 import Image from "next/image";
-import InteractiveDemo from "./InteractiveDemo";
-import { PlayCircle, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export default function HeroSection() {
   return (
@@ -46,30 +44,24 @@ export default function HeroSection() {
             {/* Botones de Acción */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start w-full sm:w-auto">
 
-              {/* Botón Principal (Waitlist) */}
-              <a
-                href="#waitlist"
+              {/* Botón Principal */}
+              <Link
+                href="/registro"
                 className="relative z-20 inline-flex justify-center items-center px-8 py-4 bg-[#4C1D95] text-white rounded-xl font-bold text-base hover:bg-[#3b1675] transition-all shadow-xl shadow-[#4C1D95]/20 hover:-translate-y-1 active:scale-95"
               >
-                Unirme a la lista de espera
-              </a>
+                Empezar ahora
+              </Link>
 
-              {/* Botón Demo Destacado */}
-              <div className="flex items-center justify-center relative">
-                <div className="group relative flex items-center gap-3 px-6 py-3.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold cursor-pointer hover:border-[#4C1D95] hover:text-[#4C1D95] hover:shadow-lg transition-all w-full sm:w-auto justify-center overflow-hidden">
-
-                  {/* Elementos Visuales */}
-                  <PlayCircle size={24} className="text-[#4C1D95] fill-[#4C1D95]/10 shrink-0" />
-                  <span className="text-sm pointer-events-none">Ver Demo Interactiva</span>
-
-                  <div className="absolute inset-0 opacity-0 z-10 [&_button]:w-full [&_button]:h-full [&_button]:cursor-pointer">
-                    <InteractiveDemo />
-                  </div>
-                </div>
-              </div>
+              {/* Botón Iniciar sesión */}
+              <Link
+                href="/login"
+                className="inline-flex justify-center items-center px-8 py-4 rounded-xl font-bold text-base border border-[#4C1D95] text-[#4C1D95] hover:bg-[#4C1D95]/5 transition-all"
+              >
+                Iniciar sesión
+              </Link>
             </div>
 
-            {/* CTA Secundario — Texto honesto sin métricas falsas */}
+            {/* CTA Secundario */}
             <div className="flex items-center justify-center lg:justify-start gap-4 pt-6 border-t border-slate-100/50">
               <div className="flex items-center gap-3 bg-[#4C1D95]/5 px-5 py-3 rounded-xl border border-[#4C1D95]/10">
                 <ArrowRight size={18} className="text-[#4C1D95]" />

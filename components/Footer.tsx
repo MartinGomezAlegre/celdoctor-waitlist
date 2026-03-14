@@ -41,7 +41,7 @@ export default function Footer() {
                      <li><Link href="/blog/preguntas-frecuentes" className="hover:text-[#4C1D95] transition-colors">Preguntas Frecuentes</Link></li>
                      <li><Link href="/blog/noticias" className="hover:text-[#4C1D95] transition-colors">Noticias</Link></li>
                      <li><a href="mailto:info@celdoctor.com" className="hover:text-[#4C1D95] transition-colors">info@celdoctor.com</a></li>
-                     <li><Link href="/#waitlist" className="hover:text-[#4C1D95] transition-colors">Lista de Espera</Link></li>
+                     <li><Link href="/registro" className="hover:text-[#4C1D95] transition-colors">Crear cuenta</Link></li>
                   </ul>
                </div>
             </div>
@@ -50,8 +50,8 @@ export default function Footer() {
                   <p>© {new Date().getFullYear()} CelDoctor Argentina S.A. Todos los derechos reservados.</p>
                </div>
                <div className="flex gap-6 text-xs text-slate-400">
-                  <span className="cursor-default" title="Próximamente">Privacidad</span>
-                  <span className="cursor-default" title="Próximamente">Términos</span>
+                  <Link href="/privacidad" className="hover:text-[#4C1D95] transition-colors">Privacidad</Link>
+                  <Link href="/terminos" className="hover:text-[#4C1D95] transition-colors">Términos</Link>
                </div>
             </div>
          </div>

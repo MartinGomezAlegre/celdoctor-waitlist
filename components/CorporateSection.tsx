@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { CheckCircle2, PieChart, Building2 } from "lucide-react";
 
@@ -106,12 +107,12 @@ export default function CorporateSection() {
               transition={{ delay: 0.5 }}
               className="pt-4"
             >
-              <a
-                href="#waitlist"
+              <Link
+                href="/registro"
                 className="inline-flex justify-center items-center px-8 py-4 bg-[#4C1D95] text-white rounded-xl font-bold text-base hover:bg-[#3b1675] hover:shadow-xl hover:shadow-[#4C1D95]/30 transition-all hover:-translate-y-1"
               >
-                Descubrir solución corporativa
-              </a>
+                Contactar ventas
+              </Link>
             </motion.div>
           </div>
 

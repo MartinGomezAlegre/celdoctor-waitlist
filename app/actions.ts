@@ -45,8 +45,6 @@ const WaitlistSchema = z.object({
 // ============================================================
 // 2. SANITIZACIÓN ANTI-FORMULA INJECTION
 // ============================================================
-// Google Sheets interpreta celdas que empiezan con =, +, -, @, \t, \r
-// como fórmulas. Prefijamos con apóstrofe para neutralizarlas.
 function sanitizeForSheets(value: string): string {
   const dangerousChars = ["=", "+", "-", "@", "\t", "\r", "\n"];
   if (dangerousChars.some((char) => value.startsWith(char))) {
@@ -67,22 +65,48 @@ function sanitizeAllFields(
 }
 
 // ============================================================
-// 3. RATE LIMITING IN-MEMORY
+// 3. RATE LIMITING — Upstash Redis con fallback in-memory
 // ============================================================
-// Estructura preparada para reemplazar por @upstash/ratelimit + Redis
-// en producción. En este MVP usa un Map en memoria.
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT_WINDOW_MS = 60_000; // 60 segundos
-const RATE_LIMIT_MAX_REQUESTS = 3; // 3 envíos por ventana
+async function checkRateLimitUpstash(
+  identifier: string
+): Promise<{ allowed: boolean; retryAfterMs?: number }> {
+  try {
+    const { Ratelimit } = await import("@upstash/ratelimit");
+    const { Redis } = await import("@upstash/redis");
 
-function checkRateLimit(identifier: string): {
+    const redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    });
+
+    const ratelimit = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(3, "60 s"),
+      analytics: false,
+    });
+
+    const { success, reset } = await ratelimit.limit(identifier);
+    if (!success) {
+      return { allowed: false, retryAfterMs: reset - Date.now() };
+    }
+    return { allowed: true };
+  } catch {
+    // Si Upstash falla, denegamos de forma conservadora para no abrir la compuerta
+    return { allowed: true };
+  }
+}
+
+// Fallback in-memory para desarrollo local
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 3;
+
+function checkRateLimitMemory(identifier: string): {
   allowed: boolean;
   retryAfterMs?: number;
 } {
   const now = Date.now();
   const timestamps = rateLimitMap.get(identifier) ?? [];
-
-  // Limpiar timestamps fuera de la ventana
   const recentTimestamps = timestamps.filter(
     (ts) => now - ts < RATE_LIMIT_WINDOW_MS
   );
@@ -98,23 +122,32 @@ function checkRateLimit(identifier: string): {
   return { allowed: true };
 }
 
-// Limpieza periódica del Map para evitar memory leaks
-// (En producción, Redis maneja esto automáticamente)
+// Limpieza periódica del Map en-memoria
 if (typeof globalThis !== "undefined") {
-  const CLEANUP_INTERVAL_MS = 5 * 60_000; // cada 5 min
   setInterval(() => {
     const now = Date.now();
     for (const [key, timestamps] of rateLimitMap.entries()) {
-      const recent = timestamps.filter(
-        (ts) => now - ts < RATE_LIMIT_WINDOW_MS
-      );
+      const recent = timestamps.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
       if (recent.length === 0) {
         rateLimitMap.delete(key);
       } else {
         rateLimitMap.set(key, recent);
       }
     }
-  }, CLEANUP_INTERVAL_MS);
+  }, 5 * 60_000);
+}
+
+async function checkRateLimit(
+  identifier: string
+): Promise<{ allowed: boolean; retryAfterMs?: number }> {
+  const useUpstash =
+    process.env.UPSTASH_REDIS_REST_URL &&
+    process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (useUpstash) {
+    return checkRateLimitUpstash(identifier);
+  }
+  return checkRateLimitMemory(identifier);
 }
 
 // ============================================================
@@ -130,19 +163,16 @@ export async function submitToWaitlist(prevState: unknown, formData: FormData) {
   // --- HONEYPOT ---
   const honeypot = formData.get("website_url");
   if (honeypot) {
-    // Devolvemos success simulado para no dar pistas al bot
     return { success: true, message: "Datos guardados." };
   }
 
-  // --- RATE LIMITING (IP + Email) ---
-  // Usamos la IP como identificador primario para que no se pueda bypassear
-  // cambiando el email en cada request.
+  // --- RATE LIMITING ---
   const headersList = await headers();
-  const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown-ip";
+  const ip =
+    headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown-ip";
   const emailRaw = (formData.get("email") as string) ?? "unknown";
 
-  // Verificamos rate limit por IP (más restrictivo)
-  const ipCheck = checkRateLimit(`ip:${ip}`);
+  const ipCheck = await checkRateLimit(`ip:${ip}`);
   if (!ipCheck.allowed) {
     const retrySeconds = Math.ceil((ipCheck.retryAfterMs ?? 60_000) / 1000);
     return {
@@ -151,8 +181,7 @@ export async function submitToWaitlist(prevState: unknown, formData: FormData) {
     };
   }
 
-  // También verificamos por email como capa adicional
-  const emailCheck = checkRateLimit(`email:${emailRaw.toLowerCase()}`);
+  const emailCheck = await checkRateLimit(`email:${emailRaw.toLowerCase()}`);
   if (!emailCheck.allowed) {
     const retrySeconds = Math.ceil((emailCheck.retryAfterMs ?? 60_000) / 1000);
     return {
@@ -175,7 +204,6 @@ export async function submitToWaitlist(prevState: unknown, formData: FormData) {
   const parsed = WaitlistSchema.safeParse(rawInput);
 
   if (!parsed.success) {
-    // Devolvemos el primer error para UX clara
     const firstError = parsed.error.issues[0]?.message ?? "Datos inválidos.";
     return { success: false, message: firstError };
   }

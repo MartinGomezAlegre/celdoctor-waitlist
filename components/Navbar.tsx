@@ -243,10 +243,16 @@ export default function Navbar() {
           </div>
 
           <Link
-            href="/#waitlist"
+            href="/login"
+            className="hidden sm:inline-flex items-center px-4 py-2.5 rounded-lg text-xs font-bold border border-[#4C1D95] text-[#4C1D95] hover:bg-[#4C1D95]/5 transition-all whitespace-nowrap"
+          >
+            Iniciar sesión
+          </Link>
+          <Link
+            href="/registro"
             className="hidden sm:inline-flex bg-[#4C1D95] text-white px-4 md:px-6 py-2.5 rounded-lg text-xs font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25 hover:-translate-y-0.5 whitespace-nowrap"
           >
-            Unirme a la lista de espera
+            Registrarme
           </Link>
 
           {/* Botón Hamburguesa (Mobile) */}
@@ -282,11 +288,18 @@ export default function Navbar() {
               {/* CTA Mobile */}
               <div className="pt-3 space-y-2.5">
                 <Link
-                  href="/#waitlist"
+                  href="/registro"
                   onClick={closeMenu}
                   className="block w-full text-center bg-[#4C1D95] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25"
                 >
-                  Unirme a la lista de espera
+                  Registrarme
+                </Link>
+                <Link
+                  href="/login"
+                  onClick={closeMenu}
+                  className="block w-full text-center border border-[#4C1D95] text-[#4C1D95] py-3.5 rounded-xl text-sm font-bold hover:bg-[#4C1D95]/5 transition-all"
+                >
+                  Iniciar sesión
                 </Link>
 
                 {/* Ver Demo */}

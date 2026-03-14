@@ -1,30 +1,27 @@
-"use client";
-
 import Link from "next/link";
 import {
   Stethoscope, Baby, Brain, Heart, Eye, Activity,
   Pill, Microscope, UserCheck, Ear, ArrowRight
 } from "lucide-react";
 
+const allSpecialties = [
+  { name: "Clínica Médica", icon: Stethoscope },
+  { name: "Pediatría", icon: Baby },
+  { name: "Cardiología", icon: Heart },
+  { name: "Psicología", icon: Brain },
+  { name: "Oftalmología", icon: Eye },
+  { name: "Nutrición", icon: Activity },
+  { name: "Dermatología", icon: UserCheck },
+  { name: "Ginecología", icon: UserCheck },
+  { name: "Traumatología", icon: Activity },
+  { name: "Otorrino", icon: Ear },
+  { name: "Urología", icon: Microscope },
+  { name: "Psiquiatría", icon: Pill },
+];
+
+const visibleSpecialties = allSpecialties.slice(0, 6);
+
 export default function SpecialtiesSection() {
-  const allSpecialties = [
-    { name: "Clínica Médica", icon: Stethoscope },
-    { name: "Pediatría", icon: Baby },
-    { name: "Cardiología", icon: Heart },
-    { name: "Psicología", icon: Brain },
-    { name: "Oftalmología", icon: Eye },
-    { name: "Nutrición", icon: Activity },
-    { name: "Dermatología", icon: UserCheck },
-    { name: "Ginecología", icon: UserCheck },
-    { name: "Traumatología", icon: Activity },
-    { name: "Otorrino", icon: Ear },
-    { name: "Urología", icon: Microscope },
-    { name: "Psiquiatría", icon: Pill },
-  ];
-
-  // Show first 6 on the homepage cards
-  const visibleSpecialties = allSpecialties.slice(0, 6);
-
   return (
     <section id="especialidades" className="bg-[#1e0b4b] py-24 relative overflow-hidden">
 
