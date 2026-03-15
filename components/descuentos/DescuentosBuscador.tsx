@@ -1,186 +1,151 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, MapPin, Clock, Percent, ChevronDown, Star, Navigation } from "lucide-react";
-import { farmacias, type Farmacia } from "./descuentos.data";
+import Link from "next/link";
+import { Search, Pill, Lock } from "lucide-react";
+
+interface Medicamento {
+    nombre: string;
+    laboratorio: string;
+    presentacion: string;
+    precio: string;
+    categoria: string;
+}
+
+const MEDICAMENTOS: Medicamento[] = [
+    { nombre: "Ibuprofeno 400mg", laboratorio: "Laboratorio Bagó", presentacion: "Comprimidos x 20", precio: "$3.200", categoria: "Analgésico" },
+    { nombre: "Amoxicilina 500mg", laboratorio: "Roemmers", presentacion: "Cápsulas x 21", precio: "$8.500", categoria: "Antibiótico" },
+    { nombre: "Omeprazol 20mg", laboratorio: "Gador", presentacion: "Cápsulas x 14", precio: "$4.100", categoria: "Gastro" },
+    { nombre: "Losartán 50mg", laboratorio: "Elea", presentacion: "Comprimidos x 30", precio: "$6.800", categoria: "Cardiovascular" },
+    { nombre: "Metformina 850mg", laboratorio: "Montpellier", presentacion: "Comprimidos x 60", precio: "$5.200", categoria: "Diabetes" },
+    { nombre: "Atorvastatina 20mg", laboratorio: "Pfizer", presentacion: "Comprimidos x 30", precio: "$9.400", categoria: "Cardiovascular" },
+    { nombre: "Paracetamol 500mg", laboratorio: "Bayer", presentacion: "Comprimidos x 24", precio: "$2.800", categoria: "Analgésico" },
+    { nombre: "Clonazepam 0.5mg", laboratorio: "Roche", presentacion: "Comprimidos x 30", precio: "$7.600", categoria: "Neurológico" },
+    { nombre: "Enalapril 10mg", laboratorio: "Gador", presentacion: "Comprimidos x 30", precio: "$4.900", categoria: "Cardiovascular" },
+    { nombre: "Azitromicina 500mg", laboratorio: "Pfizer", presentacion: "Comprimidos x 3", precio: "$12.400", categoria: "Antibiótico" },
+    { nombre: "Salbutamol", laboratorio: "GlaxoSmithKline", presentacion: "Aerosol x 200 dosis", precio: "$8.900", categoria: "Respiratorio" },
+    { nombre: "Diclofenac 50mg", laboratorio: "Novartis", presentacion: "Comprimidos x 20", precio: "$3.600", categoria: "Antiinflamatorio" },
+    { nombre: "Sertralina 50mg", laboratorio: "Roemmers", presentacion: "Comprimidos x 30", precio: "$11.200", categoria: "Psiquiátrico" },
+    { nombre: "Levotiroxina 100mcg", laboratorio: "Elea", presentacion: "Comprimidos x 30", precio: "$6.100", categoria: "Hormonal" },
+    { nombre: "Ranitidina 150mg", laboratorio: "Bagó", presentacion: "Comprimidos x 20", precio: "$3.800", categoria: "Gastro" },
+];
+
+const CATEGORIA_COLORS: Record<string, string> = {
+    "Analgésico": "bg-orange-50 text-orange-700 border-orange-100",
+    "Antibiótico": "bg-blue-50 text-blue-700 border-blue-100",
+    "Gastro": "bg-green-50 text-green-700 border-green-100",
+    "Cardiovascular": "bg-red-50 text-red-700 border-red-100",
+    "Diabetes": "bg-purple-50 text-purple-700 border-purple-100",
+    "Neurológico": "bg-indigo-50 text-indigo-700 border-indigo-100",
+    "Respiratorio": "bg-cyan-50 text-cyan-700 border-cyan-100",
+    "Antiinflamatorio": "bg-yellow-50 text-yellow-700 border-yellow-100",
+    "Psiquiátrico": "bg-violet-50 text-violet-700 border-violet-100",
+    "Hormonal": "bg-pink-50 text-pink-700 border-pink-100",
+};
 
 export default function DescuentosBuscador() {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [tipoDescuento, setTipoDescuento] = useState("todos");
-    const [selectedFarmacia, setSelectedFarmacia] = useState<Farmacia | null>(null);
+    const [query, setQuery] = useState("");
 
-    const filteredFarmacias = useMemo(() => {
-        return farmacias.filter((f) => {
-            const matchZona = searchTerm === "" || f.zona.toLowerCase().includes(searchTerm.toLowerCase()) || f.direccion.toLowerCase().includes(searchTerm.toLowerCase()) || f.nombre.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchTipo = tipoDescuento === "todos" || f.tipo === tipoDescuento;
-            return matchZona && matchTipo;
-        });
-    }, [searchTerm, tipoDescuento]);
+    const filtered = useMemo(() => {
+        const q = query.toLowerCase();
+        if (q === "") return MEDICAMENTOS;
+        return MEDICAMENTOS.filter(
+            (m) => m.nombre.toLowerCase().includes(q) || m.laboratorio.toLowerCase().includes(q)
+        );
+    }, [query]);
 
     return (
-        <section id="buscador" className="py-16 bg-white">
+        <section className="py-16 bg-white">
             <div className="max-w-7xl mx-auto px-6">
-                {/* Header + Search */}
+                {/* Header */}
                 <div className="text-center mb-10">
-                    <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">Buscador de farmacias</h2>
-                    <p className="text-slate-500 max-w-xl mx-auto">Encontrá la farmacia adherida más cercana a tu ubicación.</p>
+                    <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-3">Vademécum de medicamentos</h2>
+                    <p className="text-slate-500 max-w-xl mx-auto">Consultá precios y disponibilidad en farmacias argentinas.</p>
                 </div>
 
-                <div className="max-w-3xl mx-auto mb-12">
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-100/80 p-3 flex flex-col sm:flex-row gap-3">
-                        <div className="flex-1 relative">
-                            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Ingresá tu zona / ciudad"
-                                className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-100 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/20 focus:border-[#4C1D95]/30 transition-all"
-                                aria-label="Buscar farmacias por zona"
-                            />
-                        </div>
-                        <div className="relative sm:w-48">
-                            <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                            <select
-                                value={tipoDescuento}
-                                onChange={(e) => setTipoDescuento(e.target.value)}
-                                className="w-full appearance-none pl-4 pr-10 py-3.5 rounded-xl bg-slate-50 border border-slate-100 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/20 focus:border-[#4C1D95]/30 transition-all cursor-pointer"
-                                aria-label="Tipo de descuento"
-                            >
-                                <option value="todos">Todos</option>
-                                <option value="cronicos">Crónicos</option>
-                                <option value="materno">Materno</option>
-                                <option value="general">General</option>
-                            </select>
-                        </div>
-                        <button className="px-8 py-3.5 bg-[#4C1D95] text-white rounded-xl font-bold text-sm hover:bg-[#3b1675] transition-all shadow-lg shadow-[#4C1D95]/20 hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2 shrink-0">
-                            <Search size={16} /> Buscar
-                        </button>
+                {/* Search */}
+                <div className="max-w-lg mx-auto mb-10">
+                    <div className="relative">
+                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Buscá por nombre o laboratorio..."
+                            className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/20 focus:border-[#4C1D95]/40 transition-all shadow-sm"
+                            aria-label="Buscar medicamento"
+                        />
                     </div>
-                    <p className="text-center text-sm text-slate-400 mt-3">{filteredFarmacias.length} farmacia{filteredFarmacias.length !== 1 ? "s" : ""} encontrada{filteredFarmacias.length !== 1 ? "s" : ""}</p>
                 </div>
 
-                {/* Results + Map */}
-                <div className="grid lg:grid-cols-5 gap-8">
-                    {/* Left — Pharmacy List */}
-                    <div className="lg:col-span-3 space-y-4 max-h-[650px] overflow-y-auto pr-2">
-                        <AnimatePresence mode="popLayout">
-                            {filteredFarmacias.length === 0 ? (
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
-                                    <div className="w-20 h-20 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                                        <Search size={32} className="text-slate-300" />
-                                    </div>
-                                    <p className="text-slate-400 font-medium">No se encontraron farmacias.</p>
-                                </motion.div>
-                            ) : (
-                                filteredFarmacias.map((f) => (
-                                    <motion.div
-                                        key={f.id}
-                                        layout
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        transition={{ duration: 0.2 }}
-                                        className={`p-6 rounded-2xl border transition-all cursor-pointer group ${selectedFarmacia?.id === f.id
-                                                ? "border-[#4C1D95]/30 bg-[#4C1D95]/[0.02] shadow-lg shadow-[#4C1D95]/5"
-                                                : "border-slate-100 bg-white hover:border-[#4C1D95]/15 hover:shadow-md"
-                                            }`}
-                                        onClick={() => setSelectedFarmacia(f)}
-                                    >
-                                        <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-3 mb-2">
-                                                    <h3 className="text-lg font-bold text-slate-900">{f.nombre}</h3>
-                                                    <div className="flex items-center gap-1 shrink-0">
-                                                        <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                                                        <span className="text-sm font-semibold text-slate-700">{f.rating}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-1.5 mb-4">
-                                                    <p className="flex items-center gap-2 text-sm text-slate-500">
-                                                        <MapPin size={14} className="shrink-0 text-slate-400" /> {f.direccion}, {f.zona}
-                                                    </p>
-                                                    <p className="flex items-center gap-2 text-sm text-slate-500">
-                                                        <Clock size={14} className="shrink-0 text-slate-400" /> {f.horario}
-                                                    </p>
-                                                </div>
-                                                <div className="flex flex-wrap gap-2">
-                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#4C1D95]/5 text-[#4C1D95] text-xs font-bold border border-[#4C1D95]/10">
-                                                        <Percent size={12} /> {f.descuento}
-                                                    </span>
-                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-50 text-slate-500 text-xs font-medium border border-slate-100">
-                                                        <MapPin size={12} /> {f.zona}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); setSelectedFarmacia(f); }}
-                                                className="sm:self-center px-4 py-2.5 rounded-xl border border-[#4C1D95]/20 text-[#4C1D95] text-sm font-bold hover:bg-[#4C1D95] hover:text-white hover:shadow-lg hover:shadow-[#4C1D95]/20 transition-all shrink-0"
-                                            >
-                                                <span className="flex items-center gap-1.5"><Navigation size={14} /> Ver en mapa</span>
-                                            </button>
-                                        </div>
-                                    </motion.div>
-                                ))
-                            )}
-                        </AnimatePresence>
-                    </div>
-
-                    {/* Right — Mapa Argentina */}
-                    <div className="lg:col-span-2">
-                        <div className="sticky top-24 rounded-3xl overflow-hidden border border-slate-200 bg-slate-50 h-[450px] lg:h-[650px] relative shadow-xl shadow-slate-100/50">
-                            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, #4C1D95 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-                            <div className="absolute inset-0 opacity-5">
-                                <div className="absolute top-[20%] left-0 right-0 h-px bg-[#4C1D95]" />
-                                <div className="absolute top-[40%] left-0 right-0 h-px bg-[#4C1D95]" />
-                                <div className="absolute top-[60%] left-0 right-0 h-px bg-[#4C1D95]" />
-                                <div className="absolute top-[80%] left-0 right-0 h-px bg-[#4C1D95]" />
-                                <div className="absolute left-[25%] top-0 bottom-0 w-px bg-[#4C1D95]" />
-                                <div className="absolute left-[50%] top-0 bottom-0 w-px bg-[#4C1D95]" />
-                                <div className="absolute left-[75%] top-0 bottom-0 w-px bg-[#4C1D95]" />
-                            </div>
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-50/50 pointer-events-none z-[1]" />
-
-                            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-10">
-                                {selectedFarmacia ? (
-                                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
-                                        <div className="w-16 h-16 mx-auto bg-[#4C1D95] rounded-full flex items-center justify-center shadow-xl shadow-[#4C1D95]/30 mb-4">
-                                            <MapPin size={28} className="text-white" />
-                                        </div>
-                                        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-100 max-w-xs">
-                                            <h4 className="text-lg font-bold text-slate-900 mb-1">{selectedFarmacia.nombre}</h4>
-                                            <p className="text-sm text-slate-500 mb-1">{selectedFarmacia.direccion}</p>
-                                            <p className="text-sm text-slate-400 mb-3">{selectedFarmacia.zona} · {selectedFarmacia.horario}</p>
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#4C1D95] text-white text-xs font-bold">
-                                                <Percent size={12} /> {selectedFarmacia.descuento}
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-slate-400 mt-4">Mapa de Argentina · Próximamente</p>
-                                    </motion.div>
-                                ) : (
-                                    <div className="text-center">
-                                        <div className="w-24 h-24 mx-auto bg-[#4C1D95]/10 rounded-full flex items-center justify-center mb-4">
-                                            <MapPin size={44} className="text-[#4C1D95]/30" />
-                                        </div>
-                                        <h4 className="text-lg font-bold text-slate-400 mb-2">Mapa de Argentina</h4>
-                                        <p className="text-sm text-slate-300 max-w-xs mx-auto">Seleccioná una farmacia del listado para ver su ubicación.</p>
-                                        <p className="text-xs text-slate-300/70 mt-6">Mapa interactivo próximamente</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Animated pins */}
-                            {!selectedFarmacia && (
-                                <>
-                                    <div className="absolute top-[15%] left-[20%] w-3 h-3 rounded-full bg-[#4C1D95]/20 animate-pulse" />
-                                    <div className="absolute top-[35%] right-[30%] w-3 h-3 rounded-full bg-[#7C3AED]/20 animate-pulse" style={{ animationDelay: "0.5s" }} />
-                                    <div className="absolute bottom-[25%] left-[40%] w-3 h-3 rounded-full bg-[#4C1D95]/20 animate-pulse" style={{ animationDelay: "1s" }} />
-                                    <div className="absolute top-[60%] right-[15%] w-3 h-3 rounded-full bg-[#7C3AED]/20 animate-pulse" style={{ animationDelay: "1.5s" }} />
-                                    <div className="absolute bottom-[40%] left-[15%] w-3 h-3 rounded-full bg-[#4C1D95]/15 animate-pulse" style={{ animationDelay: "2s" }} />
-                                </>
-                            )}
+                {/* Grid */}
+                {filtered.length === 0 ? (
+                    <div className="text-center py-16 max-w-md mx-auto">
+                        <div className="w-16 h-16 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                            <Search size={28} className="text-slate-300" />
                         </div>
+                        <p className="text-slate-500 font-medium mb-4">
+                            No encontramos ese medicamento en la vista previa.<br />
+                            Suscribite para acceder al vademécum completo.
+                        </p>
+                        <Link
+                            href="/planes"
+                            className="inline-flex items-center px-6 py-3 bg-[#4C1D95] text-white rounded-xl text-sm font-bold hover:bg-[#3b1675] transition-all shadow-lg shadow-[#4C1D95]/20"
+                        >
+                            Ver planes
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+                        {filtered.map((med, i) => {
+                            const badgeClass = CATEGORIA_COLORS[med.categoria] ?? "bg-slate-50 text-slate-600 border-slate-100";
+                            return (
+                                <div
+                                    key={i}
+                                    className="p-5 rounded-2xl border border-slate-100 bg-white hover:border-[#4C1D95]/20 hover:shadow-md transition-all"
+                                >
+                                    <div className="flex items-start justify-between gap-3 mb-3">
+                                        <div className="w-10 h-10 rounded-xl bg-[#4C1D95]/5 flex items-center justify-center shrink-0">
+                                            <Pill size={18} className="text-[#4C1D95]" />
+                                        </div>
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg border text-[11px] font-bold ${badgeClass}`}>
+                                            {med.categoria}
+                                        </span>
+                                    </div>
+                                    <h3 className="text-sm font-bold text-slate-900 mb-0.5">{med.nombre}</h3>
+                                    <p className="text-xs text-slate-400 mb-1">{med.laboratorio}</p>
+                                    <p className="text-xs text-slate-500 mb-3">{med.presentacion}</p>
+                                    <p className="text-lg font-bold text-[#4C1D95]">{med.precio}</p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* Paywall */}
+                <div className="rounded-3xl bg-gradient-to-br from-[#4C1D95] to-[#2E1065] p-8 md:p-12 text-center relative overflow-hidden">
+                    <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+                    <div className="relative z-10">
+                        <div className="w-14 h-14 mx-auto bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center mb-5">
+                            <Lock size={24} className="text-white" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-2">Accedé al vademécum completo</h3>
+                        <p className="text-white/70 max-w-xl mx-auto mb-6">
+                            Más de 5.000 medicamentos con precios actualizados, disponibilidad en farmacias cercanas y alternativas genéricas.
+                            Solo para suscriptores de CelDoctor.
+                        </p>
+                        <Link
+                            href="/planes"
+                            className="inline-flex items-center px-8 py-4 bg-white text-[#2E1065] rounded-xl font-bold hover:bg-slate-100 transition-all shadow-lg"
+                        >
+                            Suscribirme ahora
+                        </Link>
+                        <p className="mt-4 text-sm text-white/50">
+                            ¿Ya tenés cuenta?{" "}
+                            <Link href="/login" className="text-white/80 underline hover:text-white transition-colors">
+                                Iniciá sesión
+                            </Link>
+                        </p>
                     </div>
                 </div>
             </div>

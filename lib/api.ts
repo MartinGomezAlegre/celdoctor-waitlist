@@ -1,6 +1,17 @@
 const BASE_URL =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+// Error tipado para que los componentes puedan distinguir causas
+export class ApiError extends Error {
+    constructor(
+        message: string,
+        public readonly code: string
+    ) {
+        super(message);
+        this.name = "ApiError";
+    }
+}
+
 // ─── Interfaces ────────────────────────────────────────────────────────────────
 
 export interface Plan {
@@ -103,20 +114,58 @@ export async function registrarUsuario(datos: {
 }
 
 /**
+ * POST /suscripciones
+ * Requiere token Bearer. Lanza error descriptivo en 400, 401 o fallo de red.
+ */
+export async function contratarPlan(
+    plan_id: number,
+    token: string
+): Promise<Suscripcion> {
+    let res: Response;
+    try {
+        res = await fetch(`${BASE_URL}/suscripciones`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ plan_id, beneficiarios: [] }),
+        });
+    } catch {
+        throw new Error("Error al contratar el plan");
+    }
+
+    if (res.status === 400) throw new Error("Ya tenés una suscripción activa");
+    if (res.status === 401) throw new Error("Sesión expirada. Iniciá sesión nuevamente");
+    if (!res.ok) throw new Error("Error al contratar el plan");
+
+    return res.json() as Promise<Suscripcion>;
+}
+
+/**
  * GET /suscripciones/mia
- * Requiere token Bearer. Devuelve null si no hay suscripción (404) o si falla.
+ * Requiere token Bearer.
+ * - 401 → lanza ApiError con code "UNAUTHORIZED" (token expirado/inválido)
+ * - 404 → devuelve null (sin suscripción activa)
+ * - otros errores → devuelve null (no rompe la UI)
  */
 export async function obtenerMiSuscripcion(
     token: string
 ): Promise<Suscripcion | null> {
+    let res: Response;
     try {
-        const res = await fetch(`${BASE_URL}/suscripciones/mia`, {
+        res = await fetch(`${BASE_URL}/suscripciones/mia`, {
             headers: { Authorization: `Bearer ${token}` },
         });
-        if (res.status === 404) return null;
-        if (!res.ok) return null;
-        return res.json() as Promise<Suscripcion>;
     } catch {
         return null;
     }
+
+    if (res.status === 401) {
+        throw new ApiError("Sesión expirada. Iniciá sesión nuevamente", "UNAUTHORIZED");
+    }
+    if (res.status === 404) return null;
+    if (!res.ok) return null;
+
+    return res.json() as Promise<Suscripcion>;
 }

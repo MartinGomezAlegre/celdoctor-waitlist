@@ -1,11 +1,31 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import { planBasic, planPremium } from "./planes.data";
+import { obtenerPlanes, type Plan } from "@/lib/api";
 
 export default function PlanesCards() {
+    const [token, setToken] = useState<string | null>(null);
+    // IDs reales de la API para armar el href de checkout
+    const [planesApi, setPlanesApi] = useState<Plan[]>([]);
+
+    useEffect(() => {
+        setToken(localStorage.getItem("celdoctor_token"));
+        obtenerPlanes().then(setPlanesApi);
+    }, []);
+
+    // Asumimos que el primer plan de la API corresponde a Basic y el segundo a Premium
+    const idBasic = planesApi[0]?.id ?? null;
+    const idPremium = planesApi[1]?.id ?? null;
+
+    function ctaHref(planApiId: number | null): string {
+        if (token && planApiId !== null) return `/checkout/${planApiId}`;
+        return "/registro";
+    }
+
     return (
         <section id="planes" className="py-20 bg-white">
             <div className="max-w-5xl mx-auto px-6">
@@ -43,7 +63,7 @@ export default function PlanesCards() {
                             ))}
                         </ul>
                         <Link
-                            href="/registro"
+                            href={ctaHref(idBasic)}
                             className="block w-full py-3.5 text-center rounded-xl border border-[#4C1D95]/20 text-[#4C1D95] font-bold text-sm hover:bg-[#4C1D95] hover:text-white hover:shadow-lg hover:shadow-[#4C1D95]/20 transition-all"
                         >
                             Elegir Basic
@@ -76,7 +96,7 @@ export default function PlanesCards() {
                             ))}
                         </ul>
                         <Link
-                            href="/registro"
+                            href={ctaHref(idPremium)}
                             className="block w-full py-3.5 text-center rounded-xl bg-white text-[#2E1065] font-bold text-sm hover:bg-slate-100 transition-all shadow-lg"
                         >
                             Elegir Premium

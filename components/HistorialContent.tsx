@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import {
     Monitor, Smartphone, Lock, Shield, Eye,
     FileText, CalendarCheck, Pill, Activity,
@@ -70,13 +71,13 @@ export default function HistorialContent() {
                                 Centralizá tus consultas, recetas y turnos en un solo lugar, con seguridad y acceso rápido desde cualquier dispositivo.
                             </p>
 
-                            <a
-                                href="/#waitlist"
+                            <Link
+                                href="/registro"
                                 className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#2E1065] rounded-2xl font-bold text-base hover:bg-slate-100 transition-all shadow-lg hover:-translate-y-1 active:scale-95"
                             >
                                 <Monitor size={20} />
-                                Explorar funciones
-                            </a>
+                                Empezar ahora
+                            </Link>
                         </motion.div>
 
                         {/* Right — Panel Screenshot Container */}
@@ -239,23 +240,33 @@ export default function HistorialContent() {
           ═══════════════════════════════════════════ */}
             <section className="py-20 bg-slate-50 border-y border-slate-100">
                 <div className="max-w-7xl mx-auto px-6">
-                    {/* Tab Menu */}
-                    <div className="flex gap-2 overflow-x-auto pb-1 mb-10 scrollbar-none">
+                    {/* Tab Menu — centered cards */}
+                    <div className="flex flex-col sm:flex-row justify-center gap-3 mb-10">
                         {tabKeys.map((tab) => {
                             const Icon = tabIcons[tab];
                             const isActive = activeTab === tab;
+                            const descriptions: Record<typeof tabKeys[number], string> = {
+                                "Historia Clínica": "Consultá tu historial médico completo",
+                                "Turnos Programados": "Gestioná tus próximas consultas",
+                                "Recetas Digitales": "Accedé a tus recetas digitales",
+                            };
                             return (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
-                                    className={`flex items-center gap-2 px-6 py-3.5 rounded-2xl font-bold text-sm whitespace-nowrap transition-all shrink-0 ${isActive
-                                        ? "bg-[#4C1D95] text-white shadow-xl shadow-[#4C1D95]/20"
-                                        : "bg-white text-slate-600 border border-slate-200 hover:border-[#4C1D95]/20 hover:text-[#4C1D95]"
+                                    className={`flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-sm transition-all text-left sm:min-w-[220px] ${isActive
+                                        ? "bg-white border-2 border-[#4C1D95] shadow-lg shadow-[#4C1D95]/10 text-[#4C1D95]"
+                                        : "bg-white border-2 border-slate-100 hover:border-[#4C1D95]/30 text-slate-700 hover:text-[#4C1D95]"
                                         }`}
                                     aria-label={tab}
                                 >
-                                    <Icon size={16} />
-                                    {tab}
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isActive ? "bg-[#4C1D95] text-white" : "bg-slate-100 text-slate-500"}`}>
+                                        <Icon size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-sm leading-tight">{tab}</p>
+                                        <p className={`text-xs font-normal mt-0.5 ${isActive ? "text-[#4C1D95]/70" : "text-slate-400"}`}>{descriptions[tab]}</p>
+                                    </div>
                                 </button>
                             );
                         })}
@@ -317,18 +328,26 @@ export default function HistorialContent() {
                 <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
                     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                         <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-                            Sumate a la lista de espera
+                            Accedé a tu historial médico digital
                         </h2>
                         <p className="text-lg text-white/70 mb-8">
-                            Sé de los primeros en acceder a tu historial médico digital con CelDoctor.
+                            Creá tu cuenta en CelDoctor y centralizá toda tu información médica.
                         </p>
-                        <a
-                            href="/#waitlist"
-                            className="inline-flex items-center gap-2 px-10 py-5 bg-white text-[#2E1065] rounded-2xl font-bold text-lg hover:bg-slate-100 transition-all shadow-xl hover:-translate-y-1 active:scale-95"
-                        >
-                            Quiero acceso
-                            <ArrowRight size={18} />
-                        </a>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <Link
+                                href="/registro"
+                                className="inline-flex items-center gap-2 px-10 py-5 bg-white text-[#2E1065] rounded-2xl font-bold text-lg hover:bg-slate-100 transition-all shadow-xl hover:-translate-y-1 active:scale-95"
+                            >
+                                Crear cuenta gratis
+                                <ArrowRight size={18} />
+                            </Link>
+                            <Link
+                                href="/login"
+                                className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-base border border-white/20 text-white hover:bg-white/10 transition-all"
+                            >
+                                Iniciar sesión
+                            </Link>
+                        </div>
                     </motion.div>
                 </div>
             </section>

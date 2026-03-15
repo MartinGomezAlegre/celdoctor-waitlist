@@ -30,6 +30,38 @@ const FALLBACK_PLANES: Plan[] = [
     },
 ];
 
+// ─── Beneficios por tipo de plan ──────────────────────────────────────────────
+const BENEFICIOS_PERSONAL = [
+    "Consultas médicas ilimitadas",
+    "Guardia 24/7 sin espera",
+    "Recetas digitales al instante",
+    "Historia clínica digital",
+    "Sin copagos sorpresa",
+];
+
+const BENEFICIOS_FAMILIAR = [
+    "Todo lo del plan personal",
+    "Hasta 5 integrantes incluidos",
+    "Pediatría prioritaria",
+    "Certificados escolares y deportivos",
+    "Consultas simultáneas",
+];
+
+const BENEFICIOS_EMPRESARIAL = [
+    "Todo lo del plan familiar",
+    "Dashboard de gestión empresarial",
+    "Factura A discriminada",
+    "Account Manager dedicado",
+    "Altas y bajas en 1 click",
+];
+
+function getBeneficios(nombre: string): string[] {
+    const n = nombre.toLowerCase();
+    if (n.includes("empresa") || n.includes("corporat")) return BENEFICIOS_EMPRESARIAL;
+    if (n.includes("familiar") || n.includes("familia")) return BENEFICIOS_FAMILIAR;
+    return BENEFICIOS_PERSONAL;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatBeneficiarios(max: number | null): string {
     if (max === null) return "Beneficiarios ilimitados";
@@ -56,10 +88,20 @@ function SkeletonPlanCard() {
 }
 
 // ─── Card de plan dinámico ────────────────────────────────────────────────────
-function PlanCard({ plan, destacado }: { plan: Plan; destacado?: boolean }) {
+function PlanCard({
+    plan,
+    destacado,
+    token,
+}: {
+    plan: Plan;
+    destacado?: boolean;
+    token: string | null;
+}) {
     const baseCard = destacado
         ? "bg-linear-to-b from-[#4C1D95] to-[#2E1065] border-[#6D28D9] border shadow-2xl shadow-[#4C1D95]/40 hover:scale-[1.02]"
         : "bg-white/5 border border-white/10 hover:border-[#a78bfa]/50 hover:bg-white/10";
+
+    const ctaHref = token ? `/checkout/${plan.id}` : "/registro";
 
     return (
         <div className={`p-8 rounded-3xl transition-all flex flex-col group ${baseCard}`}>
@@ -84,7 +126,7 @@ function PlanCard({ plan, destacado }: { plan: Plan; destacado?: boolean }) {
                 </div>
             </div>
 
-            <div className="flex-1 mb-8">
+            <div className="flex-1 mb-8 space-y-2.5">
                 <p className={`text-sm flex items-center gap-2 ${destacado ? "text-white" : "text-white/80"}`}>
                     <CheckCircle2
                         size={16}
@@ -92,10 +134,19 @@ function PlanCard({ plan, destacado }: { plan: Plan; destacado?: boolean }) {
                     />
                     {formatBeneficiarios(plan.max_beneficiarios)}
                 </p>
+                {getBeneficios(plan.nombre).map((b, i) => (
+                    <p key={i} className={`text-sm flex items-center gap-2 ${destacado ? "text-white" : "text-white/80"}`}>
+                        <CheckCircle2
+                            size={16}
+                            className={destacado ? "text-white shrink-0" : "text-[#a78bfa] shrink-0"}
+                        />
+                        {b}
+                    </p>
+                ))}
             </div>
 
             <Link
-                href="/registro"
+                href={ctaHref}
                 className={`w-full py-4 text-center rounded-xl font-bold block transition-all ${
                     destacado
                         ? "bg-white text-[#2E1065] hover:bg-slate-100 shadow-lg"
@@ -112,8 +163,10 @@ function PlanCard({ plan, destacado }: { plan: Plan; destacado?: boolean }) {
 export default function PlansSection() {
     const [planes, setPlanes] = useState<Plan[]>([]);
     const [cargando, setCargando] = useState(true);
+    const [token, setToken] = useState<string | null>(null);
 
     useEffect(() => {
+        setToken(localStorage.getItem("celdoctor_token"));
         obtenerPlanes().then((data) => {
             setPlanes(data.length > 0 ? data : FALLBACK_PLANES);
             setCargando(false);
@@ -141,6 +194,7 @@ export default function PlansSection() {
                                   key={plan.id}
                                   plan={plan}
                                   destacado={plan.id === planDestacadoId}
+                                  token={token}
                               />
                           ))}
                 </div>

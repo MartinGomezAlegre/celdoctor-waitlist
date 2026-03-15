@@ -2,9 +2,9 @@
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import InteractiveDemo from "./InteractiveDemo";
-import { Menu, X, Play, ChevronDown } from "lucide-react";
+import { Menu, X, Play, ChevronDown, LogOut } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 /* ─── Estructura de navegación ─── */
@@ -203,16 +203,34 @@ function MobileAccordion({ item, onNavigate }: { item: NavItem; onNavigate: () =
 /* ─── Navbar Principal ─── */
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [nombre, setNombre] = useState<string | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
 
   // Cerrar menú mobile en cambio de ruta
   useEffect(() => {
     setIsMenuOpen(false);
   }, [pathname]);
 
+  // Leer sesión del localStorage (solo en cliente)
+  useEffect(() => {
+    setToken(localStorage.getItem("celdoctor_token"));
+    setNombre(localStorage.getItem("celdoctor_nombre"));
+  }, [pathname]); // re-evaluar al navegar
+
   const closeMenu = useCallback(() => {
     setIsMenuOpen(false);
   }, []);
+
+  function handleLogout() {
+    localStorage.removeItem("celdoctor_token");
+    localStorage.removeItem("celdoctor_nombre");
+    setToken(null);
+    setNombre(null);
+    closeMenu();
+    router.push("/login");
+  }
 
   return (
     <nav className="sticky top-0 w-full bg-white/95 backdrop-blur-xl border-b border-slate-100 z-50 h-20 transition-all">
@@ -242,18 +260,45 @@ export default function Navbar() {
             <InteractiveDemo />
           </div>
 
-          <Link
-            href="/login"
-            className="hidden sm:inline-flex items-center px-4 py-2.5 rounded-lg text-xs font-bold border border-[#4C1D95] text-[#4C1D95] hover:bg-[#4C1D95]/5 transition-all whitespace-nowrap"
-          >
-            Iniciar sesión
-          </Link>
-          <Link
-            href="/registro"
-            className="hidden sm:inline-flex bg-[#4C1D95] text-white px-4 md:px-6 py-2.5 rounded-lg text-xs font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25 hover:-translate-y-0.5 whitespace-nowrap"
-          >
-            Registrarme
-          </Link>
+          {token ? (
+            /* ── Con sesión ── */
+            <>
+              {nombre && (
+                <span className="hidden md:block text-xs text-slate-500 font-medium whitespace-nowrap">
+                  Hola, {nombre}
+                </span>
+              )}
+              <Link
+                href="/dashboard"
+                className="hidden sm:inline-flex items-center px-4 py-2.5 rounded-lg text-xs font-bold border border-[#4C1D95] text-[#4C1D95] hover:bg-[#4C1D95]/5 transition-all whitespace-nowrap"
+              >
+                Mi cuenta
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="hidden sm:inline-flex items-center gap-1.5 bg-[#4C1D95] text-white px-4 md:px-5 py-2.5 rounded-lg text-xs font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25 whitespace-nowrap"
+              >
+                <LogOut size={13} />
+                Cerrar sesión
+              </button>
+            </>
+          ) : (
+            /* ── Sin sesión ── */
+            <>
+              <Link
+                href="/login"
+                className="hidden sm:inline-flex items-center px-4 py-2.5 rounded-lg text-xs font-bold border border-[#4C1D95] text-[#4C1D95] hover:bg-[#4C1D95]/5 transition-all whitespace-nowrap"
+              >
+                Iniciar sesión
+              </Link>
+              <Link
+                href="/registro"
+                className="hidden sm:inline-flex bg-[#4C1D95] text-white px-4 md:px-6 py-2.5 rounded-lg text-xs font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25 hover:-translate-y-0.5 whitespace-nowrap"
+              >
+                Registrarme
+              </Link>
+            </>
+          )}
 
           {/* Botón Hamburguesa (Mobile) */}
           <button
@@ -287,20 +332,46 @@ export default function Navbar() {
 
               {/* CTA Mobile */}
               <div className="pt-3 space-y-2.5">
-                <Link
-                  href="/registro"
-                  onClick={closeMenu}
-                  className="block w-full text-center bg-[#4C1D95] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25"
-                >
-                  Registrarme
-                </Link>
-                <Link
-                  href="/login"
-                  onClick={closeMenu}
-                  className="block w-full text-center border border-[#4C1D95] text-[#4C1D95] py-3.5 rounded-xl text-sm font-bold hover:bg-[#4C1D95]/5 transition-all"
-                >
-                  Iniciar sesión
-                </Link>
+                {token ? (
+                  <>
+                    {nombre && (
+                      <p className="text-center text-xs text-slate-500 font-medium pb-1">
+                        Hola, {nombre}
+                      </p>
+                    )}
+                    <Link
+                      href="/dashboard"
+                      onClick={closeMenu}
+                      className="block w-full text-center border border-[#4C1D95] text-[#4C1D95] py-3.5 rounded-xl text-sm font-bold hover:bg-[#4C1D95]/5 transition-all"
+                    >
+                      Mi cuenta
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center justify-center gap-2 w-full bg-[#4C1D95] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25"
+                    >
+                      <LogOut size={15} />
+                      Cerrar sesión
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/registro"
+                      onClick={closeMenu}
+                      className="block w-full text-center bg-[#4C1D95] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25"
+                    >
+                      Registrarme
+                    </Link>
+                    <Link
+                      href="/login"
+                      onClick={closeMenu}
+                      className="block w-full text-center border border-[#4C1D95] text-[#4C1D95] py-3.5 rounded-xl text-sm font-bold hover:bg-[#4C1D95]/5 transition-all"
+                    >
+                      Iniciar sesión
+                    </Link>
+                  </>
+                )}
 
                 {/* Ver Demo */}
                 <div

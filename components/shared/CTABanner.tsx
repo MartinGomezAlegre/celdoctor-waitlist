@@ -17,8 +17,8 @@ interface CTABannerProps {
 export default function CTABanner({
     title,
     subtitle,
-    buttonText = "Unirme a la lista de espera",
-    buttonHref = "/#waitlist",
+    buttonText = "Empezar ahora",
+    buttonHref = "/registro",
     secondaryButtonText,
     secondaryButtonHref,
 }: CTABannerProps) {
@@ -46,7 +46,7 @@ export default function CTABanner({
                     {/* Trust badge */}
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-white/80 text-xs font-bold uppercase tracking-wider">
                         <Sparkles size={12} className="text-[#a78bfa]" />
-                        Inscripciones abiertas
+                        Registrate gratis
                     </div>
 
                     <h2 className="text-3xl lg:text-4xl font-bold text-white leading-tight">

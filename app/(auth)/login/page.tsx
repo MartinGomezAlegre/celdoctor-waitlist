@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { login } from "@/lib/api";
 
 export default function LoginPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const expired = searchParams.get("expired") === "1";
+    const success = searchParams.get("success") === "1";
 
     const [email, setEmail] = useState("");
     const [contrasenia, setContrasenia] = useState("");
@@ -40,6 +44,17 @@ export default function LoginPage() {
                         Crear cuenta
                     </Link>
                 </p>
+
+                {expired && (
+                    <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-6">
+                        Tu sesión expiró. Iniciá sesión nuevamente.
+                    </p>
+                )}
+                {success && (
+                    <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 mb-6">
+                        ¡Cuenta creada! Ya podés iniciar sesión.
+                    </p>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
