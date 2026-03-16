@@ -1,5 +1,10 @@
-const BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const BASE_URL = (() => {
+    const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    if (typeof window !== "undefined" && window.location.protocol === "https:" && url.startsWith("http://") && !url.includes("localhost")) {
+        return url.replace("http://", "https://");
+    }
+    return url;
+})();
 
 // Error tipado para que los componentes puedan distinguir causas
 export class ApiError extends Error {
