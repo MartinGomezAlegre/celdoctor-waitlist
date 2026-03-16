@@ -1,10 +1,6 @@
-const BASE_URL = (() => {
-    const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-    if (typeof window !== "undefined" && window.location.protocol === "https:" && url.startsWith("http://") && !url.includes("localhost")) {
-        return url.replace("http://", "https://");
-    }
-    return url;
-})();
+export function getApiUrl(path: string): string {
+    return `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${path}`;
+}
 
 // Error tipado para que los componentes puedan distinguir causas
 export class ApiError extends Error {
@@ -56,7 +52,7 @@ export interface LoginResponse {
  */
 export async function obtenerPlanes(): Promise<Plan[]> {
     try {
-        const res = await fetch(`${BASE_URL}/planes`);
+        const res = await fetch(getApiUrl("/planes"));
         if (!res.ok) return [];
         return res.json() as Promise<Plan[]>;
     } catch {
@@ -74,7 +70,7 @@ export async function login(
 ): Promise<LoginResponse> {
     let res: Response;
     try {
-        res = await fetch(`${BASE_URL}/auth/login`, {
+        res = await fetch(getApiUrl("/auth/login"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, contrasenia }),
@@ -103,7 +99,7 @@ export async function registrarUsuario(datos: {
 }): Promise<Usuario> {
     let res: Response;
     try {
-        res = await fetch(`${BASE_URL}/usuarios`, {
+        res = await fetch(getApiUrl("/usuarios"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(datos),
@@ -128,7 +124,7 @@ export async function contratarPlan(
 ): Promise<Suscripcion> {
     let res: Response;
     try {
-        res = await fetch(`${BASE_URL}/suscripciones`, {
+        res = await fetch(getApiUrl("/suscripciones"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -159,7 +155,7 @@ export async function obtenerMiSuscripcion(
 ): Promise<Suscripcion | null> {
     let res: Response;
     try {
-        res = await fetch(`${BASE_URL}/suscripciones/mia`, {
+        res = await fetch(getApiUrl("/suscripciones/mia"), {
             headers: { Authorization: `Bearer ${token}` },
         });
     } catch {
