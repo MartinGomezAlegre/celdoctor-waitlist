@@ -1,9 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
+import { obtenerPlanes, type Plan } from "@/lib/api";
+
+const FALLBACK_PLANES: Plan[] = [
+    { id: 1, nombre: "Personal", descripcion: "Cobertura ágil para vos.", precio_mensual: 4500, max_beneficiarios: 1 },
+    { id: 2, nombre: "Familiar", descripcion: "Protección total para tu familia.", precio_mensual: 12500, max_beneficiarios: 4 },
+    { id: 3, nombre: "Corporativo", descripcion: "Salud para tu equipo.", precio_mensual: 0, max_beneficiarios: null },
+];
 
 function formatFechaHoy(): string {
     return new Date().toLocaleDateString("es-AR", {
@@ -14,8 +20,10 @@ function formatFechaHoy(): string {
 }
 
 export default function ConfirmacionPage() {
+    const params = useParams();
     const router = useRouter();
     const [listo, setListo] = useState(false);
+    const [plan, setPlan] = useState<Plan | null>(null);
 
     useEffect(() => {
         const token = localStorage.getItem("celdoctor_token");
@@ -23,8 +31,15 @@ export default function ConfirmacionPage() {
             router.replace("/login");
             return;
         }
-        setListo(true);
-    }, [router]);
+
+        const planId = Number(params.plan_id);
+        obtenerPlanes().then((planes) => {
+            const lista = planes.length > 0 ? planes : FALLBACK_PLANES;
+            const encontrado = lista.find((p) => p.id === planId) ?? lista[0];
+            setPlan(encontrado);
+            setListo(true);
+        });
+    }, [router, params.plan_id]);
 
     if (!listo) {
         return (
@@ -35,62 +50,80 @@ export default function ConfirmacionPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            {/* Header */}
-            <header className="h-16 bg-white border-b border-slate-100 flex items-center px-6">
-                <Link href="/" className="font-bold text-xl tracking-tight text-slate-900">
-                    CELDOCTOR<span className="text-[#4C1D95]">.</span>
-                </Link>
-            </header>
+        <>
+            <style>{`
+                @keyframes checkScale {
+                    0%   { transform: scale(0); opacity: 0; }
+                    60%  { transform: scale(1.15); opacity: 1; }
+                    100% { transform: scale(1); opacity: 1; }
+                }
+                @keyframes checkDraw {
+                    from { stroke-dashoffset: 60; }
+                    to   { stroke-dashoffset: 0; }
+                }
+                .check-circle {
+                    animation: checkScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+                .check-path {
+                    stroke-dasharray: 60;
+                    stroke-dashoffset: 60;
+                    animation: checkDraw 0.4s ease-out 0.35s forwards;
+                }
+            `}</style>
 
-            <main className="flex items-center justify-center px-4 py-20">
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-20">
                 <div className="w-full max-w-md text-center">
-                    {/* Ícono animado */}
+
+                    {/* Animated check */}
                     <div className="flex justify-center mb-6">
-                        <div className="w-20 h-20 rounded-full bg-emerald-50 border-4 border-emerald-100 flex items-center justify-center animate-[scale-in_0.4s_ease-out]">
-                            <CheckCircle2 size={40} className="text-emerald-500" strokeWidth={1.8} />
+                        <div className="check-circle w-24 h-24 rounded-full bg-emerald-500 flex items-center justify-center shadow-xl shadow-emerald-500/30">
+                            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                                <path
+                                    className="check-path"
+                                    d="M10 22L18 30L34 14"
+                                    stroke="white"
+                                    strokeWidth="3.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
                         </div>
                     </div>
 
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                        ¡Suscripción confirmada!
-                    </h1>
-                    <p className="text-slate-500 text-lg mb-8">
-                        Ya sos parte de CelDoctor
-                    </p>
+                    <h1 className="text-3xl font-bold text-slate-900 mb-2">¡Todo listo!</h1>
+                    <p className="text-slate-500 text-lg mb-8">Tu suscripción fue confirmada</p>
 
-                    {/* Card de información */}
+                    {/* Summary card */}
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6 text-left">
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-slate-500">Estado del plan</span>
+                                <span className="text-sm text-slate-500">Plan contratado</span>
+                                <span className="text-sm font-semibold text-slate-900">
+                                    {plan?.nombre ?? "—"}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm text-slate-500">Estado</span>
                                 <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
                                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                                     Pendiente de pago
                                 </span>
                             </div>
-
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-slate-500">Tu plan</span>
-                                <span className="text-sm font-semibold text-slate-900">Activo</span>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-slate-500">Fecha de inicio</span>
+                                <span className="text-sm text-slate-500">Fecha</span>
                                 <span className="text-sm font-semibold text-slate-900">
                                     {formatFechaHoy()}
                                 </span>
                             </div>
+                            <div className="pt-3 border-t border-slate-100">
+                                <p className="text-xs text-slate-400 leading-relaxed">
+                                    Cuando integremos los pagos, tu plan se activará automáticamente.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Mensaje informativo */}
-                    <p className="text-sm text-slate-400 mb-8 leading-relaxed px-2">
-                        Recibirás un email cuando el pago sea procesado
-                        y tu plan quede activo.
-                    </p>
-
-                    {/* Botones */}
+                    {/* Buttons */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <Link
                             href="/dashboard"
@@ -99,14 +132,14 @@ export default function ConfirmacionPage() {
                             Ir a mi cuenta
                         </Link>
                         <Link
-                            href="/planes"
+                            href="/"
                             className="flex-1 py-3.5 border border-[#4C1D95]/20 text-[#4C1D95] rounded-xl font-bold text-sm text-center hover:bg-[#4C1D95]/5 transition-all"
                         >
-                            Ver planes
+                            Volver al inicio
                         </Link>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </>
     );
 }
