@@ -9,7 +9,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: https:",
-      "connect-src 'self' https://script.google.com https://script.googleusercontent.com http://localhost:8000 https://broker-salud-production.up.railway.app",
+      "connect-src 'self' https://script.google.com https://script.googleusercontent.com http://localhost:8000 https://localhost:8000 http://broker-salud-production.up.railway.app https://broker-salud-production.up.railway.app",
       "frame-ancestors 'none'",
     ].join("; "),
   },
