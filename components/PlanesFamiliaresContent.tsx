@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -75,17 +76,15 @@ export default function PlanesFamiliaresContent() {
                         <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
                             <div className="relative">
                                 <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-3 shadow-2xl shadow-black/20 backdrop-blur-sm">
-                                    <div className="bg-[#0f0525] rounded-2xl aspect-[4/3] flex items-center justify-center relative overflow-hidden">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-[#4C1D95]/15 to-transparent" />
-                                        <div className="absolute top-8 right-8 w-24 h-24 rounded-full bg-[#7C3AED]/15 blur-xl" />
-                                        <div className="absolute bottom-12 left-8 w-32 h-20 rounded-2xl bg-[#4C1D95]/10 blur-lg" />
-                                        <div className="relative z-20 text-center p-8">
-                                            <div className="w-20 h-20 mx-auto bg-white/10 border border-white/15 rounded-3xl flex items-center justify-center mb-4">
-                                                <Users size={36} className="text-white/60" />
-                                            </div>
-                                            <p className="text-white/70 font-bold text-lg mb-1">Familia usando CelDoctor</p>
-                                            <p className="text-white/40 text-sm">Lifestyle Placeholder</p>
-                                        </div>
+                                    <div className="rounded-2xl aspect-[4/3] relative overflow-hidden">
+                                        <Image
+                                            src="/familiamodelo.png"
+                                            alt="Familia usando CelDoctor"
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, 50vw"
+                                            className="object-cover"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#1e0b4b]/40 to-transparent" />
                                     </div>
                                 </div>
                                 <div className="absolute -inset-4 bg-[#4C1D95]/10 rounded-[2rem] blur-2xl -z-10" />
@@ -152,11 +151,12 @@ export default function PlanesFamiliaresContent() {
                             transition={{ delay: 0.1 }}
                             className="rounded-3xl overflow-hidden border border-slate-100 shadow-sm min-h-[300px] relative"
                         >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
+                            <Image
                                 src="/familiamodelo.png"
                                 alt="Familia usando CelDoctor"
-                                className="w-full h-full object-cover"
+                                fill
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                                className="object-cover"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#1e0b4b]/60 to-transparent" />
                             <div className="absolute bottom-6 left-6 right-6">

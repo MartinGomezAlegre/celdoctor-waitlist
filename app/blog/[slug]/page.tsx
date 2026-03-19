@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -50,9 +51,14 @@ export default async function BlogPostPage({ params }: Props) {
                     <p className="text-sm text-slate-400 font-medium">{post.fecha}</p>
                 </div>
 
-                {/* Image placeholder */}
-                <div className="rounded-2xl overflow-hidden mb-10 aspect-video bg-gradient-to-br from-[#4C1D95] to-[#2E1065] flex items-center justify-center">
-                    <span className="font-bold text-3xl text-white/20 tracking-tight select-none">CELDOCTOR</span>
+                <div className="rounded-2xl overflow-hidden mb-10 aspect-video relative">
+                    <Image
+                        src="/Medicos.jpeg"
+                        alt="CelDoctor - equipo médico"
+                        fill
+                        className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-[#1e0b4b]/30 to-transparent" />
                 </div>
 
                 {/* Content */}

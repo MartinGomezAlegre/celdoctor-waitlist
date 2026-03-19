@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2, Users, Building2, User } from "lucide-react";
 import { obtenerPlanes, type Plan } from "@/lib/api";
@@ -260,13 +261,14 @@ export default function PlanesPage() {
                                 )}
                                 {/* Decorative image */}
                                 <div className="hidden lg:block rounded-3xl overflow-hidden aspect-[4/3] relative">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
+                                    <Image
                                         src="/familiamodelo.png"
                                         alt="Familia usando CelDoctor"
-                                        className="w-full h-full object-cover"
+                                        fill
+                                        sizes="(max-width: 1024px) 0vw, 50vw"
+                                        className="object-cover"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-[#1e0b4b]/50 to-transparent" />
+                                    <div className="absolute inset-0 bg-linear-to-t from-[#1e0b4b]/50 to-transparent" />
                                     <div className="absolute bottom-6 left-6 right-6">
                                         <p className="text-white font-bold">Salud para toda tu familia</p>
                                         <p className="text-white/70 text-sm mt-0.5">Hasta 5 integrantes · Pediatría 24/7</p>

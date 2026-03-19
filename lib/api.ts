@@ -1,5 +1,7 @@
+const BASE_URL = '/api/proxy'
+
 export function getApiUrl(path: string): string {
-    return `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${path}`;
+    return `${BASE_URL}${path}`;
 }
 
 // Error tipado para que los componentes puedan distinguir causas

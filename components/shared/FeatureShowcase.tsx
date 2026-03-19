@@ -30,6 +30,7 @@ export interface FeatureItem {
     title: string;
     description: string;
     bullets?: string[];
+    image?: string;
 }
 
 interface FeatureShowcaseProps {
@@ -76,26 +77,37 @@ export default function FeatureShowcase({
                             >
                                 {/* Icon / Visual side */}
                                 <div className={`${isReversed ? "lg:order-2" : "lg:order-1"}`}>
-                                    <div className={`relative rounded-3xl p-12 lg:p-16 ${i % 4 === 0 ? "bg-gradient-to-br from-[#4C1D95]/5 to-[#7C3AED]/10" :
-                                            i % 4 === 1 ? "bg-gradient-to-br from-slate-50 to-[#4C1D95]/5" :
-                                                i % 4 === 2 ? "bg-gradient-to-br from-[#7C3AED]/5 to-[#4C1D95]/10" :
-                                                    "bg-gradient-to-br from-[#4C1D95]/10 to-slate-50"
-                                        }`}>
-                                        <div className="flex items-center justify-center">
-                                            <div className="w-24 h-24 lg:w-32 lg:h-32 bg-[#4C1D95] rounded-3xl flex items-center justify-center shadow-xl shadow-[#4C1D95]/20 group">
-                                                <Icon size={56} className="text-white" strokeWidth={1.5} />
+                                    {feature.image ? (
+                                        <div className="relative rounded-3xl overflow-hidden aspect-[4/3]">
+                                            <div
+                                                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                                style={{ backgroundImage: `url(${feature.image})` }}
+                                                role="img"
+                                                aria-label={feature.title}
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-[#1e0b4b]/30 to-transparent" />
+                                            <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white shadow-md flex items-center justify-center text-sm font-bold text-[#4C1D95]">
+                                                {String(i + 1).padStart(2, "0")}
                                             </div>
                                         </div>
-
-                                        {/* Decorative elements */}
-                                        <div className="absolute top-6 right-6 w-12 h-12 rounded-full bg-[#4C1D95]/5" />
-                                        <div className="absolute bottom-8 left-8 w-8 h-8 rounded-full bg-[#7C3AED]/10" />
-
-                                        {/* Number badge */}
-                                        <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white shadow-md flex items-center justify-center text-sm font-bold text-[#4C1D95]">
-                                            {String(i + 1).padStart(2, "0")}
+                                    ) : (
+                                        <div className={`relative rounded-3xl p-12 lg:p-16 ${i % 4 === 0 ? "bg-gradient-to-br from-[#4C1D95]/5 to-[#7C3AED]/10" :
+                                                i % 4 === 1 ? "bg-gradient-to-br from-slate-50 to-[#4C1D95]/5" :
+                                                    i % 4 === 2 ? "bg-gradient-to-br from-[#7C3AED]/5 to-[#4C1D95]/10" :
+                                                        "bg-gradient-to-br from-[#4C1D95]/10 to-slate-50"
+                                            }`}>
+                                            <div className="flex items-center justify-center">
+                                                <div className="w-24 h-24 lg:w-32 lg:h-32 bg-[#4C1D95] rounded-3xl flex items-center justify-center shadow-xl shadow-[#4C1D95]/20 group">
+                                                    <Icon size={56} className="text-white" strokeWidth={1.5} />
+                                                </div>
+                                            </div>
+                                            <div className="absolute top-6 right-6 w-12 h-12 rounded-full bg-[#4C1D95]/5" />
+                                            <div className="absolute bottom-8 left-8 w-8 h-8 rounded-full bg-[#7C3AED]/10" />
+                                            <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white shadow-md flex items-center justify-center text-sm font-bold text-[#4C1D95]">
+                                                {String(i + 1).padStart(2, "0")}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
 
                                 {/* Text side */}

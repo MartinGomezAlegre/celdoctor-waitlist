@@ -28,6 +28,9 @@ interface PageHeroProps {
   breadcrumbs?: { label: string; href?: string }[];
   placeholderLabel?: string;
   placeholderIconName?: string;
+  /** Optional real image to show instead of the placeholder */
+  imageSrc?: string;
+  imageAlt?: string;
 }
 
 export default function PageHero({
@@ -42,6 +45,8 @@ export default function PageHero({
   breadcrumbs,
   placeholderLabel,
   placeholderIconName,
+  imageSrc,
+  imageAlt,
 }: PageHeroProps) {
   const isDark = variant === "dark";
   const BadgeIcon = badgeIconName ? iconMap[badgeIconName] : null;
@@ -161,7 +166,7 @@ export default function PageHero({
             )}
           </motion.div>
 
-          {/* RIGHT — Placeholder visual container */}
+          {/* RIGHT — Image or placeholder */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -173,33 +178,33 @@ export default function PageHero({
                 ? "bg-gradient-to-br from-white/10 to-white/5 border border-white/10 shadow-black/20"
                 : "bg-gradient-to-br from-slate-100 to-white border border-slate-200 shadow-slate-200/50"
                 }`}>
-                <div className={`rounded-2xl aspect-[4/3] flex items-center justify-center relative overflow-hidden ${isDark ? "bg-[#0f0525]" : "bg-slate-50"
-                  }`}>
-                  {/* Decorative blurs */}
-                  <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-br from-[#4C1D95]/15 to-transparent" : "bg-gradient-to-br from-[#4C1D95]/5 to-transparent"}`} />
-                  <div className={`absolute top-8 right-8 w-24 h-24 rounded-full blur-xl ${isDark ? "bg-[#7C3AED]/15" : "bg-[#4C1D95]/5"}`} />
-                  <div className={`absolute bottom-12 left-8 w-32 h-20 rounded-2xl blur-lg ${isDark ? "bg-[#4C1D95]/10" : "bg-[#4C1D95]/3"}`} />
-
-                  {/* Content */}
-                  <div className="relative z-20 text-center p-8">
-                    {PlaceholderIcon && (
-                      <div className={`w-20 h-20 mx-auto rounded-3xl flex items-center justify-center mb-4 ${isDark
-                        ? "bg-white/10 border border-white/15"
-                        : "bg-[#4C1D95]/5 border border-[#4C1D95]/10"
-                        }`}>
-                        <PlaceholderIcon size={36} className={isDark ? "text-white/60" : "text-[#4C1D95]/40"} />
+                <div className="rounded-2xl aspect-[4/3] relative overflow-hidden">
+                  {imageSrc ? (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                      style={{ backgroundImage: `url(${imageSrc})` }}
+                      role="img"
+                      aria-label={imageAlt ?? ""}
+                    />
+                  ) : (
+                    <>
+                      <div className={`absolute inset-0 flex items-center justify-center ${isDark ? "bg-[#0f0525]" : "bg-slate-50"}`}>
+                        <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-br from-[#4C1D95]/15 to-transparent" : "bg-gradient-to-br from-[#4C1D95]/5 to-transparent"}`} />
+                        <div className="relative z-20 text-center p-8">
+                          {PlaceholderIcon && (
+                            <div className={`w-20 h-20 mx-auto rounded-3xl flex items-center justify-center mb-4 ${isDark ? "bg-white/10 border border-white/15" : "bg-[#4C1D95]/5 border border-[#4C1D95]/10"}`}>
+                              <PlaceholderIcon size={36} className={isDark ? "text-white/60" : "text-[#4C1D95]/40"} />
+                            </div>
+                          )}
+                          <p className={`font-bold text-lg mb-1 ${isDark ? "text-white/70" : "text-slate-400"}`}>
+                            {placeholderLabel || "App Screenshot"}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                    <p className={`font-bold text-lg mb-1 ${isDark ? "text-white/70" : "text-slate-400"}`}>
-                      {placeholderLabel || "App Screenshot"}
-                    </p>
-                    <p className={`text-sm ${isDark ? "text-white/40" : "text-slate-300"}`}>
-                      Placeholder
-                    </p>
-                  </div>
+                    </>
+                  )}
                 </div>
               </div>
-              {/* Glow behind */}
               <div className={`absolute -inset-4 rounded-[2rem] blur-2xl -z-10 ${isDark ? "bg-[#4C1D95]/10" : "bg-[#4C1D95]/3"}`} />
             </div>
           </motion.div>
