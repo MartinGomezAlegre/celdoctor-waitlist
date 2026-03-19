@@ -61,11 +61,11 @@ async function proxyRequest(
         fetchOptions.body = await req.text()
     }
 
+    const backendUrl = `${BACKEND.replace(/\/$/, '')}/${endpoint}${qs}`
+    console.log('Proxy URL:', backendUrl)
+
     try {
-        const upstream = await fetch(
-            `${BACKEND}/${endpoint}${qs}`,
-            fetchOptions
-        )
+        const upstream = await fetch(backendUrl, fetchOptions)
         const body = await upstream.text()
 
         return new NextResponse(body, {
