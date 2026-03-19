@@ -6,7 +6,7 @@ type Context = { params: Promise<{ path: string[] }> }
 
 async function proxy(req: NextRequest, ctx: Context) {
     const { path } = await ctx.params
-    const url = `${BACKEND}/${path.join('/')}/${req.nextUrl.search}`
+    const url = `${BACKEND}/${path.join('/')}${req.nextUrl.search}`
 
     const body = req.method === 'GET' || req.method === 'HEAD'
         ? undefined
