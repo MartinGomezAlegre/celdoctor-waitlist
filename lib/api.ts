@@ -96,6 +96,7 @@ export async function registrarUsuario(datos: {
     apellido: string;
     email: string;
     telefono: string;
+    dni: string;
     fecha_nacimiento: string;
     contrasenia: string;
 }): Promise<Usuario> {

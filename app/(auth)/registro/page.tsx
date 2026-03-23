@@ -13,6 +13,7 @@ export default function RegistroPage() {
         apellido: "",
         email: "",
         telefono: "",
+        dni: "",
         fecha_nacimiento: "",
         contrasenia: "",
     });
@@ -27,6 +28,8 @@ export default function RegistroPage() {
     function validate(): string | null {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(form.email)) return "El email no es válido.";
+        const dniRegex = /^\d{7,8}$/;
+        if (!dniRegex.test(form.dni)) return "Ingresá un DNI válido (7-8 dígitos).";
         if (form.contrasenia.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
         if (!aceptaTerminos) return "Debés aceptar los términos y condiciones.";
         return null;
@@ -132,6 +135,23 @@ export default function RegistroPage() {
                             onChange={handleChange}
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
                             placeholder="+54 9 11 1234-5678"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="dni" className="block text-sm font-medium text-slate-700 mb-1.5">
+                            DNI
+                        </label>
+                        <input
+                            id="dni"
+                            name="dni"
+                            type="text"
+                            required
+                            inputMode="numeric"
+                            value={form.dni}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                            placeholder="12345678"
                         />
                     </div>
 
