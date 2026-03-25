@@ -3,20 +3,49 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    LineChart, Line, BarChart, Bar,
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import {
     LayoutDashboard, Users, CreditCard, Package,
     LogOut, TrendingUp, Download, ToggleLeft, ToggleRight,
+    Clock, AlertTriangle,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+interface Alerta {
+    tipo: "pendientes_pago" | "sin_convertir" | "exportar_mediquo";
+    cantidad: number;
+    mensaje: string;
+}
+
+interface UltimaSuscripcion {
+    id: number;
+    usuario_nombre: string;
+    usuario_email: string;
+    plan_nombre: string;
+    estado: string;
+    created_at: string;
+}
+
+interface RevenuePlan {
+    plan: string;
+    suscriptores: number;
+    revenue: number;
+}
+
 interface DashboardMetrics {
     mrr: number;
+    arr: number;
     suscriptores_activos: number;
     nuevos_hoy: number;
     churn_rate: number;
+    tasa_conversion: number;
+    pendientes_pago: number;
+    revenue_por_plan: RevenuePlan[];
+    nuevos_registros_hoy: number;
+    ultimas_suscripciones: UltimaSuscripcion[];
 }
 
 interface GraficoPoint {
@@ -58,6 +87,13 @@ interface AdminPlan {
 }
 
 type Section = "dashboard" | "usuarios" | "suscripciones" | "planes";
+type ToastType = "success" | "error" | "warning";
+
+interface Toast {
+    id: number;
+    msg: string;
+    type: ToastType;
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -74,6 +110,15 @@ function fmtCurrency(n: number) {
 }
 
 function fmtDate(iso: string) {
+    return new Date(iso).toLocaleDateString("es-AR");
+}
+
+function tiempoRelativo(iso: string): string {
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `hace ${mins} min`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `hace ${hrs}h`;
     return new Date(iso).toLocaleDateString("es-AR");
 }
 
@@ -95,12 +140,21 @@ export default function AdminDashboardPage() {
     const router = useRouter();
     const [token, setToken] = useState<string | null>(null);
     const [section, setSection] = useState<Section>("dashboard");
+    const [toasts, setToasts] = useState<Toast[]>([]);
 
     useEffect(() => {
         const t = localStorage.getItem("celdoctor_admin_token");
         if (!t) { router.replace("/admin"); return; }
         setToken(t);
     }, [router]);
+
+    function addToast(msg: string, type: ToastType) {
+        const id = Date.now();
+        setToasts((prev) => [...prev, { id, msg, type }]);
+        setTimeout(() => {
+            setToasts((prev) => prev.filter((t) => t.id !== id));
+        }, 3000);
+    }
 
     function logout() {
         localStorage.removeItem("celdoctor_admin_token");
@@ -155,20 +209,38 @@ export default function AdminDashboardPage() {
 
             {/* Main */}
             <main className="flex-1 overflow-auto p-8">
-                {section === "dashboard"     && <SectionDashboard token={token} />}
-                {section === "usuarios"      && <SectionUsuarios token={token} />}
-                {section === "suscripciones" && <SectionSuscripciones token={token} />}
-                {section === "planes"        && <SectionPlanes token={token} />}
+                {section === "dashboard"     && <SectionDashboard token={token} addToast={addToast} />}
+                {section === "usuarios"      && <SectionUsuarios token={token} addToast={addToast} />}
+                {section === "suscripciones" && <SectionSuscripciones token={token} addToast={addToast} />}
+                {section === "planes"        && <SectionPlanes token={token} addToast={addToast} />}
             </main>
+
+            {/* Toasts */}
+            <div className="fixed bottom-4 right-4 z-50 space-y-2">
+                {toasts.map((t) => (
+                    <div
+                        key={t.id}
+                        className={`px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 ${
+                            t.type === "success" ? "bg-emerald-500 text-white" :
+                            t.type === "error"   ? "bg-red-500 text-white" :
+                                                   "bg-amber-500 text-white"
+                        }`}
+                    >
+                        {t.type === "success" ? "✓" : t.type === "error" ? "✗" : "⚠"}
+                        {t.msg}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
 
 // ─── Section: Dashboard ───────────────────────────────────────────────────────
 
-function SectionDashboard({ token }: { token: string }) {
+function SectionDashboard({ token, addToast }: { token: string; addToast: (msg: string, type: ToastType) => void }) {
     const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
     const [grafico, setGrafico] = useState<GraficoPoint[]>([]);
+    const [alertas, setAlertas] = useState<Alerta[]>([]);
     const [loadingMetrics, setLoadingMetrics] = useState(true);
     const [loadingGrafico, setLoadingGrafico] = useState(true);
     const [exporting, setExporting] = useState(false);
@@ -185,6 +257,11 @@ function SectionDashboard({ token }: { token: string }) {
             .then((d: unknown) => setGrafico(Array.isArray(d) ? (d as GraficoPoint[]) : []))
             .catch(() => setGrafico([]))
             .finally(() => setLoadingGrafico(false));
+
+        fetch(`${API}/admin/alertas`, { headers: authHeaders(token) })
+            .then((r) => r.json())
+            .then((d: unknown) => setAlertas(Array.isArray(d) ? (d as Alerta[]) : []))
+            .catch(() => setAlertas([]));
     }, [token]);
 
     async function exportarExcel() {
@@ -204,24 +281,100 @@ function SectionDashboard({ token }: { token: string }) {
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+                addToast("Excel exportado correctamente", "success");
             } else {
-                alert("Error al exportar el archivo.");
+                addToast("Error al exportar el archivo", "error");
             }
         } catch {
-            alert("Error al exportar el archivo.");
+            addToast("Error al exportar el archivo", "error");
         } finally {
             setExporting(false);
         }
     }
 
     const graficoData = Array.isArray(grafico) ? grafico : [];
+    const revenuePlan = Array.isArray(metrics?.revenue_por_plan) ? metrics!.revenue_por_plan : [];
+    const ultimasSubs = Array.isArray(metrics?.ultimas_suscripciones) ? metrics!.ultimas_suscripciones : [];
 
-    const kpis = [
-        { label: "MRR",                  value: metrics ? fmtCurrency(metrics.mrr) : null,                    Icon: TrendingUp, color: "text-violet-600" },
-        { label: "Suscriptores activos", value: metrics ? String(metrics.suscriptores_activos) : null,         Icon: Users,      color: "text-emerald-600" },
-        { label: "Nuevos hoy",           value: metrics ? String(metrics.nuevos_hoy) : null,                   Icon: CreditCard, color: "text-blue-600" },
-        { label: "Churn rate",           value: metrics ? `${metrics.churn_rate}%` : null,                     Icon: TrendingUp, color: "text-red-500" },
+    const kpiFila1 = [
+        {
+            label: "MRR",
+            sub: "Ingresos mensuales",
+            value: metrics ? fmtCurrency(metrics.mrr) : null,
+            Icon: TrendingUp,
+            color: "text-violet-600",
+            highlight: false,
+        },
+        {
+            label: "ARR",
+            sub: "Ingresos anuales proyectados",
+            value: metrics ? fmtCurrency(metrics.arr) : null,
+            Icon: TrendingUp,
+            color: "text-indigo-600",
+            highlight: false,
+        },
+        {
+            label: "Suscriptores activos",
+            sub: "",
+            value: metrics ? String(metrics.suscriptores_activos) : null,
+            Icon: Users,
+            color: "text-emerald-600",
+            highlight: false,
+        },
     ];
+
+    const kpiFila2 = [
+        {
+            label: "Tasa de conversión",
+            sub: "",
+            value: metrics ? `${metrics.tasa_conversion}%` : null,
+            Icon: TrendingUp,
+            color: "text-blue-600",
+            highlight: false,
+        },
+        {
+            label: "Pendientes de pago",
+            sub: "",
+            value: metrics ? String(metrics.pendientes_pago) : null,
+            Icon: Clock,
+            color: "text-amber-600",
+            highlight: (metrics?.pendientes_pago ?? 0) > 0,
+        },
+        {
+            label: "Churn rate",
+            sub: "",
+            value: metrics ? `${metrics.churn_rate}%` : null,
+            Icon: TrendingUp,
+            color: "text-red-500",
+            highlight: false,
+        },
+    ];
+
+    function KpiCard({ label, sub, value, Icon, color, highlight }: {
+        label: string; sub: string; value: string | null;
+        Icon: React.ElementType; color: string; highlight: boolean;
+    }) {
+        return (
+            <div className={`bg-white rounded-2xl border p-6 shadow-sm ${highlight ? "border-amber-300 bg-amber-50/40" : "border-slate-100"}`}>
+                <div className={`inline-flex p-2 rounded-xl bg-slate-50 mb-3 ${color}`}>
+                    <Icon size={18} />
+                </div>
+                {loadingMetrics || value === null ? (
+                    <Skeleton className="h-8 w-24 mb-1" />
+                ) : (
+                    <p className="text-2xl font-bold text-slate-900">{value}</p>
+                )}
+                <p className="text-sm font-medium text-slate-700 mt-1">{label}</p>
+                {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+            </div>
+        );
+    }
+
+    const alertaConfig: Record<Alerta["tipo"], { bg: string; border: string; Icon: React.ElementType }> = {
+        pendientes_pago: { bg: "bg-amber-50",  border: "border-amber-300",  Icon: Clock },
+        sin_convertir:   { bg: "bg-blue-50",   border: "border-blue-300",   Icon: Users },
+        exportar_mediquo:{ bg: "bg-violet-50", border: "border-violet-300", Icon: Download },
+    };
 
     return (
         <div className="space-y-8">
@@ -237,24 +390,51 @@ function SectionDashboard({ token }: { token: string }) {
                 </button>
             </div>
 
-            {/* KPIs */}
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-                {kpis.map(({ label, value, Icon, color }) => (
-                    <div key={label} className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-                        <div className={`inline-flex p-2 rounded-xl bg-slate-50 mb-3 ${color}`}>
-                            <Icon size={18} />
-                        </div>
-                        {loadingMetrics || value === null ? (
-                            <Skeleton className="h-8 w-24 mb-1" />
-                        ) : (
-                            <p className="text-2xl font-bold text-slate-900">{value}</p>
-                        )}
-                        <p className="text-sm text-slate-500 mt-1">{label}</p>
-                    </div>
-                ))}
+            {/* KPIs fila 1 */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {kpiFila1.map((k) => <KpiCard key={k.label} {...k} />)}
             </div>
 
-            {/* Gráfico */}
+            {/* KPIs fila 2 */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {kpiFila2.map((k) => <KpiCard key={k.label} {...k} />)}
+            </div>
+
+            {/* Alertas */}
+            {alertas.length > 0 && (
+                <div className="space-y-2">
+                    {alertas.map((alerta, i) => {
+                        const cfg = alertaConfig[alerta.tipo];
+                        return (
+                            <div
+                                key={i}
+                                className={`flex items-center gap-4 px-5 py-4 rounded-2xl border ${cfg.bg} ${cfg.border}`}
+                            >
+                                <cfg.Icon size={18} className="text-slate-600 shrink-0" />
+                                <p className="text-sm text-slate-700 flex-1">{alerta.mensaje}</p>
+                                {alerta.tipo === "exportar_mediquo" && (
+                                    <button
+                                        onClick={exportarExcel}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4C1D95] text-white rounded-xl text-xs font-semibold hover:bg-[#3b1675] transition-colors shrink-0"
+                                    >
+                                        Exportar ahora
+                                        <span className="bg-white/20 px-1.5 py-0.5 rounded-full text-[10px]">
+                                            {alerta.cantidad}
+                                        </span>
+                                    </button>
+                                )}
+                                {alerta.tipo !== "exportar_mediquo" && alerta.cantidad > 0 && (
+                                    <span className="bg-white/60 border border-slate-200 px-2.5 py-1 rounded-full text-xs font-bold text-slate-700 shrink-0">
+                                        {alerta.cantidad}
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* Gráfico de línea */}
             <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
                 <h2 className="text-base font-semibold text-slate-800 mb-6">
                     Nuevas suscripciones (últimos 30 días)
@@ -269,37 +449,75 @@ function SectionDashboard({ token }: { token: string }) {
                     <ResponsiveContainer width="100%" height={260}>
                         <LineChart data={graficoData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                            <XAxis
-                                dataKey="fecha"
-                                tick={{ fontSize: 12 }}
-                                tickFormatter={(v: string) => v.slice(5)}
-                            />
+                            <XAxis dataKey="fecha" tick={{ fontSize: 12 }} tickFormatter={(v: string) => v.slice(5)} />
                             <YAxis tick={{ fontSize: 12 }} />
-                            <Tooltip
-                                contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", fontSize: 13 }}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="nuevas"
-                                stroke="#4C1D95"
-                                strokeWidth={2.5}
-                                dot={false}
-                            />
+                            <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", fontSize: 13 }} />
+                            <Line type="monotone" dataKey="nuevas" stroke="#4C1D95" strokeWidth={2.5} dot={false} />
                         </LineChart>
                     </ResponsiveContainer>
                 )}
             </div>
+
+            {/* Gráfico de barras — Revenue por plan */}
+            {!loadingMetrics && revenuePlan.length > 0 && (
+                <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+                    <h2 className="text-base font-semibold text-slate-800 mb-6">Revenue por plan</h2>
+                    <ResponsiveContainer width="100%" height={220}>
+                        <BarChart data={revenuePlan}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                            <XAxis dataKey="plan" tick={{ fontSize: 12 }} />
+                            <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} />
+                            <Tooltip
+                                formatter={(v: unknown) => [fmtCurrency(v as number), "Revenue"]}
+                                contentStyle={{ borderRadius: "12px", fontSize: 13 }}
+                            />
+                            <Bar dataKey="revenue" fill="#4C1D95" radius={[6, 6, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            )}
+
+            {/* Actividad reciente */}
+            {!loadingMetrics && ultimasSubs.length > 0 && (
+                <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+                    <h2 className="text-base font-semibold text-slate-800 mb-4">Actividad reciente</h2>
+                    <div className="space-y-4">
+                        {ultimasSubs.slice(0, 5).map((s) => (
+                            <div key={s.id} className="flex items-center gap-4">
+                                <div className="w-9 h-9 rounded-full bg-[#4C1D95]/10 flex items-center justify-center shrink-0">
+                                    <span className="text-sm font-bold text-[#4C1D95]">
+                                        {s.usuario_nombre.charAt(0).toUpperCase()}
+                                    </span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-slate-900 truncate">{s.usuario_nombre}</p>
+                                    <p className="text-xs text-slate-400 truncate">{s.usuario_email}</p>
+                                </div>
+                                <div className="text-right shrink-0">
+                                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${ESTADO_BADGE[s.estado] ?? "bg-slate-100 text-slate-600"}`}>
+                                        {s.plan_nombre}
+                                    </span>
+                                    <p className="text-xs text-slate-400 mt-1">{tiempoRelativo(s.created_at)}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
 // ─── Section: Usuarios ────────────────────────────────────────────────────────
 
-function SectionUsuarios({ token }: { token: string }) {
+function SectionUsuarios({ token, addToast }: { token: string; addToast: (msg: string, type: ToastType) => void }) {
     const [usuarios, setUsuarios] = useState<AdminUsuario[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [buscar, setBuscar] = useState("");
+    const [modalBaja, setModalBaja] = useState<AdminUsuario | null>(null);
+    const [motivoBaja, setMotivoBaja] = useState("");
+    const [procesando, setProcesando] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -310,6 +528,26 @@ function SectionUsuarios({ token }: { token: string }) {
             .catch(() => setError(true))
             .finally(() => setLoading(false));
     }, [token]);
+
+    async function cambiarEstadoUsuario(usuario: AdminUsuario, activo: boolean) {
+        setProcesando(true);
+        try {
+            const res = await fetch(`${API}/admin/usuarios/${usuario.id}/estado`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", ...authHeaders(token) },
+                body: JSON.stringify({ activo, motivo: motivoBaja }),
+            });
+            if (!res.ok) throw new Error();
+            setUsuarios((prev) => prev.map((u) => u.id === usuario.id ? { ...u, activo } : u));
+            addToast(`Usuario ${usuario.nombre} ${activo ? "dado de alta" : "dado de baja"} correctamente`, "success");
+        } catch {
+            addToast("Error al cambiar el estado del usuario", "error");
+        } finally {
+            setProcesando(false);
+            setModalBaja(null);
+            setMotivoBaja("");
+        }
+    }
 
     const filtrados = usuarios.filter((u) => {
         const q = buscar.toLowerCase();
@@ -347,14 +585,16 @@ function SectionUsuarios({ token }: { token: string }) {
                                 <th className="text-left px-5 py-3.5 font-semibold text-slate-600">DNI</th>
                                 <th className="text-left px-5 py-3.5 font-semibold text-slate-600">Teléfono</th>
                                 <th className="text-left px-5 py-3.5 font-semibold text-slate-600">Rol</th>
+                                <th className="text-left px-5 py-3.5 font-semibold text-slate-600">Estado</th>
                                 <th className="text-left px-5 py-3.5 font-semibold text-slate-600">Registro</th>
+                                <th className="text-left px-5 py-3.5 font-semibold text-slate-600">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading
                                 ? Array.from({ length: 6 }).map((_, i) => (
                                     <tr key={i} className="border-b border-slate-50">
-                                        {Array.from({ length: 6 }).map((_, j) => (
+                                        {Array.from({ length: 8 }).map((_, j) => (
                                             <td key={j} className="px-5 py-3.5">
                                                 <Skeleton className="h-4 w-full" />
                                             </td>
@@ -372,7 +612,25 @@ function SectionUsuarios({ token }: { token: string }) {
                                                 {u.rol}
                                             </span>
                                         </td>
+                                        <td className="px-5 py-3.5">
+                                            <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${u.activo ? "text-emerald-600" : "text-red-500"}`}>
+                                                <span className={`w-2 h-2 rounded-full ${u.activo ? "bg-emerald-500" : "bg-red-400"}`} />
+                                                {u.activo ? "Activo" : "Inactivo"}
+                                            </span>
+                                        </td>
                                         <td className="px-5 py-3.5 text-slate-500">{fmtDate(u.created_at)}</td>
+                                        <td className="px-5 py-3.5">
+                                            <button
+                                                onClick={() => setModalBaja(u)}
+                                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
+                                                    u.activo
+                                                        ? "border-red-200 text-red-600 hover:bg-red-50"
+                                                        : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                                                }`}
+                                            >
+                                                {u.activo ? "Dar de baja" : "Dar de alta"}
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                         </tbody>
@@ -382,17 +640,55 @@ function SectionUsuarios({ token }: { token: string }) {
                     )}
                 </div>
             )}
+
+            {/* Modal baja/alta */}
+            {modalBaja && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-2xl p-6 shadow-xl max-w-sm w-full mx-4 space-y-4">
+                        <h3 className="font-bold text-slate-900">
+                            {modalBaja.activo ? "Dar de baja" : "Dar de alta"} a {modalBaja.nombre}
+                        </h3>
+                        <textarea
+                            placeholder="Motivo (opcional)"
+                            value={motivoBaja}
+                            onChange={(e) => setMotivoBaja(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
+                        />
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => { setModalBaja(null); setMotivoBaja(""); }}
+                                className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={() => cambiarEstadoUsuario(modalBaja, !modalBaja.activo)}
+                                disabled={procesando}
+                                className={`px-4 py-2 rounded-xl text-white text-sm font-semibold disabled:opacity-60 transition-colors ${
+                                    modalBaja.activo ? "bg-red-500 hover:bg-red-600" : "bg-emerald-500 hover:bg-emerald-600"
+                                }`}
+                            >
+                                {procesando ? "Procesando..." : "Confirmar"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
 // ─── Section: Suscripciones ───────────────────────────────────────────────────
 
-function SectionSuscripciones({ token }: { token: string }) {
+function SectionSuscripciones({ token, addToast }: { token: string; addToast: (msg: string, type: ToastType) => void }) {
     const [suscripciones, setSuscripciones] = useState<AdminSuscripcion[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [filtroEstado, setFiltroEstado] = useState("");
+    const [modalGestion, setModalGestion] = useState<AdminSuscripcion | null>(null);
+    const [nuevoEstado, setNuevoEstado] = useState("");
+    const [motivoGestion, setMotivoGestion] = useState("");
+    const [procesando, setProcesando] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -405,10 +701,47 @@ function SectionSuscripciones({ token }: { token: string }) {
             .finally(() => setLoading(false));
     }, [token, filtroEstado]);
 
+    async function cambiarEstadoSuscripcion() {
+        if (!modalGestion || !nuevoEstado) return;
+        setProcesando(true);
+        try {
+            const res = await fetch(`${API}/admin/suscripciones/${modalGestion.id}/estado`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", ...authHeaders(token) },
+                body: JSON.stringify({ estado: nuevoEstado, motivo: motivoGestion }),
+            });
+            if (!res.ok) throw new Error();
+            setSuscripciones((prev) =>
+                prev.map((s) => s.id === modalGestion.id ? { ...s, estado: nuevoEstado } : s)
+            );
+            addToast("Suscripción actualizada correctamente", "success");
+        } catch {
+            addToast("Error al actualizar la suscripción", "error");
+        } finally {
+            setProcesando(false);
+            setModalGestion(null);
+            setNuevoEstado("");
+            setMotivoGestion("");
+        }
+    }
+
+    const activas = suscripciones.filter((s) => s.estado === "activa").length;
+    const pendientes = suscripciones.filter((s) => s.estado === "pendiente_pago").length;
+    const canceladas = suscripciones.filter((s) => s.estado === "cancelada").length;
+
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-slate-900">Suscripciones</h1>
+            <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <h1 className="text-2xl font-bold text-slate-900">Suscripciones</h1>
+                    {!loading && (
+                        <>
+                            <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">{activas} Activas</span>
+                            <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-yellow-100 text-amber-700">{pendientes} Pendientes</span>
+                            <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">{canceladas} Canceladas</span>
+                        </>
+                    )}
+                </div>
                 <select
                     value={filtroEstado}
                     onChange={(e) => setFiltroEstado(e.target.value)}
@@ -436,13 +769,14 @@ function SectionSuscripciones({ token }: { token: string }) {
                                 <th className="text-left px-5 py-3.5 font-semibold text-slate-600">Estado</th>
                                 <th className="text-left px-5 py-3.5 font-semibold text-slate-600">Precio</th>
                                 <th className="text-left px-5 py-3.5 font-semibold text-slate-600">Fecha</th>
+                                <th className="text-left px-5 py-3.5 font-semibold text-slate-600">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading
                                 ? Array.from({ length: 6 }).map((_, i) => (
                                     <tr key={i} className="border-b border-slate-50">
-                                        {Array.from({ length: 6 }).map((_, j) => (
+                                        {Array.from({ length: 7 }).map((_, j) => (
                                             <td key={j} className="px-5 py-3.5">
                                                 <Skeleton className="h-4 w-full" />
                                             </td>
@@ -461,6 +795,14 @@ function SectionSuscripciones({ token }: { token: string }) {
                                         </td>
                                         <td className="px-5 py-3.5 text-slate-700">{fmtCurrency(s.precio_pagado)}</td>
                                         <td className="px-5 py-3.5 text-slate-500">{fmtDate(s.fecha_inicio)}</td>
+                                        <td className="px-5 py-3.5">
+                                            <button
+                                                onClick={() => { setModalGestion(s); setNuevoEstado(""); setMotivoGestion(""); }}
+                                                className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                                            >
+                                                Gestionar
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                         </tbody>
@@ -470,13 +812,71 @@ function SectionSuscripciones({ token }: { token: string }) {
                     )}
                 </div>
             )}
+
+            {/* Modal gestión */}
+            {modalGestion && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-2xl p-6 shadow-xl max-w-sm w-full mx-4 space-y-4">
+                        <h3 className="font-bold text-slate-900">
+                            Gestionar suscripción de {modalGestion.nombre_completo}
+                        </h3>
+                        <p className="text-sm text-slate-500">
+                            Plan: {modalGestion.plan_nombre} · Estado actual:{" "}
+                            <span className={`font-semibold ${
+                                modalGestion.estado === "activa" ? "text-emerald-600" :
+                                modalGestion.estado === "pendiente_pago" ? "text-amber-600" :
+                                "text-red-600"
+                            }`}>
+                                {modalGestion.estado.replace(/_/g, " ")}
+                            </span>
+                        </p>
+                        <select
+                            value={nuevoEstado}
+                            onChange={(e) => setNuevoEstado(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
+                        >
+                            <option value="">Seleccionar nuevo estado</option>
+                            {modalGestion.estado !== "activa" && (
+                                <option value="activa">✓ Activar suscripción</option>
+                            )}
+                            {modalGestion.estado !== "pendiente_pago" && (
+                                <option value="pendiente_pago">⏳ Marcar como pendiente</option>
+                            )}
+                            {modalGestion.estado !== "cancelada" && (
+                                <option value="cancelada">✗ Cancelar suscripción</option>
+                            )}
+                        </select>
+                        <textarea
+                            placeholder="Motivo del cambio (opcional)"
+                            value={motivoGestion}
+                            onChange={(e) => setMotivoGestion(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
+                        />
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => { setModalGestion(null); setNuevoEstado(""); setMotivoGestion(""); }}
+                                className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={cambiarEstadoSuscripcion}
+                                disabled={!nuevoEstado || procesando}
+                                className="px-4 py-2 rounded-xl bg-[#4C1D95] text-white text-sm font-semibold hover:bg-[#3b1675] transition-colors disabled:opacity-60"
+                            >
+                                {procesando ? "Procesando..." : "Confirmar cambio"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
 // ─── Section: Planes ──────────────────────────────────────────────────────────
 
-function SectionPlanes({ token }: { token: string }) {
+function SectionPlanes({ token, addToast }: { token: string; addToast: (msg: string, type: ToastType) => void }) {
     const [planes, setPlanes] = useState<AdminPlan[]>([]);
     const [loading, setLoading] = useState(true);
     const [editPrecio, setEditPrecio] = useState<Record<number, string>>({});
@@ -515,8 +915,9 @@ function SectionPlanes({ token }: { token: string }) {
                 body: JSON.stringify({ activo, precio_mensual: precio }),
             });
             await fetchPlanes();
+            addToast("Plan actualizado correctamente", "success");
         } catch {
-            alert("Error al guardar.");
+            addToast("Error al guardar el plan", "error");
         } finally {
             setSaving(null);
             setConfirmModal(null);
@@ -529,9 +930,7 @@ function SectionPlanes({ token }: { token: string }) {
 
             {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                        <Skeleton key={i} className="h-48" />
-                    ))}
+                    {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-48" />)}
                 </div>
             ) : planes.length === 0 ? (
                 <p className="text-slate-400 text-sm">No hay planes disponibles.</p>
@@ -562,9 +961,7 @@ function SectionPlanes({ token }: { token: string }) {
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-medium text-slate-500 mb-1 block">
-                                        Precio mensual (ARS)
-                                    </label>
+                                    <label className="text-xs font-medium text-slate-500 mb-1 block">Precio mensual (ARS)</label>
                                     <div className="flex gap-2">
                                         <input
                                             type="number"
@@ -577,9 +974,7 @@ function SectionPlanes({ token }: { token: string }) {
                                         />
                                         <button
                                             disabled={!precioValido || precioSinCambios || saving === plan.id}
-                                            onClick={() =>
-                                                setConfirmModal({ id: plan.id, campo: "precio", valor: precioNum })
-                                            }
+                                            onClick={() => setConfirmModal({ id: plan.id, campo: "precio", valor: precioNum })}
                                             className="px-3 py-2 bg-[#4C1D95] text-white rounded-xl text-xs font-semibold hover:bg-[#3b1675] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                         >
                                             {saving === plan.id ? "..." : "Guardar"}
