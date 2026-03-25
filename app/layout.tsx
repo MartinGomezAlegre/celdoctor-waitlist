@@ -1,5 +1,6 @@
 ﻿import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google"; // Usamos la fuente optimizada de Google
+import { headers } from "next/headers";
 import "./globals.css";
 import JsonLd from "@/components/JsonLd";
 import Navbar from "@/components/Navbar";
@@ -84,19 +85,29 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+
+  const sinNavbar =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/checkout");
+
   return (
     <html lang="es" className="scroll-smooth scroll-pt-24 antialiased">
       <body className={inter.className}>
         <div className="min-h-screen flex flex-col font-sans text-slate-900 bg-white selection:bg-[#4C1D95]/30">
-          <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-[#4C1D95] focus:text-white focus:rounded-xl focus:font-bold focus:shadow-lg">Saltar al contenido</a>
-          <Navbar />
+          <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-[#4C1D95] focus:text-white focus:rounded-xl focus:font-bold focus:shadow-lg">
+            Saltar al contenido
+          </a>
+          {!sinNavbar && <Navbar />}
           <main id="main" className="flex-1">{children}</main>
-          <Footer />
+          {!sinNavbar && <Footer />}
         </div>
         <JsonLd />
       </body>
