@@ -30,6 +30,7 @@ export interface Usuario {
     nombre: string;
     apellido: string;
     email: string;
+    rol?: string;
 }
 
 export interface Suscripcion {
@@ -38,6 +39,20 @@ export interface Suscripcion {
     estado: string;
     fecha_inicio: string;
     precio_pagado: number;
+    nombre_plan?: string;
+    descripcion_plan?: string;
+    fue_exportado?: boolean;
+}
+
+export interface MiPerfil {
+    id: number;
+    nombre: string;
+    apellido: string;
+    email: string;
+    telefono?: string;
+    dni?: string;
+    fecha_nacimiento?: string;
+    rol?: string;
 }
 
 export interface LoginResponse {
@@ -144,6 +159,30 @@ export async function contratarPlan(
     if (!res.ok) throw new Error("Error al contratar el plan");
 
     return res.json() as Promise<Suscripcion>;
+}
+
+/**
+ * GET /usuarios/me
+ * Requiere token Bearer.
+ * - 401 → lanza ApiError con code "UNAUTHORIZED"
+ * - otros errores → devuelve null
+ */
+export async function getMiPerfil(token: string): Promise<MiPerfil | null> {
+    let res: Response;
+    try {
+        res = await fetch(getApiUrl("/usuarios/me"), {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+    } catch {
+        return null;
+    }
+
+    if (res.status === 401) {
+        throw new ApiError("Sesión expirada. Iniciá sesión nuevamente", "UNAUTHORIZED");
+    }
+    if (!res.ok) return null;
+
+    return res.json() as Promise<MiPerfil>;
 }
 
 /**

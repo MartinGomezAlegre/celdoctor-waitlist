@@ -33,7 +33,7 @@ function InfoRow({ label, value }: { label: string; value: string | null | undef
     )
 }
 
-// ─── Detalle de Empresa ───────────────────────────────────────────────────────
+// ─── VISTA: DETALLE DE EMPRESA ────────────────────────────────────────────────
 
 type TabDetalle = "info" | "empleados" | "pagos" | "historial"
 
@@ -229,7 +229,7 @@ function DetalleEmpresa({
                 ))}
             </div>
 
-            {/* TAB: Información */}
+            {/* ─── TAB: INFORMACIÓN ──────────────────────────────────────────────── */}
             {tab === "info" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-3">
@@ -263,7 +263,7 @@ function DetalleEmpresa({
                 </div>
             )}
 
-            {/* TAB: Empleados */}
+            {/* ─── TAB: EMPLEADOS ────────────────────────────────────────────────── */}
             {tab === "empleados" && (
                 <div className="space-y-4">
                     <div className="flex items-center justify-between flex-wrap gap-3">
@@ -522,7 +522,7 @@ function DetalleEmpresa({
     )
 }
 
-// ─── Main: SectionEmpresas ────────────────────────────────────────────────────
+// ─── VISTA: LISTA DE EMPRESAS ─────────────────────────────────────────────────
 
 export default function SectionEmpresas({ token, addToast }: Props) {
     const [empresas, setEmpresas] = useState<Empresa[]>([])

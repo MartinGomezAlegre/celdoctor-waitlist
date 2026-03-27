@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { CheckCircle2, Clock, Circle } from "lucide-react";
 import { obtenerPlanes, type Plan } from "@/lib/api";
 
 const FALLBACK_PLANES: Plan[] = [
@@ -49,6 +50,12 @@ export default function ConfirmacionPage() {
         );
     }
 
+    const pasos = [
+        { label: "Suscripción registrada", done: true },
+        { label: "Validación de pago", done: false, active: true },
+        { label: "Plan activo", done: false },
+    ];
+
     return (
         <>
             <style>{`
@@ -72,7 +79,7 @@ export default function ConfirmacionPage() {
             `}</style>
 
             <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-20">
-                <div className="w-full max-w-md text-center">
+                <div className="w-full max-w-md">
 
                     {/* Animated check */}
                     <div className="flex justify-center mb-6">
@@ -90,11 +97,13 @@ export default function ConfirmacionPage() {
                         </div>
                     </div>
 
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">¡Todo listo!</h1>
-                    <p className="text-slate-500 text-lg mb-8">Tu suscripción fue confirmada</p>
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-slate-900 mb-2">¡Suscripción registrada!</h1>
+                        <p className="text-slate-500 text-base">Tu solicitud fue recibida correctamente</p>
+                    </div>
 
                     {/* Summary card */}
-                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6 text-left">
+                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-4">
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-slate-500">Plan contratado</span>
@@ -104,9 +113,9 @@ export default function ConfirmacionPage() {
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-slate-500">Estado</span>
-                                <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                                    Pendiente de pago
+                                <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                    En procesamiento
                                 </span>
                             </div>
                             <div className="flex items-center justify-between">
@@ -115,11 +124,29 @@ export default function ConfirmacionPage() {
                                     {formatFechaHoy()}
                                 </span>
                             </div>
-                            <div className="pt-3 border-t border-slate-100">
-                                <p className="text-xs text-slate-400 leading-relaxed">
-                                    Cuando integremos los pagos, tu plan se activará automáticamente.
-                                </p>
-                            </div>
+                        </div>
+                    </div>
+
+                    {/* Timeline */}
+                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Próximos pasos</h3>
+                        <div className="space-y-4">
+                            {pasos.map((paso, i) => (
+                                <div key={i} className="flex items-start gap-3">
+                                    <div className="mt-0.5 shrink-0">
+                                        {paso.done ? (
+                                            <CheckCircle2 size={18} className="text-emerald-500" />
+                                        ) : paso.active ? (
+                                            <Clock size={18} className="text-blue-500" />
+                                        ) : (
+                                            <Circle size={18} className="text-slate-300" />
+                                        )}
+                                    </div>
+                                    <span className={`text-sm ${paso.done ? "text-slate-900 font-medium" : paso.active ? "text-blue-700 font-medium" : "text-slate-400"}`}>
+                                        {paso.label}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
 

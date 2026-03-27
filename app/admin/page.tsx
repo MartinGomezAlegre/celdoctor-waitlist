@@ -17,7 +17,7 @@ export default function AdminLoginPage() {
         setLoading(true);
         try {
             const res = await login(email, contrasenia);
-            if ((res.usuario as unknown as { rol?: string }).rol !== "admin") {
+            if (res.usuario.rol !== "admin") {
                 setError("Sin permisos de administrador.");
                 return;
             }

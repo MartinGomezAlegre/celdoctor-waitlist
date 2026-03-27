@@ -3,13 +3,24 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShieldCheck, ShieldOff } from "lucide-react";
+import {
+    ShieldCheck,
+    ShieldOff,
+    User,
+    Mail,
+    Phone,
+    CreditCard,
+    MessageCircle,
+    CheckCircle2,
+    Circle,
+    Clock,
+} from "lucide-react";
 import {
     obtenerMiSuscripcion,
-    obtenerPlanes,
+    getMiPerfil,
     ApiError,
     type Suscripcion,
-    type Plan,
+    type MiPerfil,
 } from "@/lib/api";
 
 function formatFecha(iso: string): string {
@@ -26,7 +37,6 @@ function formatPrecio(precio: number): string {
 
 function EstadoBadge({ estado }: { estado: string }) {
     const lower = estado.toLowerCase();
-
     if (lower === "activa") {
         return (
             <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
@@ -51,7 +61,6 @@ function EstadoBadge({ estado }: { estado: string }) {
             </span>
         );
     }
-    // fallback genérico
     return (
         <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
             {estado}
@@ -59,13 +68,57 @@ function EstadoBadge({ estado }: { estado: string }) {
     );
 }
 
-// ─── Skeleton loader ──────────────────────────────────────────────────────────
-function SkeletonCard() {
+function SkeletonBlock({ className }: { className?: string }) {
+    return <div className={`bg-slate-200 rounded-xl animate-pulse ${className ?? ""}`} />;
+}
+
+function SuscripcionSkeleton() {
     return (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-pulse">
-            <div className="h-4 bg-slate-200 rounded w-1/3 mb-4" />
-            <div className="h-8 bg-slate-200 rounded w-1/2 mb-3" />
-            <div className="h-4 bg-slate-200 rounded w-2/3" />
+        <div className="space-y-6">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
+                <SkeletonBlock className="h-5 w-32" />
+                <SkeletonBlock className="h-8 w-48" />
+                <SkeletonBlock className="h-4 w-64" />
+            </div>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-3">
+                <SkeletonBlock className="h-4 w-24" />
+                <SkeletonBlock className="h-4 w-full" />
+                <SkeletonBlock className="h-4 w-3/4" />
+            </div>
+        </div>
+    );
+}
+
+// ─── Timeline ─────────────────────────────────────────────────────────────────
+function SuscripcionTimeline({ estado }: { estado: string }) {
+    const lower = estado.toLowerCase();
+    const pasos = [
+        { label: "Suscripción registrada", done: true },
+        { label: "Validación de pago", done: lower === "activa" || lower === "cancelada", active: lower === "pendiente_pago" },
+        { label: "Plan activo", done: lower === "activa" },
+    ];
+
+    return (
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-5">Estado del proceso</h3>
+            <div className="space-y-4">
+                {pasos.map((paso, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                        <div className="mt-0.5 shrink-0">
+                            {paso.done ? (
+                                <CheckCircle2 size={18} className="text-emerald-500" />
+                            ) : paso.active ? (
+                                <Clock size={18} className="text-amber-500" />
+                            ) : (
+                                <Circle size={18} className="text-slate-300" />
+                            )}
+                        </div>
+                        <span className={`text-sm ${paso.done ? "text-slate-900 font-medium" : paso.active ? "text-amber-700 font-medium" : "text-slate-400"}`}>
+                            {paso.label}
+                        </span>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
@@ -74,11 +127,8 @@ function SkeletonCard() {
 export default function DashboardPage() {
     const router = useRouter();
 
-    const [nombre, setNombre] = useState<string>("");
-    const [suscripcion, setSuscripcion] = useState<Suscripcion | null | undefined>(
-        undefined // undefined = todavía cargando
-    );
-    const [planes, setPlanes] = useState<Plan[]>([]);
+    const [suscripcion, setSuscripcion] = useState<Suscripcion | null | undefined>(undefined);
+    const [perfil, setPerfil] = useState<MiPerfil | null>(null);
 
     useEffect(() => {
         const token = localStorage.getItem("celdoctor_token");
@@ -87,12 +137,10 @@ export default function DashboardPage() {
             return;
         }
 
-        setNombre(localStorage.getItem("celdoctor_nombre") ?? "");
-
-        Promise.all([obtenerMiSuscripcion(token), obtenerPlanes()])
-            .then(([sus, pls]) => {
+        Promise.all([obtenerMiSuscripcion(token), getMiPerfil(token)])
+            .then(([sus, prof]) => {
                 setSuscripcion(sus);
-                setPlanes(pls);
+                setPerfil(prof);
             })
             .catch((err) => {
                 if (err instanceof ApiError && err.code === "UNAUTHORIZED") {
@@ -106,84 +154,159 @@ export default function DashboardPage() {
     }, [router]);
 
     const cargando = suscripcion === undefined;
-
-    const planActivo = suscripcion
-        ? (planes.find((p) => p.id === suscripcion.plan_id) ?? null)
-        : null;
-
-    const nombrePlan = planActivo?.nombre ?? (suscripcion ? `Plan #${suscripcion.plan_id}` : "");
+    const nombre = perfil ? perfil.nombre : (localStorage.getItem("celdoctor_nombre") ?? "");
+    const nombrePlan = suscripcion?.nombre_plan ?? (suscripcion ? `Plan #${suscripcion.plan_id}` : "");
 
     return (
         <div className="min-h-screen bg-slate-50">
             <main className="max-w-5xl mx-auto px-6 py-12">
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                    {nombre ? `¡Bienvenido, ${nombre}!` : "Mi cuenta"}
-                </h1>
-                <p className="text-slate-500 mb-10">
-                    Aquí podés gestionar tu suscripción y acceder a tus consultas.
-                </p>
+
+                {/* Header */}
+                <div className="mb-10">
+                    <h1 className="text-3xl font-bold text-slate-900 mb-1">
+                        {nombre ? `¡Bienvenido, ${nombre}!` : "Mi cuenta"}
+                    </h1>
+                    <p className="text-slate-500">Gestioná tu suscripción y accedé a tus consultas.</p>
+                </div>
 
                 {cargando ? (
-                    <div className="grid sm:grid-cols-2 gap-6">
-                        <SkeletonCard />
-                        <SkeletonCard />
+                    <div className="grid lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2"><SuscripcionSkeleton /></div>
+                        <div className="space-y-6">
+                            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-3 animate-pulse">
+                                <SkeletonBlock className="h-4 w-24" />
+                                <SkeletonBlock className="h-4 w-full" />
+                                <SkeletonBlock className="h-4 w-3/4" />
+                            </div>
+                        </div>
                     </div>
                 ) : suscripcion ? (
-                    /* ── Con suscripción ── */
-                    <div className="grid sm:grid-cols-2 gap-6">
-                        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:col-span-2">
-                            <div className="flex items-center gap-3 mb-5">
-                                <div className="w-10 h-10 bg-[#4C1D95]/10 rounded-xl flex items-center justify-center text-[#4C1D95]">
-                                    <ShieldCheck size={20} />
+                    <div className="grid lg:grid-cols-3 gap-6">
+
+                        {/* Left — Plan card + Timeline */}
+                        <div className="lg:col-span-2 space-y-6">
+
+                            {/* Plan card */}
+                            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                                <div className="flex items-center gap-3 mb-5">
+                                    <div className="w-10 h-10 bg-[#4C1D95]/10 rounded-xl flex items-center justify-center text-[#4C1D95]">
+                                        <ShieldCheck size={20} />
+                                    </div>
+                                    <h2 className="text-lg font-bold text-slate-900">Tu suscripción</h2>
                                 </div>
-                                <h2 className="text-lg font-bold text-slate-900">
-                                    Estado de suscripción
-                                </h2>
+
+                                <div className="bg-linear-to-br from-[#4C1D95]/5 to-[#4C1D95]/10 border border-[#4C1D95]/10 rounded-xl p-5">
+                                    <div className="flex items-start justify-between gap-3 mb-3">
+                                        <p className="text-2xl font-bold text-slate-900">{nombrePlan}</p>
+                                        <EstadoBadge estado={suscripcion.estado} />
+                                    </div>
+                                    {suscripcion.descripcion_plan && (
+                                        <p className="text-sm text-slate-500 mb-3">{suscripcion.descripcion_plan}</p>
+                                    )}
+                                    <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-500">
+                                        <span>Desde el {formatFecha(suscripcion.fecha_inicio)}</span>
+                                        <span className="font-semibold text-slate-700">{formatPrecio(suscripcion.precio_pagado)}</span>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 flex gap-3">
+                                    <Link
+                                        href="/planes"
+                                        className="inline-flex items-center px-4 py-2 text-sm font-semibold text-[#4C1D95] border border-[#4C1D95]/20 rounded-lg hover:bg-[#4C1D95]/5 transition-colors"
+                                    >
+                                        Ver planes
+                                    </Link>
+                                </div>
                             </div>
 
-                            <div className="bg-[#4C1D95]/5 border border-[#4C1D95]/10 rounded-xl p-5">
-                                <div className="mb-3">
-                                    <EstadoBadge estado={suscripcion.estado} />
-                                </div>
-                                <p className="text-2xl font-bold text-slate-900 mb-1">
-                                    {nombrePlan}
-                                </p>
-                                <p className="text-sm text-slate-500">
-                                    Desde el {formatFecha(suscripcion.fecha_inicio)} ·{" "}
-                                    {formatPrecio(suscripcion.precio_pagado)}
-                                </p>
-                            </div>
+                            {/* Timeline */}
+                            <SuscripcionTimeline estado={suscripcion.estado} />
+                        </div>
 
-                            <div className="mt-4">
-                                <Link
-                                    href="/planes"
-                                    className="inline-flex items-center px-4 py-2 text-sm font-semibold text-[#4C1D95] border border-[#4C1D95]/20 rounded-lg hover:bg-[#4C1D95]/5 transition-colors"
+                        {/* Right — Datos cuenta + Soporte */}
+                        <div className="space-y-6">
+
+                            {/* Datos cuenta */}
+                            {perfil && (
+                                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Datos de cuenta</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-3">
+                                            <User size={15} className="text-slate-400 shrink-0" />
+                                            <span className="text-sm text-slate-700">{perfil.nombre} {perfil.apellido}</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <Mail size={15} className="text-slate-400 shrink-0" />
+                                            <span className="text-sm text-slate-700 break-all">{perfil.email}</span>
+                                        </div>
+                                        {perfil.telefono && (
+                                            <div className="flex items-center gap-3">
+                                                <Phone size={15} className="text-slate-400 shrink-0" />
+                                                <span className="text-sm text-slate-700">{perfil.telefono}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-3">
+                                            <CreditCard size={15} className="text-slate-400 shrink-0" />
+                                            <span className="text-sm text-slate-700">{nombrePlan}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Soporte */}
+                            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Soporte</h3>
+                                <p className="text-sm text-slate-500 mb-4">
+                                    ¿Tenés alguna consulta sobre tu suscripción?
+                                </p>
+                                <a
+                                    href="mailto:soporte@celdoctor.com"
+                                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#4C1D95] text-white rounded-xl text-sm font-semibold hover:bg-[#3b1675] transition-colors w-full justify-center"
                                 >
-                                    Ver mi plan
-                                </Link>
+                                    <MessageCircle size={15} />
+                                    Contactar soporte
+                                </a>
                             </div>
                         </div>
                     </div>
                 ) : (
                     /* ── Sin suscripción ── */
-                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 max-w-md">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400">
-                                <ShieldOff size={20} />
+                    <div className="grid lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 space-y-6">
+                            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400">
+                                        <ShieldOff size={20} />
+                                    </div>
+                                    <h2 className="text-lg font-bold text-slate-900">Sin suscripción activa</h2>
+                                </div>
+                                <p className="text-sm text-slate-500 mb-6">
+                                    No tenés un plan activo. Elegí el que mejor se adapte a vos.
+                                </p>
+                                <Link
+                                    href="/planes"
+                                    className="inline-flex items-center px-6 py-3 bg-[#4C1D95] text-white rounded-xl text-sm font-bold hover:bg-[#3b1675] transition-all shadow-lg shadow-[#4C1D95]/20"
+                                >
+                                    Ver planes disponibles
+                                </Link>
                             </div>
-                            <h2 className="text-lg font-bold text-slate-900">
-                                Sin suscripción activa
-                            </h2>
                         </div>
-                        <p className="text-sm text-slate-500 mb-6">
-                            No tenés un plan activo. Elegí el que mejor se adapte a vos.
-                        </p>
-                        <Link
-                            href="/planes"
-                            className="inline-flex items-center px-6 py-3 bg-[#4C1D95] text-white rounded-xl text-sm font-bold hover:bg-[#3b1675] transition-all shadow-lg shadow-[#4C1D95]/20"
-                        >
-                            Ver planes disponibles
-                        </Link>
+
+                        {perfil && (
+                            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Datos de cuenta</h3>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <User size={15} className="text-slate-400 shrink-0" />
+                                        <span className="text-sm text-slate-700">{perfil.nombre} {perfil.apellido}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <Mail size={15} className="text-slate-400 shrink-0" />
+                                        <span className="text-sm text-slate-700 break-all">{perfil.email}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </main>

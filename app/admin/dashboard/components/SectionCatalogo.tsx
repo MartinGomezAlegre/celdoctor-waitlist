@@ -14,7 +14,7 @@ interface Props {
     addToast: (msg: string, type: ToastType) => void
 }
 
-// ─── Planes sub-section ───────────────────────────────────────────────────────
+// ─── PLANES ───────────────────────────────────────────────────────────────────
 
 function SubPlanes({ token, addToast }: Props) {
     const [planes, setPlanes] = useState<AdminPlan[]>([])
@@ -168,7 +168,7 @@ function SubPlanes({ token, addToast }: Props) {
     )
 }
 
-// ─── Cupones sub-section ──────────────────────────────────────────────────────
+// ─── CUPONES ──────────────────────────────────────────────────────────────────
 
 function SubCupones({ token, addToast }: Props) {
     const [cupones, setCupones] = useState<Cupon[]>([])

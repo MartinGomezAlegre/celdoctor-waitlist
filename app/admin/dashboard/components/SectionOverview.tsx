@@ -148,7 +148,7 @@ export default function SectionOverview({ token, addToast, onNavigate }: Props) 
         </button>
       </div>
 
-      {/* FILA 1 — KPIs financieros */}
+      {/* ─── KPIs FINANCIEROS ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiCard
           label="MRR"
@@ -176,7 +176,7 @@ export default function SectionOverview({ token, addToast, onNavigate }: Props) 
         />
       </div>
 
-      {/* FILA 2 — KPIs operativos */}
+      {/* ─── KPIs OPERATIVOS ───────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label="Suscriptores activos"
@@ -209,7 +209,7 @@ export default function SectionOverview({ token, addToast, onNavigate }: Props) 
         />
       </div>
 
-      {/* FILA 3 — KPIs alcance */}
+      {/* ─── KPIs ALCANCE ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiCard
           label="Empresas activas"
@@ -234,7 +234,7 @@ export default function SectionOverview({ token, addToast, onNavigate }: Props) 
         />
       </div>
 
-      {/* GRÁFICOS */}
+      {/* ─── GRÁFICOS ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Line Chart */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -300,7 +300,7 @@ export default function SectionOverview({ token, addToast, onNavigate }: Props) 
         </div>
       </div>
 
-      {/* ALERTAS */}
+      {/* ─── ALERTAS ───────────────────────────────────────────────────────── */}
       {showAlertas && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-gray-700">Alertas</h2>
@@ -416,7 +416,7 @@ export default function SectionOverview({ token, addToast, onNavigate }: Props) 
         </div>
       )}
 
-      {/* ACTIVIDAD RECIENTE */}
+      {/* ─── ACTIVIDAD RECIENTE ────────────────────────────────────────────── */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-sm font-semibold text-gray-700">Actividad reciente</h2>
         {ultimasSubs.length === 0 ? (

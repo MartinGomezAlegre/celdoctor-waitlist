@@ -22,6 +22,7 @@ export default function SectionFacturacion({ token, addToast }: Props) {
     const [loading, setLoading] = useState(true)
     const [filtroEstado, setFiltroEstado] = useState("")
     const [exporting, setExporting] = useState(false)
+    const [showConfirmModal, setShowConfirmModal] = useState(false)
 
     useEffect(() => {
         setLoading(true)
@@ -41,7 +42,7 @@ export default function SectionFacturacion({ token, addToast }: Props) {
     async function exportarMediquo() {
         setExporting(true)
         try {
-            const res = await fetch(`${API}/admin/exportar-excel`, { headers: authHeaders(token) })
+            const res = await fetch(`${API}/admin/facturacion/exportar-mediquo`, { headers: authHeaders(token) })
             if (!res.ok) throw new Error()
             const blob = await res.blob()
             const url = URL.createObjectURL(blob)
@@ -52,11 +53,26 @@ export default function SectionFacturacion({ token, addToast }: Props) {
             a.click()
             document.body.removeChild(a)
             URL.revokeObjectURL(url)
-            addToast("Exportación completada", "success")
+            setShowConfirmModal(true)
         } catch {
             addToast("Error al exportar el archivo", "error")
         } finally {
             setExporting(false)
+        }
+    }
+
+    async function marcarExportados() {
+        setShowConfirmModal(false)
+        try {
+            const res = await fetch(`${API}/admin/facturacion/marcar-exportados`, {
+                method: "POST",
+                headers: { ...authHeaders(token), "Content-Type": "application/json" },
+                body: JSON.stringify({ suscripcion_ids: [] }),
+            })
+            if (!res.ok) throw new Error()
+            addToast("Registros marcados como exportados", "success")
+        } catch {
+            addToast("Error al marcar los registros", "error")
         }
     }
 
@@ -169,6 +185,31 @@ export default function SectionFacturacion({ token, addToast }: Props) {
                         </table>
                     </div>
                 </>
+            )}
+
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-2xl p-6 shadow-xl max-w-sm w-full mx-4">
+                        <h3 className="text-base font-bold text-slate-900 mb-2">Marcar registros como exportados</h3>
+                        <p className="text-sm text-slate-500 mb-6">
+                            ¿Querés marcar todos los registros exportados como procesados? Esta acción no se puede deshacer.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => { setShowConfirmModal(false); addToast("Exportación completada", "success") }}
+                                className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                            >
+                                Omitir
+                            </button>
+                            <button
+                                onClick={marcarExportados}
+                                className="flex-1 py-2.5 bg-[#4C1D95] text-white rounded-xl text-sm font-semibold hover:bg-[#3b1675] transition-colors"
+                            >
+                                Confirmar
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {tab === "exportar" && (
