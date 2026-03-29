@@ -89,6 +89,12 @@ export default function LoginPage() {
                         />
                     </div>
 
+                    <div className="flex justify-end -mt-2">
+                        <Link href="/recuperar-contrasenia" className="text-sm text-[#4C1D95] hover:underline">
+                            ¿Olvidaste tu contraseña?
+                        </Link>
+                    </div>
+
                     {error && (
                         <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
                             {error}

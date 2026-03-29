@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2, Users, Building2, User } from "lucide-react";
-import { obtenerPlanes, type Plan } from "@/lib/api";
+import { obtenerPlanes, obtenerPlanesUsuario, type Plan } from "@/lib/api";
 
 // ─── Beneficios por tipo ───────────────────────────────────────────────────────
 const BENEFICIOS_PERSONAL = [
@@ -75,7 +75,7 @@ function PlanCard({
 
     if (destacado) {
         return (
-            <div className="relative p-8 rounded-3xl bg-gradient-to-b from-[#4C1D95] to-[#2E1065] border border-[#6D28D9] shadow-2xl shadow-[#4C1D95]/30 flex flex-col">
+            <div className="relative p-8 rounded-3xl bg-linear-to-b from-[#4C1D95] to-[#2E1065] border border-[#6D28D9] shadow-2xl shadow-[#4C1D95]/30 flex flex-col">
                 <div className="absolute top-0 right-0 bg-white text-[#4C1D95] text-[10px] font-bold px-4 py-1.5 rounded-bl-xl uppercase tracking-wider">
                     Más popular
                 </div>
@@ -154,8 +154,10 @@ export default function PlanesPage() {
     const [cargando, setCargando] = useState(true);
 
     useEffect(() => {
-        setToken(localStorage.getItem("celdoctor_token"));
-        obtenerPlanes().then((data) => {
+        const t = localStorage.getItem("celdoctor_token");
+        setToken(t);
+        const fetchPlanes = t ? obtenerPlanesUsuario() : obtenerPlanes();
+        fetchPlanes.then((data) => {
             setPlanes(data.length > 0 ? data : FALLBACK_PLANES);
             setCargando(false);
         });
@@ -199,7 +201,7 @@ export default function PlanesPage() {
 
                 {/* Tabs */}
                 <div className="flex items-center justify-center gap-2 mt-8 overflow-x-auto pb-1">
-                    {TABS.map((t) => (
+                    {TABS.filter((t) => !(token && t.id === "corporativo")).map((t) => (
                         <button
                             key={t.id}
                             onClick={() => setTab(t.id)}
@@ -260,7 +262,7 @@ export default function PlanesPage() {
                                     <PlanCard plan={FALLBACK_PLANES[1]} token={token} />
                                 )}
                                 {/* Decorative image */}
-                                <div className="hidden lg:block rounded-3xl overflow-hidden aspect-[4/3] relative">
+                                <div className="hidden lg:block rounded-3xl overflow-hidden aspect-4/3 relative">
                                     <Image
                                         src="/familiamodelo.png"
                                         alt="Familia usando CelDoctor"

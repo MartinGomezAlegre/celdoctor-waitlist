@@ -1,4 +1,4 @@
-export type Section = "overview" | "personas" | "empresas" | "suscripciones" | "facturacion" | "catalogo" | "reportes"
+export type Section = "overview" | "personas" | "empresas" | "suscripciones" | "facturacion" | "catalogo" | "reportes" | "soporte" | "leads"
 export type ToastType = "success" | "error" | "warning"
 
 export interface Toast { id: number; msg: string; type: ToastType }
@@ -90,3 +90,29 @@ export type EmpresaForm = typeof EMPRESA_FORM_VACIO
 
 export const EMPLEADO_FORM_VACIO = { nombre: "", apellido: "", dni: "", email: "", cargo: "" }
 export type EmpleadoForm = typeof EMPLEADO_FORM_VACIO
+
+export interface Ticket {
+    id: number;
+    usuario_nombre: string;
+    usuario_email: string;
+    asunto: string;
+    mensaje: string;
+    estado: "abierto" | "respondido" | "cerrado";
+    prioridad: "normal" | "alta";
+    respuesta: string | null;
+    created_at: string;
+    respondido_en: string | null;
+}
+
+export interface LeadEmpresarial {
+    id: number;
+    razon_social: string | null;
+    nombre_contacto: string;
+    email: string;
+    telefono: string;
+    cantidad_empleados: number | null;
+    mensaje: string | null;
+    estado: "nuevo" | "contactado" | "convertido" | "descartado";
+    nota_admin: string | null;
+    created_at: string;
+}

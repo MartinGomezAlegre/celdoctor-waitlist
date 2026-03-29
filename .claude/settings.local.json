@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -l \"WaitlistForm\\\\|from.*WaitlistForm\" /c/Users/marti/Desktop/Proyectos/celdoctor-waitlist/components/*Section*.tsx)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

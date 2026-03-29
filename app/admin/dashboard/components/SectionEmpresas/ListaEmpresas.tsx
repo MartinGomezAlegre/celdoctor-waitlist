@@ -1,0 +1,182 @@
+"use client"
+import { useState, useEffect } from "react"
+import { Plus } from "lucide-react"
+import type { Empresa, AdminPlan, EmpresaForm, ToastType } from "../../types"
+import { EMPRESA_FORM_VACIO } from "../../types"
+import { API, authHeaders, fmtDate, diasParaVencer } from "../../lib"
+import { Skeleton } from "../shared/Skeleton"
+import { StatBadge } from "../shared/StatBadge"
+import { Pagination } from "../shared/Pagination"
+import { FormEmpresa } from "./FormEmpresa"
+
+const PER_PAGE = 25
+
+interface Props {
+    empresas: Empresa[]
+    loading: boolean
+    error: boolean
+    buscar: string
+    onBuscar: (v: string) => void
+    token: string
+    addToast: (msg: string, type: ToastType) => void
+    planes: AdminPlan[]
+    onSeleccionar: (e: Empresa) => void
+    onRefetch: () => void
+}
+
+export function ListaEmpresas({
+    empresas, loading, error, buscar, onBuscar,
+    token, addToast, planes, onSeleccionar, onRefetch,
+}: Props) {
+    const [page, setPage] = useState(1)
+    const [modalNueva, setModalNueva] = useState(false)
+    const [form, setForm] = useState<EmpresaForm>(EMPRESA_FORM_VACIO)
+    const [guardando, setGuardando] = useState(false)
+
+    const filtradas = empresas.filter((e) => {
+        const q = buscar.toLowerCase()
+        return e.razon_social.toLowerCase().includes(q) || e.cuit.includes(q)
+    })
+
+    // Resetear página al cambiar búsqueda
+    useEffect(() => { setPage(1) }, [buscar])
+
+    const paginadas = filtradas.slice((page - 1) * PER_PAGE, page * PER_PAGE)
+
+    async function guardarNueva() {
+        setGuardando(true)
+        try {
+            const res = await fetch(`${API}/admin/empresas`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", ...authHeaders(token) },
+                body: JSON.stringify(form),
+            })
+            if (!res.ok) throw new Error()
+            addToast("Empresa creada correctamente", "success")
+            setModalNueva(false)
+            setForm(EMPRESA_FORM_VACIO)
+            onRefetch()
+        } catch {
+            addToast("Error al crear la empresa", "error")
+        } finally {
+            setGuardando(false)
+        }
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+                <h1 className="text-2xl font-bold text-slate-900">Empresas</h1>
+                <div className="flex gap-3">
+                    <input
+                        type="text"
+                        placeholder="Buscar por razón social o CUIT…"
+                        value={buscar}
+                        onChange={(e) => onBuscar(e.target.value)}
+                        className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] w-64"
+                    />
+                    <button
+                        onClick={() => { setForm(EMPRESA_FORM_VACIO); setModalNueva(true) }}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-[#4C1D95] text-white rounded-xl text-sm font-semibold hover:bg-[#3b1675] transition-colors"
+                    >
+                        <Plus size={15} /> Nueva empresa
+                    </button>
+                </div>
+            </div>
+
+            {error ? (
+                <div className="bg-red-50 border border-red-100 rounded-2xl px-6 py-4 text-sm text-red-600">
+                    Error al cargar empresas.
+                </div>
+            ) : (
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-auto">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-slate-100 bg-slate-50">
+                                {["Empresa", "Contacto", "Empleados", "Plan", "Estado", "Próx. cobro", "Acciones"].map((h) => (
+                                    <th key={h} className="text-left px-5 py-3.5 font-semibold text-slate-600 whitespace-nowrap">{h}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                Array.from({ length: 5 }).map((_, i) => (
+                                    <tr key={i} className="border-b border-slate-50">
+                                        {Array.from({ length: 7 }).map((_, j) => (
+                                            <td key={j} className="px-5 py-3.5"><Skeleton className="h-4 w-full" /></td>
+                                        ))}
+                                    </tr>
+                                ))
+                            ) : paginadas.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="text-center text-slate-400 py-12 text-sm">
+                                        No hay empresas registradas.
+                                    </td>
+                                </tr>
+                            ) : (
+                                paginadas.map((emp) => (
+                                    <tr key={emp.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-5 py-3.5">
+                                            <p className="font-medium text-slate-900 whitespace-nowrap">{emp.razon_social}</p>
+                                            <p className="text-xs text-slate-400">{emp.cuit}</p>
+                                        </td>
+                                        <td className="px-5 py-3.5">
+                                            <p className="text-slate-700 whitespace-nowrap">{emp.contacto_nombre}</p>
+                                            <p className="text-xs text-slate-400">{emp.contacto_email}</p>
+                                        </td>
+                                        <td className="px-5 py-3.5">
+                                            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                                                {emp.empleados_activos}/{emp.cantidad_empleados}
+                                            </span>
+                                        </td>
+                                        <td className="px-5 py-3.5 text-slate-700">{emp.plan_nombre ?? "—"}</td>
+                                        <td className="px-5 py-3.5">
+                                            <StatBadge estado={emp.estado_suscripcion ?? undefined} />
+                                        </td>
+                                        <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">
+                                            {emp.fecha_vencimiento ? (
+                                                <span className={diasParaVencer(emp.fecha_vencimiento) <= 7 ? "text-orange-600 font-semibold" : ""}>
+                                                    {fmtDate(emp.fecha_vencimiento)}
+                                                </span>
+                                            ) : "—"}
+                                        </td>
+                                        <td className="px-5 py-3.5">
+                                            <button
+                                                onClick={() => onSeleccionar(emp)}
+                                                className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-[#4C1D95]/30 text-[#4C1D95] hover:bg-[#4C1D95]/5 transition-colors"
+                                            >
+                                                Ver detalle
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                    {!loading && filtradas.length > PER_PAGE && (
+                        <div className="px-5 pb-4">
+                            <Pagination
+                                total={filtradas.length}
+                                page={page}
+                                perPage={PER_PAGE}
+                                onPageChange={setPage}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {modalNueva && (
+                <FormEmpresa
+                    title="Nueva empresa"
+                    form={form}
+                    setForm={setForm}
+                    planes={planes}
+                    guardando={guardando}
+                    onClose={() => { setModalNueva(false); setForm(EMPRESA_FORM_VACIO) }}
+                    onSave={guardarNueva}
+                />
+            )}
+        </div>
+    )
+}

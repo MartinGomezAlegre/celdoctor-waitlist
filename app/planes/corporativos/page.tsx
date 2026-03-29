@@ -2,7 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import PageHero from "@/components/shared/PageHero";
 import PlanesCorporativosContent from "@/components/PlanesCorporativosContent";
-
+import FormContactoEmpresarial from "./FormContactoEmpresarial";
 
 export const metadata: Metadata = {
     title: "Planes Corporativos",
@@ -29,6 +29,8 @@ export default function CorporativosPage() {
             />
 
             <PlanesCorporativosContent />
+
+            <FormContactoEmpresarial />
         </>
     );
 }

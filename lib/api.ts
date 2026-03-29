@@ -38,10 +38,12 @@ export interface Suscripcion {
     plan_id: number;
     estado: string;
     fecha_inicio: string;
+    fecha_vencimiento?: string;
     precio_pagado: number;
     nombre_plan?: string;
     descripcion_plan?: string;
     fue_exportado?: boolean;
+    max_beneficiarios?: number | null;
 }
 
 export interface MiPerfil {
@@ -170,7 +172,7 @@ export async function contratarPlan(
 export async function getMiPerfil(token: string): Promise<MiPerfil | null> {
     let res: Response;
     try {
-        res = await fetch(getApiUrl("/usuarios/me"), {
+        res = await fetch(getApiUrl("/usuarios/mi-perfil"), {
             headers: { Authorization: `Bearer ${token}` },
         });
     } catch {
@@ -211,4 +213,174 @@ export async function obtenerMiSuscripcion(
     if (!res.ok) return null;
 
     return res.json() as Promise<Suscripcion>;
+}
+
+// ─── Nuevos tipos ──────────────────────────────────────────────────────────────
+
+export interface TicketUsuario {
+    id: number;
+    asunto: string;
+    estado: "abierto" | "respondido" | "cerrado";
+    prioridad: string;
+    respuesta: string | null;
+    created_at: string;
+    respondido_en: string | null;
+}
+
+export interface Beneficiario {
+    id: number;
+    nombre: string;
+    apellido: string;
+    dni: string;
+    fecha_nacimiento: string;
+    relacion: string;
+}
+
+// ─── Planes filtrados para usuarios (sin corporativo) ─────────────────────────
+
+/**
+ * GET /planes?tipo=personal — solo planes personal y familiar
+ */
+export async function obtenerPlanesUsuario(): Promise<Plan[]> {
+    try {
+        const res = await fetch(getApiUrl("/planes?tipo=personal"));
+        if (!res.ok) return [];
+        return res.json() as Promise<Plan[]>;
+    } catch {
+        return [];
+    }
+}
+
+// ─── Tickets del usuario ──────────────────────────────────────────────────────
+
+/**
+ * GET /soporte/mis-tickets
+ * Requiere token Bearer.
+ */
+export async function obtenerMisTickets(token: string): Promise<TicketUsuario[]> {
+    let res: Response;
+    try {
+        res = await fetch(getApiUrl("/soporte/mis-tickets"), {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+    } catch {
+        return [];
+    }
+    if (res.status === 401) throw new ApiError("Sesión expirada. Iniciá sesión nuevamente", "UNAUTHORIZED");
+    if (!res.ok) return [];
+    return res.json() as Promise<TicketUsuario[]>;
+}
+
+/**
+ * POST /soporte/tickets
+ * Requiere token Bearer.
+ */
+export async function crearTicket(token: string, asunto: string, mensaje: string): Promise<TicketUsuario> {
+    let res: Response;
+    try {
+        res = await fetch(getApiUrl("/soporte/tickets"), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ asunto, mensaje }),
+        });
+    } catch {
+        throw new Error("Error de conexión al crear el ticket");
+    }
+    if (res.status === 401) throw new ApiError("Sesión expirada. Iniciá sesión nuevamente", "UNAUTHORIZED");
+    if (!res.ok) throw new Error("No se pudo crear el ticket");
+    return res.json() as Promise<TicketUsuario>;
+}
+
+// ─── Beneficiarios ────────────────────────────────────────────────────────────
+
+/**
+ * GET /beneficiarios
+ * Requiere token Bearer.
+ */
+export async function obtenerBeneficiarios(token: string): Promise<Beneficiario[]> {
+    let res: Response;
+    try {
+        res = await fetch(getApiUrl("/beneficiarios"), {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+    } catch {
+        return [];
+    }
+    if (res.status === 401) throw new ApiError("Sesión expirada. Iniciá sesión nuevamente", "UNAUTHORIZED");
+    if (!res.ok) return [];
+    return res.json() as Promise<Beneficiario[]>;
+}
+
+/**
+ * POST /beneficiarios
+ * Requiere token Bearer.
+ */
+export async function agregarBeneficiario(
+    token: string,
+    datos: { nombre: string; apellido: string; dni: string; fecha_nacimiento: string; relacion: string }
+): Promise<Beneficiario> {
+    let res: Response;
+    try {
+        res = await fetch(getApiUrl("/beneficiarios"), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(datos),
+        });
+    } catch {
+        throw new Error("Error de conexión al agregar el beneficiario");
+    }
+    if (res.status === 401) throw new ApiError("Sesión expirada. Iniciá sesión nuevamente", "UNAUTHORIZED");
+    if (res.status === 400) throw new Error("Datos inválidos. Verificá los campos ingresados");
+    if (!res.ok) throw new Error("No se pudo agregar el beneficiario");
+    return res.json() as Promise<Beneficiario>;
+}
+
+/**
+ * DELETE /beneficiarios/{id}
+ * Requiere token Bearer.
+ */
+export async function eliminarBeneficiario(token: string, id: number): Promise<void> {
+    let res: Response;
+    try {
+        res = await fetch(getApiUrl(`/beneficiarios/${id}`), {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+        });
+    } catch {
+        throw new Error("Error de conexión al eliminar el beneficiario");
+    }
+    if (res.status === 401) throw new ApiError("Sesión expirada. Iniciá sesión nuevamente", "UNAUTHORIZED");
+    if (!res.ok) throw new Error("No se pudo eliminar el beneficiario");
+}
+
+// ─── Editar perfil ────────────────────────────────────────────────────────────
+
+/**
+ * PUT /usuarios/me
+ * Requiere token Bearer.
+ */
+export async function editarPerfil(token: string, datos: Partial<MiPerfil>): Promise<MiPerfil> {
+    let res: Response;
+    try {
+        res = await fetch(getApiUrl("/usuarios/me"), {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(datos),
+        });
+    } catch {
+        throw new Error("Error de conexión al guardar los cambios");
+    }
+    if (res.status === 401) throw new ApiError("Sesión expirada. Iniciá sesión nuevamente", "UNAUTHORIZED");
+    if (res.status === 400) throw new Error("Datos inválidos. Verificá los campos ingresados");
+    if (!res.ok) throw new Error("No se pudo actualizar el perfil");
+    return res.json() as Promise<MiPerfil>;
 }
