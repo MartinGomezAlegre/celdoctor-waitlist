@@ -10,6 +10,7 @@ import type { Section, Toast, ToastType, Alerta, MetricasEmpresas } from "./type
 import { API, authHeaders } from "./lib"
 import { adminEndpoints } from "./admin-endpoints"
 import { clearSessionCookie } from "@/lib/session-cookie"
+import { useLocalStorageValue } from "@/lib/use-local-storage-value"
 import SectionOverview from "./components/SectionOverview"
 import SectionPersonas from "./components/SectionPersonas"
 import SectionEmpresas from "./components/SectionEmpresas"
@@ -104,12 +105,13 @@ export default function AdminDashboardPage() {
     const [metricasEmpresas, setMetricasEmpresas] = useState<MetricasEmpresas | null>(null)
     const [ticketsAbiertos, setTicketsAbiertos] = useState(0)
     const [leadsNuevos, setLeadsNuevos] = useState(0)
-
-    const token = typeof window !== "undefined"
-        ? localStorage.getItem("celdoctor_admin_token")
-        : null
+    const [token, setToken, tokenHydrated] = useLocalStorageValue("celdoctor_admin_token")
 
     useEffect(() => {
+        if (!tokenHydrated) {
+            return
+        }
+
         if (!token) {
             router.replace("/admin")
             return
@@ -134,7 +136,7 @@ export default function AdminDashboardPage() {
             .then((r) => r.json())
             .then((d: unknown) => setLeadsNuevos(Array.isArray(d) ? (d as unknown[]).length : 0))
             .catch(() => null)
-    }, [router, token])
+    }, [router, token, tokenHydrated])
 
     function addToast(msg: string, type: ToastType) {
         const id = Date.now()
@@ -145,6 +147,7 @@ export default function AdminDashboardPage() {
     function logout() {
         localStorage.removeItem("celdoctor_admin_token")
         clearSessionCookie("celdoctor_admin_token")
+        setToken(null)
         router.replace("/admin")
     }
 
@@ -153,7 +156,7 @@ export default function AdminDashboardPage() {
         setSidebarAbierto(false)
     }
 
-    if (!token) {
+    if (!tokenHydrated || !token) {
         return (
             <div className="min-h-screen bg-slate-100 flex items-center justify-center">
                 <div className="w-8 h-8 border-4 border-[#4C1D95]/20 border-t-[#4C1D95] rounded-full animate-spin" />

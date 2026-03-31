@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { obtenerPlanes, type Plan } from "@/lib/api";
+import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 
 // ─── Fallback hardcodeado (se usa si la API no responde) ──────────────────────
 const FALLBACK_PLANES: Plan[] = [
@@ -163,10 +164,7 @@ function PlanCard({
 export default function PlansSection() {
     const [planes, setPlanes] = useState<Plan[]>([]);
     const [cargando, setCargando] = useState(true);
-    const [token] = useState<string | null>(() => {
-        if (typeof window === "undefined") return null;
-        return localStorage.getItem("celdoctor_token");
-    });
+    const [token] = useLocalStorageValue("celdoctor_token");
 
     useEffect(() => {
         obtenerPlanes().then((data) => {

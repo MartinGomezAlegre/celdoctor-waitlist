@@ -4,6 +4,20 @@ export function getApiUrl(path: string): string {
     return `${BASE_URL}${path}`;
 }
 
+async function getErrorDetail(res: Response, fallback: string): Promise<string> {
+    try {
+        const data = await res.json() as { detail?: unknown };
+
+        if (typeof data.detail === "string" && data.detail.trim()) {
+            return data.detail;
+        }
+    } catch {
+        // Ignorado: usamos el fallback
+    }
+
+    return fallback;
+}
+
 // Error tipado para que los componentes puedan distinguir causas
 export class ApiError extends Error {
     constructor(
@@ -290,7 +304,7 @@ export async function crearTicket(token: string, asunto: string, mensaje: string
         throw new Error("Error de conexión al crear el ticket");
     }
     if (res.status === 401) throw new ApiError("Sesión expirada. Iniciá sesión nuevamente", "UNAUTHORIZED");
-    if (!res.ok) throw new Error("No se pudo crear el ticket");
+    if (!res.ok) throw new Error(await getErrorDetail(res, "No se pudo crear el ticket"));
     return res.json() as Promise<TicketUsuario>;
 }
 

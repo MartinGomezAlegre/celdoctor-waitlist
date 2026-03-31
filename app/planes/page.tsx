@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2, Users, Building2, User } from "lucide-react";
 import { obtenerPlanes, obtenerPlanesUsuario, type Plan } from "@/lib/api";
+import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 
 // ─── Beneficios por tipo ───────────────────────────────────────────────────────
 const BENEFICIOS_PERSONAL = [
@@ -150,19 +151,20 @@ const TABS: { id: TabId; label: string }[] = [
 export default function PlanesPage() {
     const [tab, setTab] = useState<TabId>("personal");
     const [planes, setPlanes] = useState<Plan[]>([]);
-    const [token] = useState<string | null>(() => {
-        if (typeof window === "undefined") return null;
-        return localStorage.getItem("celdoctor_token");
-    });
+    const [token, , tokenHydrated] = useLocalStorageValue("celdoctor_token");
     const [cargando, setCargando] = useState(true);
 
     useEffect(() => {
+        if (!tokenHydrated) {
+            return;
+        }
+
         const fetchPlanes = token ? obtenerPlanesUsuario() : obtenerPlanes();
         fetchPlanes.then((data) => {
             setPlanes(data.length > 0 ? data : FALLBACK_PLANES);
             setCargando(false);
         });
-    }, [token]);
+    }, [token, tokenHydrated]);
 
     const planesPersonal = planes.filter((p) => {
         const n = p.nombre.toLowerCase();

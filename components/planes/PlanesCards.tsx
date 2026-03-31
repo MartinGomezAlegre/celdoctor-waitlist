@@ -6,12 +6,10 @@ import { motion } from "framer-motion";
 import { CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import { planBasic, planPremium } from "./planes.data";
 import { obtenerPlanes, type Plan } from "@/lib/api";
+import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 
 export default function PlanesCards() {
-    const [token] = useState<string | null>(() => {
-        if (typeof window === "undefined") return null;
-        return localStorage.getItem("celdoctor_token");
-    });
+    const [token] = useLocalStorageValue("celdoctor_token");
     // IDs reales de la API para armar el href de checkout
     const [planesApi, setPlanesApi] = useState<Plan[]>([]);
 

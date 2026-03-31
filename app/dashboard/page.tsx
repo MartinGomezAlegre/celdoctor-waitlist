@@ -22,6 +22,7 @@ import {
     type Plan,
 } from "@/lib/api";
 import { clearSessionCookie } from "@/lib/session-cookie";
+import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -304,10 +305,33 @@ function SoporteCard({ token }: { token: string }) {
 
     async function handleCrearTicket(e: React.FormEvent) {
         e.preventDefault();
+        const asuntoNormalizado = asunto.trim();
+        const mensajeNormalizado = mensaje.trim();
+
+        if (asuntoNormalizado.length < 5) {
+            setErrorEnvio("El asunto debe tener al menos 5 caracteres");
+            return;
+        }
+
+        if (asuntoNormalizado.length > 200) {
+            setErrorEnvio("El asunto no puede superar los 200 caracteres");
+            return;
+        }
+
+        if (mensajeNormalizado.length < 10) {
+            setErrorEnvio("El mensaje debe tener al menos 10 caracteres");
+            return;
+        }
+
+        if (mensajeNormalizado.length > 2000) {
+            setErrorEnvio("El mensaje no puede superar los 2000 caracteres");
+            return;
+        }
+
         setErrorEnvio(null);
         setEnviando(true);
         try {
-            const nuevo = await crearTicket(token, asunto, mensaje);
+            const nuevo = await crearTicket(token, asuntoNormalizado, mensajeNormalizado);
             setTickets((prev) => [nuevo, ...prev]);
             setModalNuevo(false);
             setAsunto("");
@@ -367,13 +391,13 @@ function SoporteCard({ token }: { token: string }) {
                 <form onSubmit={handleCrearTicket} className="space-y-4">
                     <div>
                         <label className="block text-xs font-medium text-slate-700 mb-1">Asunto *</label>
-                        <input required value={asunto} onChange={(e) => setAsunto(e.target.value)}
+                        <input required minLength={5} maxLength={200} value={asunto} onChange={(e) => setAsunto(e.target.value)}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]"
                             placeholder="¿En qué podemos ayudarte?" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-slate-700 mb-1">Mensaje *</label>
-                        <textarea required rows={4} value={mensaje} onChange={(e) => setMensaje(e.target.value)}
+                        <textarea required minLength={10} maxLength={2000} rows={4} value={mensaje} onChange={(e) => setMensaje(e.target.value)}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]"
                             placeholder="Describí tu consulta..." />
                     </div>
@@ -501,19 +525,17 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
 export default function DashboardPage() {
     const router = useRouter();
 
-    const [token, setToken] = useState<string | null>(() => {
-        if (typeof window === "undefined") return null;
-        return localStorage.getItem("celdoctor_token");
-    });
+    const [token, setToken, tokenHydrated] = useLocalStorageValue("celdoctor_token");
     const [suscripcion, setSuscripcion] = useState<Suscripcion | null | undefined>(undefined);
     const [perfil, setPerfil] = useState<MiPerfil | null>(null);
     const [planes, setPlanes] = useState<Plan[]>([]);
-    const [nombreFallback] = useState(() => {
-        if (typeof window === "undefined") return "";
-        return localStorage.getItem("celdoctor_nombre") ?? "";
-    });
+    const [nombreFallback, setNombreFallback] = useLocalStorageValue("celdoctor_nombre", "");
 
     useEffect(() => {
+        if (!tokenHydrated) {
+            return;
+        }
+
         if (!token) {
             router.replace("/login");
             return;
@@ -536,15 +558,16 @@ export default function DashboardPage() {
                     localStorage.removeItem("celdoctor_email");
                     clearSessionCookie("celdoctor_token");
                     setToken(null);
+                    setNombreFallback("");
                     router.replace("/login?expired=1");
                 } else {
                     setSuscripcion(null);
                 }
             });
-    }, [router, token]);
+    }, [router, setNombreFallback, setToken, token, tokenHydrated]);
 
-    const cargando = suscripcion === undefined;
-    const nombre = perfil?.nombre ?? nombreFallback;
+    const cargando = !tokenHydrated || suscripcion === undefined;
+    const nombre = perfil?.nombre ?? nombreFallback ?? "";
     const nombrePlan = suscripcion?.nombre_plan ?? (suscripcion ? `Plan #${suscripcion.plan_id}` : "");
 
     const diasRestantes = suscripcion?.fecha_vencimiento ? diasHasta(suscripcion.fecha_vencimiento) : null;
@@ -557,6 +580,14 @@ export default function DashboardPage() {
 
     const precioMaxPlan = planes.length > 0 ? Math.max(...planes.map((p) => p.precio_mensual)) : 0;
     const esElMasCaro = suscripcion ? suscripcion.precio_pagado >= precioMaxPlan : false;
+
+    if (!tokenHydrated) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center px-6">
+                <div className="w-8 h-8 border-4 border-[#4C1D95]/20 border-t-[#4C1D95] rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     if (!token) {
         return (
