@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, Clock } from "lucide-react";
-import { obtenerPlanes, contratarPlan, ApiError, type Plan } from "@/lib/api";
+import { obtenerPlanes, contratarPlan, getMiPerfil, ApiError, type Plan } from "@/lib/api";
 
 // ─── Beneficios helper ────────────────────────────────────────────────────────
 const BENEFICIOS: Record<string, string[]> = {
@@ -150,7 +150,18 @@ export default function CheckoutPage() {
         }
         setToken(storedToken);
         setNombre(localStorage.getItem("celdoctor_nombre") ?? "");
-        setEmail(localStorage.getItem("celdoctor_email") ?? "");
+        const storedEmail = localStorage.getItem("celdoctor_email") ?? "";
+        setEmail(storedEmail);
+
+        if (!storedEmail) {
+            getMiPerfil(storedToken)
+                .then((perfil) => {
+                    if (!perfil?.email) return;
+                    localStorage.setItem("celdoctor_email", perfil.email);
+                    setEmail(perfil.email);
+                })
+                .catch(() => null);
+        }
 
         obtenerPlanes().then((planes) => {
             const found = planes.find((p) => p.id === planIdParam);

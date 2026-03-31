@@ -21,6 +21,7 @@ import {
     type TicketUsuario,
     type Plan,
 } from "@/lib/api";
+import { clearSessionCookie } from "@/lib/session-cookie";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -500,21 +501,27 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
 export default function DashboardPage() {
     const router = useRouter();
 
-    const [token, setToken] = useState<string | null>(null);
+    const [token, setToken] = useState<string | null>(() => {
+        if (typeof window === "undefined") return null;
+        return localStorage.getItem("celdoctor_token");
+    });
     const [suscripcion, setSuscripcion] = useState<Suscripcion | null | undefined>(undefined);
     const [perfil, setPerfil] = useState<MiPerfil | null>(null);
     const [planes, setPlanes] = useState<Plan[]>([]);
-    const [nombreFallback, setNombreFallback] = useState("");
+    const [nombreFallback] = useState(() => {
+        if (typeof window === "undefined") return "";
+        return localStorage.getItem("celdoctor_nombre") ?? "";
+    });
 
     useEffect(() => {
-        const t = localStorage.getItem("celdoctor_token");
-        setNombreFallback(localStorage.getItem("celdoctor_nombre") ?? "");
-        if (!t) { router.replace("/login"); return; }
-        setToken(t);
+        if (!token) {
+            router.replace("/login");
+            return;
+        }
 
         Promise.all([
-            obtenerMiSuscripcion(t),
-            getMiPerfil(t),
+            obtenerMiSuscripcion(token),
+            getMiPerfil(token),
             obtenerPlanesUsuario(),
         ])
             .then(([sus, prof, pl]) => {
@@ -526,12 +533,15 @@ export default function DashboardPage() {
                 if (err instanceof ApiError && err.code === "UNAUTHORIZED") {
                     localStorage.removeItem("celdoctor_token");
                     localStorage.removeItem("celdoctor_nombre");
+                    localStorage.removeItem("celdoctor_email");
+                    clearSessionCookie("celdoctor_token");
+                    setToken(null);
                     router.replace("/login?expired=1");
                 } else {
                     setSuscripcion(null);
                 }
             });
-    }, [router]);
+    }, [router, token]);
 
     const cargando = suscripcion === undefined;
     const nombre = perfil?.nombre ?? nombreFallback;
@@ -548,7 +558,15 @@ export default function DashboardPage() {
     const precioMaxPlan = planes.length > 0 ? Math.max(...planes.map((p) => p.precio_mensual)) : 0;
     const esElMasCaro = suscripcion ? suscripcion.precio_pagado >= precioMaxPlan : false;
 
-    if (!token) return null;
+    if (!token) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center px-6">
+                <div className="text-center">
+                    <p className="text-sm font-medium text-slate-600">Redirigiendo a inicio de sesión…</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50">

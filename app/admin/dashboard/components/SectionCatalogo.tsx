@@ -188,7 +188,7 @@ function SubCupones({ token, addToast }: Props) {
     const fetchCupones = useCallback(async () => {
         setLoading(true)
         try {
-            const r = await fetch(`${API}/admin/cupones`, { headers: authHeaders(token) })
+            const r = await fetch(`${API}/admin/catalogo/cupones`, { headers: authHeaders(token) })
             const d: unknown = await r.json()
             setCupones(Array.isArray(d) ? (d as Cupon[]) : [])
         } catch {
@@ -202,7 +202,7 @@ function SubCupones({ token, addToast }: Props) {
 
     async function toggleActivo(cupon: Cupon) {
         try {
-            const res = await fetch(`${API}/admin/cupones/${cupon.id}`, {
+            const res = await fetch(`${API}/admin/catalogo/cupones/${cupon.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json", ...authHeaders(token) },
                 body: JSON.stringify({ activo: !cupon.activo }),
@@ -221,7 +221,7 @@ function SubCupones({ token, addToast }: Props) {
         if (!form.codigo || !form.valor) return
         setGuardando(true)
         try {
-            const res = await fetch(`${API}/admin/cupones`, {
+            const res = await fetch(`${API}/admin/catalogo/cupones`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", ...authHeaders(token) },
                 body: JSON.stringify({

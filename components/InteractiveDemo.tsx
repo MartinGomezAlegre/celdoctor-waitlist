@@ -93,13 +93,8 @@ function PhoneScreenRenderer({
 // ============================================================
 export default function InteractiveDemo() {
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [callDuration, setCallDuration] = useState(0);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Bloquear scroll cuando el modal está abierto
   useEffect(() => {
@@ -118,8 +113,6 @@ export default function InteractiveDemo() {
     let interval: ReturnType<typeof setInterval> | undefined;
     if (tourSteps[currentStep].screen === "video") {
       interval = setInterval(() => setCallDuration((p) => p + 1), 1000);
-    } else {
-      setCallDuration(0);
     }
     return () => {
       if (interval) clearInterval(interval);
@@ -127,31 +120,39 @@ export default function InteractiveDemo() {
   }, [currentStep]);
 
   const nextStep = useCallback(() => {
-    if (currentStep < tourSteps.length - 1) setCurrentStep((c) => c + 1);
+    if (currentStep < tourSteps.length - 1) {
+      setCallDuration(0);
+      setCurrentStep((c) => c + 1);
+    }
   }, [currentStep]);
 
   const prevStep = useCallback(() => {
-    if (currentStep > 0) setCurrentStep((c) => c - 1);
+    if (currentStep > 0) {
+      setCallDuration(0);
+      setCurrentStep((c) => c - 1);
+    }
   }, [currentStep]);
 
   const navigatePhone = useCallback((screenName: string) => {
     const stepIndex = tourSteps.findIndex((s) => s.screen === screenName);
     if (stepIndex !== -1) {
+      setCallDuration(0);
       setCurrentStep(stepIndex);
     }
   }, []);
 
-  // FIX CRÍTICO: El check de `mounted` debe estar ANTES del createPortal
-  // para evitar errores de hidratación y referencia a `document` en SSR.
-  if (!mounted) return null;
-
   const currentScreen = tourSteps[currentStep].screen;
+  const canUsePortal = typeof document !== "undefined";
 
   return (
     <>
       {/* Botón que abre el modal */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setCallDuration(0);
+          setCurrentStep(0);
+          setIsOpen(true);
+        }}
         className="group relative flex items-center gap-3 px-6 py-2.5 rounded-full bg-white border border-slate-200 shadow-sm hover:border-[#7C3AED]/50 hover:shadow-md transition-all active:scale-95"
       >
         <div className="w-8 h-8 rounded-full bg-[#7C3AED]/10 flex items-center justify-center text-[#7C3AED] group-hover:scale-110 transition-transform">
@@ -168,10 +169,11 @@ export default function InteractiveDemo() {
       </button>
 
       {/* Modal via Portal */}
-      {createPortal(
-        <AnimatePresence>
-          {isOpen && (
-            <div className="fixed inset-0 z-99999 flex items-center justify-center font-sans">
+      {canUsePortal
+        ? createPortal(
+            <AnimatePresence>
+              {isOpen && (
+                <div className="fixed inset-0 z-99999 flex items-center justify-center font-sans">
               {/* Backdrop */}
               <motion.div
                 initial={{ opacity: 0 }}
@@ -284,11 +286,12 @@ export default function InteractiveDemo() {
                   </div>
                 </div>
               </motion.div>
-            </div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
+                </div>
+              )}
+            </AnimatePresence>,
+            document.body
+          )
+        : null}
     </>
   );
 }

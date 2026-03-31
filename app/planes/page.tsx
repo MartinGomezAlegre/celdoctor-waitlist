@@ -150,18 +150,19 @@ const TABS: { id: TabId; label: string }[] = [
 export default function PlanesPage() {
     const [tab, setTab] = useState<TabId>("personal");
     const [planes, setPlanes] = useState<Plan[]>([]);
-    const [token, setToken] = useState<string | null>(null);
+    const [token] = useState<string | null>(() => {
+        if (typeof window === "undefined") return null;
+        return localStorage.getItem("celdoctor_token");
+    });
     const [cargando, setCargando] = useState(true);
 
     useEffect(() => {
-        const t = localStorage.getItem("celdoctor_token");
-        setToken(t);
-        const fetchPlanes = t ? obtenerPlanesUsuario() : obtenerPlanes();
+        const fetchPlanes = token ? obtenerPlanesUsuario() : obtenerPlanes();
         fetchPlanes.then((data) => {
             setPlanes(data.length > 0 ? data : FALLBACK_PLANES);
             setCargando(false);
         });
-    }, []);
+    }, [token]);
 
     const planesPersonal = planes.filter((p) => {
         const n = p.nombre.toLowerCase();

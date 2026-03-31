@@ -103,7 +103,7 @@ export default function SectionSoporte({ token, addToast }: Props) {
         if (!ticketSeleccionado) return
         setCerrando(true)
         try {
-            const res = await fetch(`${API}/admin/soporte/tickets/${ticketSeleccionado.id}/responder`, {
+            const res = await fetch(`${API}/admin/soporte/tickets/${ticketSeleccionado.id}/estado`, {
                 method: "PUT",
                 headers: { ...authHeaders(token), "Content-Type": "application/json" },
                 body: JSON.stringify({ estado: "cerrado" }),

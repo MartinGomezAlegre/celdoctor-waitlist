@@ -1,12 +1,9 @@
 ﻿import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google"; // Usamos la fuente optimizada de Google
 import { headers } from "next/headers";
 import "./globals.css";
 import JsonLd from "@/components/JsonLd";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-// Fuente optimizada (evita saltos de diseño/Layout Shift)
-const inter = Inter({ subsets: ["latin"] });
 
 // URL de tu sitio real (Cuando lo subas a Vercel, poné tu dominio acá)
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://celdoctor.com";
@@ -100,7 +97,7 @@ export default async function RootLayout({
 
   return (
     <html lang="es" className="scroll-smooth scroll-pt-24 antialiased">
-      <body className={inter.className}>
+      <body>
         <div className="min-h-screen flex flex-col font-sans text-slate-900 bg-white selection:bg-[#4C1D95]/30">
           <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-[#4C1D95] focus:text-white focus:rounded-xl focus:font-bold focus:shadow-lg">
             Saltar al contenido

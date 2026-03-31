@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { login } from "@/lib/api";
+import { setSessionCookie } from "@/lib/session-cookie";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -26,6 +27,8 @@ export default function LoginPage() {
             const data = await login(email, contrasenia);
             localStorage.setItem("celdoctor_token", data.access_token);
             localStorage.setItem("celdoctor_nombre", data.usuario.nombre);
+            localStorage.setItem("celdoctor_email", data.usuario.email);
+            setSessionCookie("celdoctor_token", data.access_token);
             router.push("/dashboard");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Error de conexión");

@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import {
-    Phone, Headphones, Stethoscope, Smartphone,
+    Phone, Headphones, Stethoscope,
     Clock, Shield, MapPin, Star, ChevronLeft, ChevronRight,
     Sparkles, Video, Zap, HeartPulse,
 } from "lucide-react";
@@ -66,13 +67,13 @@ export default function UrgenciasContent() {
                             </p>
 
                             <div className="flex flex-wrap gap-4">
-                                <a
+                                <Link
                                     href="/#waitlist"
                                     className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#2E1065] rounded-2xl font-bold text-base hover:bg-slate-100 transition-all shadow-lg hover:-translate-y-1 active:scale-95"
                                 >
                                     <Phone size={20} />
                                     Contactar urgencias
-                                </a>
+                                </Link>
                             </div>
                         </motion.div>
 
@@ -236,13 +237,13 @@ export default function UrgenciasContent() {
                                 })}
                             </div>
 
-                            <a
+                            <Link
                                 href="/#waitlist"
                                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#4C1D95] text-white font-bold text-sm hover:bg-[#3b1675] transition-all shadow-lg shadow-[#4C1D95]/20 hover:-translate-y-0.5 active:scale-95"
                             >
                                 <Video size={16} />
                                 Iniciar llamada
-                            </a>
+                            </Link>
                         </motion.div>
                     </div>
                 </div>

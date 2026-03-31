@@ -23,7 +23,7 @@ export default function TerminosPage() {
                     </h2>
                     <p>
                         Los presentes Términos y Condiciones regulan el uso de los servicios ofrecidos por{" "}
-                        <strong>CelDoctor Argentina S.A.</strong> (CUIT a definir, en adelante "CelDoctor") a través
+                        <strong>CelDoctor Argentina S.A.</strong> (CUIT a definir, en adelante &quot;CelDoctor&quot;) a través
                         de su plataforma web y aplicación móvil. Al crear una cuenta o utilizar el servicio, el
                         usuario acepta estos términos en su totalidad.
                     </p>

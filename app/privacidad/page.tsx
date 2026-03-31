@@ -22,7 +22,7 @@ export default function PrivacidadPage() {
                         1. Responsable del tratamiento
                     </h2>
                     <p>
-                        <strong>CelDoctor Argentina S.A.</strong> (en adelante "CelDoctor", "nosotros" o "la Empresa"),
+                        <strong>CelDoctor Argentina S.A.</strong> (en adelante &quot;CelDoctor&quot;, &quot;nosotros&quot; o &quot;la Empresa&quot;),
                         con domicilio en la República Argentina, es el responsable del tratamiento de los datos personales
                         recopilados a través de la plataforma accesible en{" "}
                         <a href="https://celdoctor.com" className="text-[#4C1D95] underline">

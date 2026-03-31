@@ -19,11 +19,17 @@ async function proxy(req: NextRequest, ctx: Context) {
         ? undefined
         : await req.text()
 
-    const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
+    const headers = new Headers()
+    const contentType = req.headers.get('Content-Type')
+    const accept = req.headers.get('Accept')
+
+    if (body !== undefined) {
+        headers.set('Content-Type', contentType ?? 'application/json')
     }
+    if (accept) headers.set('Accept', accept)
+
     const auth = req.headers.get('Authorization')
-    if (auth) headers['Authorization'] = auth
+    if (auth) headers.set('Authorization', auth)
 
     const res = await fetch(url, {
         method: req.method,
@@ -36,10 +42,24 @@ async function proxy(req: NextRequest, ctx: Context) {
         return NextResponse.json({ detail: 'Backend no disponible' }, { status: 503 })
     }
 
-    const text = await res.text()
-    return new NextResponse(text, {
+    // Preservar el body binario sin convertir a texto
+    const bytes = await res.arrayBuffer()
+    const outHeaders = new Headers()
+    for (const [key, value] of res.headers.entries()) {
+        const normalizedKey = key.toLowerCase()
+        if (
+            normalizedKey === 'content-length' ||
+            normalizedKey === 'transfer-encoding' ||
+            normalizedKey === 'connection'
+        ) {
+            continue
+        }
+        outHeaders.set(key, value)
+    }
+
+    return new NextResponse(bytes, {
         status: res.status,
-        headers: { 'Content-Type': res.headers.get('Content-Type') ?? 'application/json' },
+        headers: outHeaders,
     })
 }
 

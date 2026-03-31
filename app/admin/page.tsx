@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
+import { setSessionCookie } from "@/lib/session-cookie";
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -22,6 +23,7 @@ export default function AdminLoginPage() {
                 return;
             }
             localStorage.setItem("celdoctor_admin_token", res.access_token);
+            setSessionCookie("celdoctor_admin_token", res.access_token);
             router.push("/admin/dashboard");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Error de conexión");

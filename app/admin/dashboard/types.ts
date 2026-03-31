@@ -15,7 +15,7 @@ export interface DashboardMetrics {
 }
 
 export interface MetricasEmpresas {
-    empresas_activas: number; empleados_activos: number; mrr_empresarial: number;
+    total_empresas?: number; empresas_activas: number; total_empleados_activos: number; mrr_empresarial: number;
     empresas_vencen_esta_semana: number; empresas_pendiente_pago: number;
 }
 
@@ -72,14 +72,35 @@ export interface ResumenFacturacion {
 }
 
 export interface ReporteMensual {
-    mrr: number; mrr_anterior: number; nuevas_suscripciones: number; nuevas_suscripciones_anterior: number;
-    cancelaciones: number; cancelaciones_anterior: number; nuevos_usuarios: number;
-    nuevos_usuarios_anterior: number; empresas_nuevas: number; empresas_nuevas_anterior: number;
-    top_plan: { nombre: string; revenue: number; suscriptores: number } | null;
+    mes: string;
+    mrr: number;
+    mrr_mes_anterior: number;
+    variacion_mrr: number;
+    nuevas_suscripciones: number;
+    nuevas_mes_anterior: number;
+    variacion_nuevas: number;
+    cancelaciones: number;
+    cancelaciones_mes_anterior: number;
+    variacion_cancelaciones: number;
+    nuevos_usuarios: number;
+    empresas_nuevas: number;
+    top_plan: string | null;
 }
 
-export interface MetricasEmbudo { registrados: number; iniciaron_checkout: number; completaron_pago: number }
-export interface MetricasRetencion { mes: string; nuevos: number; retencion: number; porcentaje: number }
+export interface MetricasEmbudo {
+    visitantes_registrados: number;
+    iniciaron_checkout: number;
+    completaron_pago: number;
+    tasa_registro_a_checkout: number;
+    tasa_checkout_a_pago: number;
+}
+
+export interface MetricasRetencion {
+    mes: string;
+    nuevos: number;
+    activos_al_mes_siguiente: number;
+    tasa_retencion: number;
+}
 
 export const EMPRESA_FORM_VACIO = {
     razon_social: "", cuit: "", nombre_comercial: "", rubro: "",

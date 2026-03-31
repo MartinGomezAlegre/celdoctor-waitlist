@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ChevronDown } from "lucide-react";
-import type { Metadata } from "next";
 
 // Note: metadata must be in a server component; using a wrapper layout or
 // the page is client-only so we declare it inline as a constant for reference.

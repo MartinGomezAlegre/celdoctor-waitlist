@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import {
     Users, CheckCircle2, Heart, Baby, Stethoscope,
-    Sparkles, ArrowRight, Shield,
+    ArrowRight, Shield,
 } from "lucide-react";
 
 /* ══════════════════════════════════════════

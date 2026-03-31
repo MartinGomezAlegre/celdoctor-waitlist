@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Sparkles, Video } from "lucide-react";
 
@@ -26,13 +27,13 @@ export default function VideollamadaHero() {
                             Consultá con un profesional médico certificado por videollamada HD, desde cualquier lugar y en cualquier momento. Sin esperas, sin traslados.
                         </p>
 
-                        <a
+                        <Link
                             href="/#waitlist"
                             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#2E1065] rounded-2xl font-bold text-base hover:bg-slate-100 transition-all shadow-lg hover:-translate-y-1 active:scale-95"
                         >
                             <Video size={20} />
                             Iniciar consulta
-                        </a>
+                        </Link>
                     </motion.div>
 
                     {/* Right — App Interface Placeholder */}

@@ -17,7 +17,25 @@ export function useEmpresas(token: string) {
             .finally(() => setLoading(false))
     }, [token])
 
-    useEffect(() => { fetchEmpresas() }, [fetchEmpresas])
+    useEffect(() => {
+        let cancelled = false
+
+        fetch(`${API}/admin/empresas`, { headers: authHeaders(token) })
+            .then((r) => r.json())
+            .then((d: unknown) => {
+                if (!cancelled) setEmpresas(Array.isArray(d) ? (d as Empresa[]) : [])
+            })
+            .catch(() => {
+                if (!cancelled) setError(true)
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false)
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [token])
 
     return { empresas, loading, error, refetch: fetchEmpresas }
 }

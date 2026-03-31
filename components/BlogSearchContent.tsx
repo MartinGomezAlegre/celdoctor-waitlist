@@ -2,8 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Search, BookOpen, ArrowRight, Clock, Tag } from "lucide-react";
-import Link from "next/link";
+import { Search, BookOpen, Clock } from "lucide-react";
 
 const articles = [
     { id: 1, title: "5 beneficios de la telemedicina que no conocías", category: "Salud Digital", date: "Próximamente", readTime: "4 min", featured: true },

@@ -1,9 +1,10 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Plus, Download, Upload } from "lucide-react"
 import type { Empresa, EmpleadoEmpresa, EmpleadoForm, ToastType } from "../../types"
 import { EMPLEADO_FORM_VACIO } from "../../types"
 import { API, authHeaders, fmtDate } from "../../lib"
+import { adminEndpoints } from "../../admin-endpoints"
 import { Skeleton } from "../shared/Skeleton"
 import { ActiveDot } from "../shared/StatBadge"
 import { ConfirmModal, Modal } from "../shared/Modal"
@@ -25,16 +26,13 @@ export function TabEmpleados({ empresa, token, addToast }: Props) {
     const [procesando, setProcesando] = useState(false)
     const [exportando, setExportando] = useState(false)
 
-    // Fetch on mount (component only mounts when tab is active)
-    useEffect(() => { fetchEmpleados() }, [fetchEmpleados])
-
     const hoy = new Date().toISOString().split("T")[0]
     const empleadosActivos = empleados.filter((e) => e.activo).length
 
     async function agregarEmpleado() {
         setProcesando(true)
         try {
-            const res = await fetch(`${API}/admin/empresas/${empresa.id}/empleados`, {
+            const res = await fetch(`${API}${adminEndpoints.empresaEmpleados(empresa.id)}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", ...authHeaders(token) },
                 body: JSON.stringify(empleadoForm),
@@ -53,7 +51,7 @@ export function TabEmpleados({ empresa, token, addToast }: Props) {
 
     async function cambiarEstadoEmpleado(empleado: EmpleadoEmpresa, activo: boolean) {
         try {
-            const res = await fetch(`${API}/admin/empresas/${empresa.id}/empleados/${empleado.id}/estado`, {
+            const res = await fetch(`${API}${adminEndpoints.empleadoEstado(empresa.id, empleado.id)}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json", ...authHeaders(token) },
                 body: JSON.stringify({ activo }),
@@ -83,7 +81,7 @@ export function TabEmpleados({ empresa, token, addToast }: Props) {
     async function exportarEmpleados() {
         setExportando(true)
         try {
-            const res = await fetch(`${API}/admin/empresas/${empresa.id}/exportar-excel`, {
+            const res = await fetch(`${API}${adminEndpoints.empresaExportar(empresa.id)}`, {
                 headers: authHeaders(token),
             })
             if (!res.ok) throw new Error()

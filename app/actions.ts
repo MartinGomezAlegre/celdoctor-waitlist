@@ -92,7 +92,7 @@ async function checkRateLimitUpstash(
     return { allowed: true };
   } catch {
     // Si Upstash falla, denegamos de forma conservadora para no abrir la compuerta
-    return { allowed: true };
+    return { allowed: false, retryAfterMs: RATE_LIMIT_WINDOW_MS };
   }
 }
 
@@ -123,7 +123,7 @@ function checkRateLimitMemory(identifier: string): {
 }
 
 // Limpieza periódica del Map en-memoria
-if (typeof globalThis !== "undefined") {
+if (process.env.NODE_ENV !== "production" && typeof globalThis !== "undefined") {
   setInterval(() => {
     const now = Date.now();
     for (const [key, timestamps] of rateLimitMap.entries()) {

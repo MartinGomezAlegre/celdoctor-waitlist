@@ -8,12 +8,14 @@ import { planBasic, planPremium } from "./planes.data";
 import { obtenerPlanes, type Plan } from "@/lib/api";
 
 export default function PlanesCards() {
-    const [token, setToken] = useState<string | null>(null);
+    const [token] = useState<string | null>(() => {
+        if (typeof window === "undefined") return null;
+        return localStorage.getItem("celdoctor_token");
+    });
     // IDs reales de la API para armar el href de checkout
     const [planesApi, setPlanesApi] = useState<Plan[]>([]);
 
     useEffect(() => {
-        setToken(localStorage.getItem("celdoctor_token"));
         obtenerPlanes().then(setPlanesApi);
     }, []);
 

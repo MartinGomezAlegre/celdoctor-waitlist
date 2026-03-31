@@ -1,15 +1,31 @@
 import type { NextConfig } from "next";
 
+const connectSrc = [
+  "'self'",
+  "https://script.google.com",
+  "https://script.googleusercontent.com",
+  process.env.BACKEND_URL,
+].filter(Boolean);
+
+if (process.env.NODE_ENV !== "production") {
+  connectSrc.push(
+    "http://localhost:8000",
+    "https://localhost:8000",
+    "http://broker-salud-production.up.railway.app",
+    "https://broker-salud-production.up.railway.app"
+  );
+}
+
 const securityHeaders = [
   {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self' data:",
       "img-src 'self' data: https:",
-      "connect-src 'self' https://script.google.com https://script.googleusercontent.com http://localhost:8000 https://localhost:8000 http://broker-salud-production.up.railway.app https://broker-salud-production.up.railway.app",
+      `connect-src ${connectSrc.join(" ")}`,
       "frame-ancestors 'none'",
     ].join("; "),
   },

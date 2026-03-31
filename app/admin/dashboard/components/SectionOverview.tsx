@@ -37,6 +37,7 @@ import {
   tiempoRelativo,
   ESTADO_BADGE,
 } from "../lib";
+import { adminEndpoints } from "../admin-endpoints";
 import { KpiCard } from "./shared/KpiCard";
 import { Skeleton } from "./shared/Skeleton";
 
@@ -80,7 +81,7 @@ export default function SectionOverview({ token, addToast, onNavigate }: Props) 
       .catch(() => setAlertas([]));
 
     // Fetch metricas empresas
-    fetch(`${API}/admin/metricas-empresas`, { headers: authHeaders(token) })
+    fetch(`${API}${adminEndpoints.metricasEmpresas}`, { headers: authHeaders(token) })
       .then((r) => r.json())
       .then((d: MetricasEmpresas) => setMetricasEmpresas(d))
       .catch(() => setMetricasEmpresas(null));
@@ -220,7 +221,7 @@ export default function SectionOverview({ token, addToast, onNavigate }: Props) 
         />
         <KpiCard
           label="Empleados activos"
-          value={metricasEmpresas ? String(metricasEmpresas.empleados_activos) : "—"}
+          value={metricasEmpresas ? String(metricasEmpresas.total_empleados_activos) : "—"}
           Icon={Users}
           color="blue"
           loading={loadingMetrics}

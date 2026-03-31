@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import InteractiveDemo from "./InteractiveDemo";
 import { Menu, X, Play, ChevronDown, LogOut } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { clearSessionCookie } from "@/lib/session-cookie";
 
 /* ─── Estructura de navegación ─── */
 interface NavChild {
@@ -203,21 +204,15 @@ function MobileAccordion({ item, onNavigate }: { item: NavItem; onNavigate: () =
 /* ─── Navbar Principal ─── */
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
-  const [nombre, setNombre] = useState<string | null>(null);
-  const pathname = usePathname();
+  const [token, setToken] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("celdoctor_token");
+  });
+  const [nombre, setNombre] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("celdoctor_nombre");
+  });
   const router = useRouter();
-
-  // Cerrar menú mobile en cambio de ruta
-  useEffect(() => {
-    setIsMenuOpen(false);
-  }, [pathname]);
-
-  // Leer sesión del localStorage (solo en cliente)
-  useEffect(() => {
-    setToken(localStorage.getItem("celdoctor_token"));
-    setNombre(localStorage.getItem("celdoctor_nombre"));
-  }, [pathname]); // re-evaluar al navegar
 
   const closeMenu = useCallback(() => {
     setIsMenuOpen(false);
@@ -226,6 +221,8 @@ export default function Navbar() {
   function handleLogout() {
     localStorage.removeItem("celdoctor_token");
     localStorage.removeItem("celdoctor_nombre");
+    localStorage.removeItem("celdoctor_email");
+    clearSessionCookie("celdoctor_token");
     setToken(null);
     setNombre(null);
     closeMenu();

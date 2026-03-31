@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import { Download, TrendingUp, TrendingDown, CheckCircle, XCircle } from "lucide-react"
 import type { PagoFacturacion, ResumenFacturacion, ToastType } from "../types"
-import { API, authHeaders, fmtCurrency, fmtDate, ESTADO_BADGE } from "../lib"
+import { API, authHeaders, fmtCurrency, fmtDate } from "../lib"
+import { adminEndpoints } from "../admin-endpoints"
 import { KpiCard } from "./shared/KpiCard"
 import { TableSkeleton } from "./shared/Skeleton"
 import { StatBadge } from "./shared/StatBadge"
@@ -23,16 +24,17 @@ export default function SectionFacturacion({ token, addToast }: Props) {
     const [filtroEstado, setFiltroEstado] = useState("")
     const [exporting, setExporting] = useState(false)
     const [showConfirmModal, setShowConfirmModal] = useState(false)
+    const [exportedIds, setExportedIds] = useState<number[]>([])
 
     useEffect(() => {
         setLoading(true)
         const qs = filtroEstado ? `?estado=${filtroEstado}` : ""
         Promise.all([
-            fetch(`${API}/admin/facturacion/pagos${qs}`, { headers: authHeaders(token) })
+            fetch(`${API}${adminEndpoints.pagos}${qs}`, { headers: authHeaders(token) })
                 .then((r) => r.json())
                 .then((d: unknown) => setPagos(Array.isArray(d) ? (d as PagoFacturacion[]) : []))
                 .catch(() => setPagos([])),
-            fetch(`${API}/admin/facturacion/resumen`, { headers: authHeaders(token) })
+            fetch(`${API}${adminEndpoints.resumenFacturacion}`, { headers: authHeaders(token) })
                 .then((r) => r.json())
                 .then((d: ResumenFacturacion) => setResumen(d))
                 .catch(() => setResumen(null)),
@@ -42,8 +44,13 @@ export default function SectionFacturacion({ token, addToast }: Props) {
     async function exportarMediquo() {
         setExporting(true)
         try {
-            const res = await fetch(`${API}/admin/facturacion/exportar-mediquo`, { headers: authHeaders(token) })
+            const res = await fetch(`${API}${adminEndpoints.exportarMediquo}`, { headers: authHeaders(token) })
             if (!res.ok) throw new Error()
+            const headerIds = res.headers.get("x-subscription-ids") ?? ""
+            const parsedIds = headerIds
+                .split(",")
+                .map((id) => Number(id.trim()))
+                .filter((id) => Number.isFinite(id) && id > 0)
             const blob = await res.blob()
             const url = URL.createObjectURL(blob)
             const a = document.createElement("a")
@@ -53,6 +60,7 @@ export default function SectionFacturacion({ token, addToast }: Props) {
             a.click()
             document.body.removeChild(a)
             URL.revokeObjectURL(url)
+            setExportedIds(parsedIds)
             setShowConfirmModal(true)
         } catch {
             addToast("Error al exportar el archivo", "error")
@@ -63,13 +71,19 @@ export default function SectionFacturacion({ token, addToast }: Props) {
 
     async function marcarExportados() {
         setShowConfirmModal(false)
+        if (exportedIds.length === 0) {
+            addToast("No hay suscripciones exportadas para marcar", "warning")
+            return
+        }
+
         try {
-            const res = await fetch(`${API}/admin/facturacion/marcar-exportados`, {
+            const res = await fetch(`${API}${adminEndpoints.marcarExportados}`, {
                 method: "POST",
                 headers: { ...authHeaders(token), "Content-Type": "application/json" },
-                body: JSON.stringify({ suscripcion_ids: [] }),
+                body: JSON.stringify({ suscripcion_ids: exportedIds }),
             })
             if (!res.ok) throw new Error()
+            setExportedIds([])
             addToast("Registros marcados como exportados", "success")
         } catch {
             addToast("Error al marcar los registros", "error")
@@ -217,11 +231,11 @@ export default function SectionFacturacion({ token, addToast }: Props) {
                     <div className="space-y-2">
                         <h2 className="text-lg font-bold text-slate-900">Exportar para Mediquo</h2>
                         <p className="text-sm text-slate-500">
-                            Descargá el listado de suscriptores activos en formato Excel para sincronizar con la plataforma Mediquo.
+                            Descargá el listado de suscripciones pendientes de pago creadas hoy para sincronizar con la plataforma Mediquo.
                         </p>
                     </div>
                     <div className="rounded-xl bg-violet-50 border border-violet-100 px-4 py-3 text-sm text-violet-700">
-                        El archivo incluye nombre, email, DNI y plan de todos los suscriptores con suscripción activa.
+                        El archivo incluye nombre, email, DNI y plan de las altas del día que todavía siguen en estado pendiente de pago.
                     </div>
                     <button
                         onClick={exportarMediquo}
