@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2, Users, Building2, User } from "lucide-react";
-import { obtenerPlanes, obtenerPlanesUsuario, type Plan } from "@/lib/api";
-import { useLocalStorageValue } from "@/lib/use-local-storage-value";
+import { obtenerPlanes, obtenerPlanesUsuario, type Plan, type Suscripcion } from "@/lib/api";
+import { getPlanPurchaseState, isCorporatePlan } from "@/lib/plan-purchase";
+import { useCurrentSubscription } from "@/lib/use-current-subscription";
 
 // ─── Beneficios por tipo ───────────────────────────────────────────────────────
 const BENEFICIOS_PERSONAL = [
@@ -64,15 +65,19 @@ function SkeletonCard() {
 function PlanCard({
     plan,
     token,
+    tokenHydrated,
+    suscripcion,
     destacado,
 }: {
     plan: Plan;
     token: string | null;
+    tokenHydrated: boolean;
+    suscripcion: Suscripcion | null | undefined;
     destacado?: boolean;
 }) {
     const beneficios = getBeneficios(plan.nombre);
-    const ctaHref = token ? `/checkout/${plan.id}` : "/registro";
-    const esCorporativo = plan.precio_mensual === 0;
+    const action = getPlanPurchaseState(plan, suscripcion, token, tokenHydrated);
+    const esCorporativo = isCorporatePlan(plan);
 
     if (destacado) {
         return (
@@ -96,12 +101,18 @@ function PlanCard({
                         </li>
                     ))}
                 </ul>
-                <Link
-                    href={ctaHref}
-                    className="w-full py-4 text-center bg-white text-[#2E1065] rounded-xl font-bold hover:bg-slate-100 transition-all shadow-lg block"
-                >
-                    Elegir este plan
-                </Link>
+                {action.disabled || !action.href ? (
+                    <span className="block w-full rounded-xl bg-white/20 py-4 text-center font-bold text-white/70">
+                        {action.label}
+                    </span>
+                ) : (
+                    <Link
+                        href={action.href}
+                        className="block w-full rounded-xl bg-white py-4 text-center font-bold text-[#2E1065] shadow-lg transition-all hover:bg-slate-100"
+                    >
+                        {action.label}
+                    </Link>
+                )}
             </div>
         );
     }
@@ -128,12 +139,18 @@ function PlanCard({
                     </li>
                 ))}
             </ul>
-            <Link
-                href={esCorporativo ? "/planes/corporativos#form-contacto-empresarial" : ctaHref}
-                className="w-full py-4 text-center border border-[#4C1D95]/20 text-[#4C1D95] rounded-xl font-bold hover:bg-[#4C1D95] hover:text-white transition-all block"
-            >
-                {esCorporativo ? "Solicitar cotización" : "Elegir este plan"}
-            </Link>
+            {action.disabled || !action.href ? (
+                <span className="block w-full rounded-xl border border-slate-200 bg-slate-100 py-4 text-center font-bold text-slate-500">
+                    {action.label}
+                </span>
+            ) : (
+                <Link
+                    href={action.href}
+                    className="block w-full rounded-xl border border-[#4C1D95]/20 py-4 text-center font-bold text-[#4C1D95] transition-all hover:bg-[#4C1D95] hover:text-white"
+                >
+                    {action.label}
+                </Link>
+            )}
         </div>
     );
 }
@@ -151,8 +168,8 @@ const TABS: { id: TabId; label: string }[] = [
 export default function PlanesPage() {
     const [tab, setTab] = useState<TabId>("personal");
     const [planes, setPlanes] = useState<Plan[]>([]);
-    const [token, , tokenHydrated] = useLocalStorageValue("celdoctor_token");
     const [cargando, setCargando] = useState(true);
+    const { token, tokenHydrated, suscripcion } = useCurrentSubscription();
 
     useEffect(() => {
         if (!tokenHydrated) {
@@ -233,7 +250,7 @@ export default function PlanesPage() {
                             </div>
                         ) : efectivoPersonal.length === 1 ? (
                             <div className="max-w-sm mx-auto">
-                                <PlanCard plan={efectivoPersonal[0]} token={token} />
+                                <PlanCard plan={efectivoPersonal[0]} token={token} tokenHydrated={tokenHydrated} suscripcion={suscripcion} />
                             </div>
                         ) : (
                             <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -242,6 +259,8 @@ export default function PlanesPage() {
                                         key={plan.id}
                                         plan={plan}
                                         token={token}
+                                        tokenHydrated={tokenHydrated}
+                                        suscripcion={suscripcion}
                                         destacado={plan.id === planDestacadoId}
                                     />
                                 ))}
@@ -260,9 +279,9 @@ export default function PlanesPage() {
                         ) : (
                             <div className="grid lg:grid-cols-2 gap-8 max-w-3xl mx-auto items-center">
                                 {efectivoFamiliar.length > 0 ? (
-                                    <PlanCard plan={efectivoFamiliar[0]} token={token} />
+                                    <PlanCard plan={efectivoFamiliar[0]} token={token} tokenHydrated={tokenHydrated} suscripcion={suscripcion} />
                                 ) : (
-                                    <PlanCard plan={FALLBACK_PLANES[1]} token={token} />
+                                    <PlanCard plan={FALLBACK_PLANES[1]} token={token} tokenHydrated={tokenHydrated} suscripcion={suscripcion} />
                                 )}
                                 {/* Decorative image */}
                                 <div className="hidden lg:block rounded-3xl overflow-hidden aspect-4/3 relative">
@@ -292,9 +311,9 @@ export default function PlanesPage() {
                         ) : (
                             <>
                                 {efectivoCorporativo.length > 0 ? (
-                                    <PlanCard plan={efectivoCorporativo[0]} token={token} />
+                                    <PlanCard plan={efectivoCorporativo[0]} token={token} tokenHydrated={tokenHydrated} suscripcion={suscripcion} />
                                 ) : (
-                                    <PlanCard plan={FALLBACK_PLANES[2]} token={token} />
+                                    <PlanCard plan={FALLBACK_PLANES[2]} token={token} tokenHydrated={tokenHydrated} suscripcion={suscripcion} />
                                 )}
 
                                 {/* Características empresariales */}

@@ -21,9 +21,8 @@ export default function Footer() {
                   <h4 className="font-bold text-slate-900 mb-5">Atención Médica</h4>
                   <ul className="space-y-3 text-slate-500 text-xs md:text-sm">
                      <li><Link href="/atencion-medica/especialidades-medicas" className="hover:text-[#4C1D95] transition-colors">Especialidades Médicas</Link></li>
-                     <li><Link href="/atencion-medica/videollamada-inmediata" className="hover:text-[#4C1D95] transition-colors">Videollamada Inmediata</Link></li>
                      <li><Link href="/atencion-medica/receta-medica" className="hover:text-[#4C1D95] transition-colors">Receta Digital</Link></li>
-                     <li><Link href="/atencion-medica/descuentos-farmacias" className="hover:text-[#4C1D95] transition-colors">Descuentos en Farmacias</Link></li>
+                     <li><Link href="/atencion-medica/historial-medico" className="hover:text-[#4C1D95] transition-colors">Historial Medico</Link></li>
                   </ul>
                </div>
                <div>

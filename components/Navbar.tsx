@@ -25,9 +25,6 @@ const navItems: NavItem[] = [
     label: "Atención Médica",
     children: [
       { href: "/atencion-medica/especialidades-medicas", label: "Especialidades Médicas" },
-      { href: "/atencion-medica/descuentos-farmacias", label: "Descuentos en Farmacias" },
-      { href: "/atencion-medica/llamadas-urgencias", label: "Llamadas de urgencias" },
-      { href: "/atencion-medica/videollamada-inmediata", label: "Videollamada inmediata" },
       { href: "/atencion-medica/receta-medica", label: "Receta médica homologada" },
       { href: "/atencion-medica/historial-medico", label: "Historial Médico" },
     ],

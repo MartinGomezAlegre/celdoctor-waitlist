@@ -58,6 +58,7 @@ export interface Suscripcion {
     descripcion_plan?: string;
     fue_exportado?: boolean;
     max_beneficiarios?: number | null;
+    tipo_plan?: string | null;
 }
 
 export interface MiPerfil {
@@ -170,7 +171,7 @@ export async function contratarPlan(
         throw new Error("Error al contratar el plan");
     }
 
-    if (res.status === 400) throw new Error("Ya tenés una suscripción activa");
+    if (res.status === 400) throw new Error(await getErrorDetail(res, "No se pudo contratar el plan"));
     if (res.status === 401) throw new Error("Sesión expirada. Iniciá sesión nuevamente");
     if (!res.ok) throw new Error("Error al contratar el plan");
 

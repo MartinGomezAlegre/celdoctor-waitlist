@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CheckCircle2, User } from "lucide-react";
 import { obtenerPlanes, obtenerPlanesUsuario, type Plan } from "@/lib/api";
-import { useLocalStorageValue } from "@/lib/use-local-storage-value";
+import { getPlanPurchaseState } from "@/lib/plan-purchase";
+import { useCurrentSubscription } from "@/lib/use-current-subscription";
 
 const PLAN_INDIVIDUAL_FALLBACK: Plan = {
     id: 1,
@@ -18,15 +19,15 @@ const PLAN_INDIVIDUAL_FALLBACK: Plan = {
 
 const FEATURES = [
     "1 beneficiario",
-    "Consultas médicas ilimitadas",
+    "Consultas medicas ilimitadas",
     "Guardia 24/7 sin espera",
     "Recetas digitales al instante",
-    "Historia clínica digital",
+    "Historia clinica digital",
     "Sin copagos sorpresa",
 ];
 
 export default function PlanesPersonalesContent() {
-    const [token, , tokenHydrated] = useLocalStorageValue("celdoctor_token");
+    const { token, tokenHydrated, suscripcion } = useCurrentSubscription();
     const [planIndividual, setPlanIndividual] = useState<Plan>(PLAN_INDIVIDUAL_FALLBACK);
 
     useEffect(() => {
@@ -47,40 +48,40 @@ export default function PlanesPersonalesContent() {
         });
     }, [token, tokenHydrated]);
 
-    const ctaHref = useMemo(() => {
-        if (!tokenHydrated) {
-            return "/registro";
-        }
-
-        return token ? `/checkout/${planIndividual.id}` : "/registro";
-    }, [planIndividual.id, token, tokenHydrated]);
+    const action = getPlanPurchaseState(planIndividual, suscripcion, token, tokenHydrated);
 
     return (
         <>
-            <section className="relative pt-28 pb-20 lg:pt-36 lg:pb-28 overflow-hidden bg-[#1e0b4b]">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[150px] pointer-events-none bg-[#4C1D95]/30" />
-                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+            <section className="relative overflow-hidden bg-[#1e0b4b] pt-28 pb-20 lg:pt-36 lg:pb-28">
+                <div className="pointer-events-none absolute top-1/2 left-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#4C1D95]/30 blur-[150px]" />
+                <div
+                    className="absolute inset-0 opacity-[0.03]"
+                    style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+                />
 
-                <div className="max-w-7xl mx-auto px-6 relative z-10">
-                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                <div className="relative z-10 mx-auto max-w-7xl px-6">
+                    <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
                         <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/10 text-[#c4b5fd] text-[11px] font-bold uppercase tracking-wider mb-6">
-                                <User size={12} /> Plan Individual
+                            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#c4b5fd]">
+                                <User size={12} /> Plan individual
                             </div>
 
-                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.1] tracking-tight mb-6">
-                                Atención médica inmediata,
+                            <h1 className="mb-6 text-4xl leading-[1.1] font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+                                Atencion medica inmediata,
                                 <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#c4b5fd] to-white">sin letra chica.</span>
+                                <span className="bg-gradient-to-r from-[#c4b5fd] to-white bg-clip-text text-transparent">
+                                    sin letra chica.
+                                </span>
                             </h1>
 
-                            <p className="text-lg text-white/70 leading-relaxed mb-8 max-w-lg">
-                                Un solo plan, claro y simple: cobertura digital para una persona con consultas ilimitadas, guardia 24/7 y recetas al instante.
+                            <p className="mb-8 max-w-lg text-lg leading-relaxed text-white/70">
+                                Un solo plan, claro y simple: cobertura digital para una persona con consultas ilimitadas,
+                                guardia 24/7 y recetas al instante.
                             </p>
 
                             <a
                                 href="#plan-individual"
-                                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#2E1065] rounded-2xl font-bold text-base hover:bg-slate-100 transition-all shadow-lg hover:-translate-y-1 active:scale-95"
+                                className="inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-[#2E1065] shadow-lg transition-all hover:-translate-y-1 hover:bg-slate-100 active:scale-95"
                             >
                                 Ver plan
                             </a>
@@ -88,8 +89,8 @@ export default function PlanesPersonalesContent() {
 
                         <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
                             <div className="relative">
-                                <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-3 shadow-2xl shadow-black/20 backdrop-blur-sm">
-                                    <div className="rounded-2xl aspect-[4/3] relative overflow-hidden">
+                                <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-3 shadow-2xl shadow-black/20 backdrop-blur-sm">
+                                    <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
                                         <Image
                                             src="/personalmodelo.png"
                                             alt="Plan individual CelDoctor"
@@ -100,55 +101,61 @@ export default function PlanesPersonalesContent() {
                                         <div className="absolute inset-0 bg-gradient-to-t from-[#1e0b4b]/40 to-transparent" />
                                     </div>
                                 </div>
-                                <div className="absolute -inset-4 bg-[#4C1D95]/10 rounded-[2rem] blur-2xl -z-10" />
+                                <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-[#4C1D95]/10 blur-2xl" />
                             </div>
                         </motion.div>
                     </div>
                 </div>
             </section>
 
-            <section id="plan-individual" className="py-24 bg-white border-t border-slate-100 relative overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-[#4C1D95]/5 rounded-full blur-[120px] pointer-events-none" />
+            <section id="plan-individual" className="relative overflow-hidden border-t border-slate-100 bg-white py-24">
+                <div className="pointer-events-none absolute top-0 left-1/2 h-[600px] w-[1000px] -translate-x-1/2 rounded-full bg-[#4C1D95]/5 blur-[120px]" />
 
-                <div className="max-w-5xl mx-auto px-6 relative z-10">
-                    <div className="text-center mb-14">
-                        <h2 className="text-3xl font-bold text-slate-900 mb-2">Plan Individual</h2>
-                        <p className="text-slate-500">La opción correcta para una persona. Sin comparativas falsas ni planes duplicados.</p>
+                <div className="relative z-10 mx-auto max-w-5xl px-6">
+                    <div className="mb-14 text-center">
+                        <h2 className="mb-2 text-3xl font-bold text-slate-900">Plan individual</h2>
+                        <p className="text-slate-500">Una sola opcion clara y consistente con el producto real.</p>
                     </div>
 
-                    <div className="max-w-md mx-auto">
+                    <div className="mx-auto max-w-md">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className="p-8 rounded-[2rem] bg-gradient-to-b from-[#34106D] to-[#25084E] border border-[#5f2ec4] shadow-2xl shadow-[#4C1D95]/30 flex flex-col"
+                            className="flex flex-col rounded-[2rem] border border-[#5f2ec4] bg-gradient-to-b from-[#34106D] to-[#25084E] p-8 shadow-2xl shadow-[#4C1D95]/30"
                         >
                             <div className="mb-8">
-                                <h3 className="text-4xl font-bold text-white mb-2">{planIndividual.nombre || "Individual"}</h3>
-                                <p className="text-white/70 text-lg">{planIndividual.descripcion || "Plan para una persona"}</p>
+                                <h3 className="mb-2 text-4xl font-bold text-white">{planIndividual.nombre || "Individual"}</h3>
+                                <p className="text-lg text-white/70">{planIndividual.descripcion || "Plan para una persona"}</p>
                                 <div className="mt-8">
                                     <span className="text-5xl font-bold text-white">
                                         ${planIndividual.precio_mensual.toLocaleString("es-AR")}
                                     </span>
-                                    <span className="text-xl text-white/70 ml-2">/mes</span>
+                                    <span className="ml-2 text-xl text-white/70">/mes</span>
                                 </div>
                             </div>
 
-                            <ul className="space-y-4 mb-10 flex-1">
+                            <ul className="mb-10 flex-1 space-y-4">
                                 {FEATURES.map((item) => (
-                                    <li key={item} className="flex items-start gap-3 text-white text-lg">
-                                        <CheckCircle2 size={18} className="text-[#c4b5fd] shrink-0 mt-1" />
+                                    <li key={item} className="flex items-start gap-3 text-lg text-white">
+                                        <CheckCircle2 size={18} className="mt-1 shrink-0 text-[#c4b5fd]" />
                                         <span>{item}</span>
                                     </li>
                                 ))}
                             </ul>
 
-                            <Link
-                                href={ctaHref}
-                                className="w-full py-4 text-center border border-white/20 text-white rounded-2xl font-bold text-xl hover:bg-white hover:text-[#2E1065] transition-all block"
-                            >
-                                Contratar ahora
-                            </Link>
+                            {action.disabled || !action.href ? (
+                                <span className="block w-full rounded-2xl border border-white/10 bg-white/15 py-4 text-center text-xl font-bold text-white/70">
+                                    {action.label}
+                                </span>
+                            ) : (
+                                <Link
+                                    href={action.href}
+                                    className="block w-full rounded-2xl border border-white/20 py-4 text-center text-xl font-bold text-white transition-all hover:bg-white hover:text-[#2E1065]"
+                                >
+                                    {action.label}
+                                </Link>
+                            )}
                         </motion.div>
                     </div>
                 </div>

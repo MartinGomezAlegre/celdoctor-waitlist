@@ -25,6 +25,24 @@ export interface AdminUsuario {
     plan_nombre?: string | null; estado_suscripcion?: string | null; created_at: string;
 }
 
+export interface AdminBeneficiario {
+    id: number
+    nombre: string
+    apellido: string
+    dni: string
+    fecha_nacimiento: string | null
+    relacion: string
+}
+
+export interface AdminUsuarioDetalle extends AdminUsuario {
+    suscripcion_id?: number | null
+    plan_id?: number | null
+    fecha_inicio_suscripcion?: string | null
+    fecha_vencimiento?: string | null
+    max_beneficiarios?: number | null
+    beneficiarios: AdminBeneficiario[]
+}
+
 export interface AdminSuscripcion {
     id: number; nombre_completo: string; email: string; plan_nombre: string;
     precio_pagado: number; estado: string; fecha_inicio: string; created_at: string;

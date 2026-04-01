@@ -1,70 +1,81 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
-    LayoutDashboard, Users, Building2, CreditCard,
-    Receipt, Package, BarChart2, LogOut, MessageSquare, Briefcase, Menu, X,
-} from "lucide-react"
-import type { Section, Toast, ToastType, Alerta, MetricasEmpresas } from "./types"
-import { API, authHeaders } from "./lib"
-import { adminEndpoints } from "./admin-endpoints"
-import { clearSessionCookie } from "@/lib/session-cookie"
-import { useLocalStorageValue } from "@/lib/use-local-storage-value"
-import SectionOverview from "./components/SectionOverview"
-import SectionPersonas from "./components/SectionPersonas"
-import SectionEmpresas from "./components/SectionEmpresas"
-import SectionSuscripciones from "./components/SectionSuscripciones"
-import SectionFacturacion from "./components/SectionFacturacion"
-import SectionCatalogo from "./components/SectionCatalogo"
-import SectionReportes from "./components/SectionReportes"
-import SectionSoporte from "./components/SectionSoporte"
-import SectionLeads from "./components/SectionLeads"
+    LayoutDashboard,
+    Users,
+    Building2,
+    CreditCard,
+    Receipt,
+    Package,
+    BarChart2,
+    LogOut,
+    MessageSquare,
+    Briefcase,
+    Menu,
+    X,
+} from "lucide-react";
+import type { Section, Toast, ToastType, Alerta, MetricasEmpresas } from "./types";
+import { API, authHeaders } from "./lib";
+import { adminEndpoints } from "./admin-endpoints";
+import { clearSessionCookie } from "@/lib/session-cookie";
+import { useLocalStorageValue } from "@/lib/use-local-storage-value";
+import SectionOverview from "./components/SectionOverview";
+import SectionPersonas from "./components/SectionPersonas";
+import SectionEmpresas from "./components/SectionEmpresas";
+import SectionSuscripciones from "./components/SectionSuscripciones";
+import SectionFacturacion from "./components/SectionFacturacion";
+import SectionCatalogo from "./components/SectionCatalogo";
+import SectionReportes from "./components/SectionReportes";
+import SectionSoporte from "./components/SectionSoporte";
+import SectionLeads from "./components/SectionLeads";
 
 interface NavItem {
-    id: Section
-    label: string
-    Icon: React.ElementType
-    badge?: number
+    id: Section;
+    label: string;
+    Icon: React.ElementType;
+    badge?: number;
 }
 
 interface NavGroup {
-    label?: string
-    items: NavItem[]
+    label?: string;
+    items: NavItem[];
 }
 
 interface SidebarContentProps {
-    navGroups: NavGroup[]
-    section: Section
-    onNavigate: (section: Section) => void
-    onLogout: () => void
+    navGroups: NavGroup[];
+    section: Section;
+    onNavigate: (section: Section) => void;
+    onLogout: () => void;
 }
 
 function SidebarContent({ navGroups, section, onNavigate, onLogout }: SidebarContentProps) {
     return (
         <>
-            <div className="px-6 py-6 border-b border-white/10">
-                <span className="text-xl font-black text-white tracking-tight">CELDOCTOR.</span>
-                <p className="text-white/40 text-xs mt-0.5">Panel de administraciÃ³n</p>
+            <div className="border-b border-white/10 px-6 py-6">
+                <span className="text-xl font-black tracking-tight text-white">CELDOCTOR.</span>
+                <p className="mt-0.5 text-xs text-white/40">Panel de administracion</p>
             </div>
 
-            <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
-                {navGroups.map((group, gi) => (
-                    <div key={gi}>
+            <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+                {navGroups.map((group, groupIndex) => (
+                    <div key={groupIndex}>
                         {group.label && (
-                            <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-white/30">
+                            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-widest text-white/30">
                                 {group.label}
                             </p>
                         )}
+
                         <div className="space-y-0.5">
                             {group.items.map(({ id, label, Icon, badge }) => (
                                 <button
                                     key={id}
                                     onClick={() => onNavigate(id)}
-                                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                                         section === id
                                             ? "bg-white/15 text-white"
-                                            : "text-white/60 hover:text-white hover:bg-white/10"
+                                            : "text-white/60 hover:bg-white/10 hover:text-white"
                                     }`}
                                 >
                                     <span className="flex items-center gap-2.5">
@@ -72,7 +83,7 @@ function SidebarContent({ navGroups, section, onNavigate, onLogout }: SidebarCon
                                         {label}
                                     </span>
                                     {badge !== undefined && badge > 0 && (
-                                        <span className="min-w-4.5 h-4.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold px-1">
+                                        <span className="flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                                             {badge > 99 ? "99+" : badge}
                                         </span>
                                     )}
@@ -83,96 +94,102 @@ function SidebarContent({ navGroups, section, onNavigate, onLogout }: SidebarCon
                 ))}
             </nav>
 
-            <div className="px-3 py-4 border-t border-white/10">
+            <div className="border-t border-white/10 px-3 py-4">
                 <button
                     onClick={onLogout}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                    className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                 >
                     <LogOut size={15} />
-                    Cerrar sesiÃ³n
+                    Cerrar sesion
                 </button>
             </div>
         </>
-    )
+    );
 }
 
 export default function AdminDashboardPage() {
-    const router = useRouter()
-    const [section, setSection] = useState<Section>("overview")
-    const [toasts, setToasts] = useState<Toast[]>([])
-    const [sidebarAbierto, setSidebarAbierto] = useState(false)
-    const [alertas, setAlertas] = useState<Alerta[]>([])
-    const [metricasEmpresas, setMetricasEmpresas] = useState<MetricasEmpresas | null>(null)
-    const [ticketsAbiertos, setTicketsAbiertos] = useState(0)
-    const [leadsNuevos, setLeadsNuevos] = useState(0)
-    const [token, setToken, tokenHydrated] = useLocalStorageValue("celdoctor_admin_token")
+    const router = useRouter();
+    const [section, setSection] = useState<Section>("overview");
+    const [toasts, setToasts] = useState<Toast[]>([]);
+    const [sidebarAbierto, setSidebarAbierto] = useState(false);
+    const [alertas, setAlertas] = useState<Alerta[]>([]);
+    const [metricasEmpresas, setMetricasEmpresas] = useState<MetricasEmpresas | null>(null);
+    const [ticketsAbiertos, setTicketsAbiertos] = useState(0);
+    const [leadsNuevos, setLeadsNuevos] = useState(0);
+    const [token, setToken, tokenHydrated] = useLocalStorageValue("celdoctor_admin_token");
 
     useEffect(() => {
         if (!tokenHydrated) {
-            return
+            return;
         }
 
         if (!token) {
-            router.replace("/admin")
-            return
+            router.replace("/admin");
+            return;
         }
 
         fetch(`${API}${adminEndpoints.alertas}`, { headers: authHeaders(token) })
-            .then((r) => r.json())
-            .then((d: unknown) => setAlertas(Array.isArray(d) ? (d as Alerta[]) : []))
-            .catch(() => null)
+            .then((response) => response.json())
+            .then((data: unknown) => setAlertas(Array.isArray(data) ? (data as Alerta[]) : []))
+            .catch(() => null);
 
         fetch(`${API}${adminEndpoints.metricasEmpresas}`, { headers: authHeaders(token) })
-            .then((r) => r.json())
-            .then((d: MetricasEmpresas) => setMetricasEmpresas(d))
-            .catch(() => null)
+            .then((response) => response.json())
+            .then((data: MetricasEmpresas) => setMetricasEmpresas(data))
+            .catch(() => null);
 
         fetch(`${API}${adminEndpoints.tickets}?estado=abierto`, { headers: authHeaders(token) })
-            .then((r) => r.json())
-            .then((d: unknown) => setTicketsAbiertos(Array.isArray(d) ? (d as unknown[]).length : 0))
-            .catch(() => null)
+            .then((response) => response.json())
+            .then((data: unknown) => setTicketsAbiertos(Array.isArray(data) ? (data as unknown[]).length : 0))
+            .catch(() => null);
 
         fetch(`${API}${adminEndpoints.leads}?estado=nuevo`, { headers: authHeaders(token) })
-            .then((r) => r.json())
-            .then((d: unknown) => setLeadsNuevos(Array.isArray(d) ? (d as unknown[]).length : 0))
-            .catch(() => null)
-    }, [router, token, tokenHydrated])
+            .then((response) => response.json())
+            .then((data: unknown) => setLeadsNuevos(Array.isArray(data) ? (data as unknown[]).length : 0))
+            .catch(() => null);
+    }, [router, token, tokenHydrated]);
 
     function addToast(msg: string, type: ToastType) {
-        const id = Date.now()
-        setToasts((prev) => [...prev, { id, msg, type }])
-        setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000)
+        const id = Date.now();
+        setToasts((prev) => [...prev, { id, msg, type }]);
+        setTimeout(() => setToasts((prev) => prev.filter((toast) => toast.id !== id)), 4000);
     }
 
     function logout() {
-        localStorage.removeItem("celdoctor_admin_token")
-        clearSessionCookie("celdoctor_admin_token")
-        setToken(null)
-        router.replace("/admin")
+        localStorage.removeItem("celdoctor_admin_token");
+        clearSessionCookie("celdoctor_admin_token");
+        setToken(null);
+        router.replace("/admin");
     }
 
-    function navegarA(s: Section) {
-        setSection(s)
-        setSidebarAbierto(false)
+    function navegarA(nextSection: Section) {
+        setSection(nextSection);
+        setSidebarAbierto(false);
     }
 
     if (!tokenHydrated || !token) {
         return (
-            <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-[#4C1D95]/20 border-t-[#4C1D95] rounded-full animate-spin" />
+            <div className="flex min-h-screen items-center justify-center bg-slate-100">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#4C1D95]/20 border-t-[#4C1D95]" />
             </div>
-        )
+        );
     }
 
-    const pendientesPago = alertas.find((a) => a.tipo === "pendientes_pago")?.cantidad ?? 0
-    const sinConvertir = alertas.find((a) => a.tipo === "sin_convertir")?.cantidad ?? 0
-    const empresasAlerta = (metricasEmpresas?.empresas_vencen_esta_semana ?? 0) + (metricasEmpresas?.empresas_pendiente_pago ?? 0)
-    const totalAlertas = pendientesPago + sinConvertir + empresasAlerta
+    const pendientesPago = alertas.find((alerta) => alerta.tipo === "pendientes_pago")?.cantidad ?? 0;
+    const sinConvertir = alertas.find((alerta) => alerta.tipo === "sin_convertir")?.cantidad ?? 0;
+    const empresasAlerta =
+        (metricasEmpresas?.empresas_vencen_esta_semana ?? 0) + (metricasEmpresas?.empresas_pendiente_pago ?? 0);
+    const totalAlertas = pendientesPago + sinConvertir + empresasAlerta;
 
     const navGroups: NavGroup[] = [
         {
             items: [
-                { id: "overview", label: "Inicio", Icon: LayoutDashboard, badge: totalAlertas > 0 ? totalAlertas : undefined },
+                {
+                    id: "overview",
+                    label: "Inicio",
+                    Icon: LayoutDashboard,
+                    badge: totalAlertas > 0 ? totalAlertas : undefined,
+                },
             ],
         },
         {
@@ -185,9 +202,14 @@ export default function AdminDashboardPage() {
         {
             label: "Negocio",
             items: [
-                { id: "suscripciones", label: "Suscripciones", Icon: CreditCard, badge: pendientesPago > 0 ? pendientesPago : undefined },
-                { id: "facturacion", label: "FacturaciÃ³n", Icon: Receipt },
-                { id: "catalogo", label: "CatÃ¡logo", Icon: Package },
+                {
+                    id: "suscripciones",
+                    label: "Suscripciones",
+                    Icon: CreditCard,
+                    badge: pendientesPago > 0 ? pendientesPago : undefined,
+                },
+                { id: "facturacion", label: "Facturacion", Icon: Receipt },
+                { id: "catalogo", label: "Catalogo", Icon: Package },
             ],
         },
         {
@@ -198,36 +220,34 @@ export default function AdminDashboardPage() {
             ],
         },
         {
-            label: "AnÃ¡lisis",
-            items: [
-                { id: "reportes", label: "Reportes", Icon: BarChart2 },
-            ],
+            label: "Analisis",
+            items: [{ id: "reportes", label: "Reportes", Icon: BarChart2 }],
         },
-    ]
+    ];
 
     return (
         <div className="flex min-h-screen bg-slate-100">
-            <aside className="hidden lg:flex w-60 bg-[#1e0b4b] flex-col shrink-0">
+            <aside className="hidden w-60 shrink-0 flex-col bg-[#1e0b4b] lg:flex">
                 <SidebarContent navGroups={navGroups} section={section} onNavigate={navegarA} onLogout={logout} />
             </aside>
 
             <>
                 {sidebarAbierto && (
                     <div
-                        className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                        className="fixed inset-0 z-40 bg-black/50 lg:hidden"
                         onClick={() => setSidebarAbierto(false)}
                     />
                 )}
 
                 <aside
-                    className={`fixed top-0 left-0 h-full w-70 bg-[#1e0b4b] flex flex-col z-50 transition-transform duration-300 lg:hidden ${
+                    className={`fixed top-0 left-0 z-50 flex h-full w-70 flex-col bg-[#1e0b4b] transition-transform duration-300 lg:hidden ${
                         sidebarAbierto ? "translate-x-0" : "-translate-x-full"
                     }`}
                 >
                     <div className="absolute top-4 right-4">
                         <button
                             onClick={() => setSidebarAbierto(false)}
-                            className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                            className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                         >
                             <X size={18} />
                         </button>
@@ -236,16 +256,16 @@ export default function AdminDashboardPage() {
                 </aside>
             </>
 
-            <div className="flex-1 flex flex-col min-w-0">
-                <header className="lg:hidden flex items-center gap-4 px-4 py-3 bg-[#1e0b4b] sticky top-0 z-30">
+            <div className="flex min-w-0 flex-1 flex-col">
+                <header className="sticky top-0 z-30 flex items-center gap-4 bg-[#1e0b4b] px-4 py-3 lg:hidden">
                     <button
                         onClick={() => setSidebarAbierto(true)}
-                        className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                        aria-label="Abrir menÃº"
+                        className="rounded-lg p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                        aria-label="Abrir menu"
                     >
                         <Menu size={22} />
                     </button>
-                    <span className="text-lg font-black text-white tracking-tight">CELDOCTOR.</span>
+                    <span className="text-lg font-black tracking-tight text-white">CELDOCTOR.</span>
                 </header>
 
                 <main className="flex-1 overflow-auto">
@@ -263,21 +283,23 @@ export default function AdminDashboardPage() {
                 </main>
             </div>
 
-            <div className="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none">
-                {toasts.map((t) => (
+            <div className="pointer-events-none fixed right-4 bottom-4 z-50 space-y-2">
+                {toasts.map((toast) => (
                     <div
-                        key={t.id}
-                        className={`pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${
-                            t.type === "success" ? "bg-emerald-500 text-white" :
-                            t.type === "error" ? "bg-red-500 text-white" :
-                                "bg-amber-500 text-white"
+                        key={toast.id}
+                        className={`pointer-events-auto flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${
+                            toast.type === "success"
+                                ? "bg-emerald-500 text-white"
+                                : toast.type === "error"
+                                  ? "bg-red-500 text-white"
+                                  : "bg-amber-500 text-white"
                         }`}
                     >
-                        {t.type === "success" ? "âœ“" : t.type === "error" ? "âœ—" : "âš "}
-                        {t.msg}
+                        {toast.type === "success" ? "OK" : toast.type === "error" ? "X" : "!"}
+                        {toast.msg}
                     </div>
                 ))}
             </div>
         </div>
-    )
+    );
 }

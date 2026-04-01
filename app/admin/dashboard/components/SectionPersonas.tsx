@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { ToastType, AdminUsuario } from "../types";
+import { ToastType, AdminBeneficiario, AdminUsuario, AdminUsuarioDetalle } from "../types";
 import { API, authHeaders, fmtDate } from "../lib";
 import { TableSkeleton } from "./shared/Skeleton";
 import { ActiveDot, StatBadge } from "./shared/StatBadge";
@@ -27,6 +27,8 @@ export default function SectionPersonas({ token, addToast }: Props) {
   const [filtro, setFiltro] = useState<Filtro>("todos");
 
   const [drawerUsuario, setDrawerUsuario] = useState<AdminUsuario | null>(null);
+  const [drawerDetalle, setDrawerDetalle] = useState<AdminUsuarioDetalle | null>(null);
+  const [loadingDetalle, setLoadingDetalle] = useState(false);
   const [modalBaja, setModalBaja] = useState<AdminUsuario | null>(null);
   const [motivoBaja, setMotivoBaja] = useState("");
   const [procesando, setProcesando] = useState(false);
@@ -79,6 +81,9 @@ export default function SectionPersonas({ token, addToast }: Props) {
       if (drawerUsuario?.id === usuario.id) {
         setDrawerUsuario((prev) => (prev ? { ...prev, activo } : prev));
       }
+      if (drawerDetalle?.id === usuario.id) {
+        setDrawerDetalle((prev) => (prev ? { ...prev, activo } : prev));
+      }
       addToast(
         activo
           ? `${usuario.nombre} ${usuario.apellido} dado de alta correctamente.`
@@ -94,6 +99,31 @@ export default function SectionPersonas({ token, addToast }: Props) {
     }
   }
 
+  async function abrirDetalleUsuario(usuario: AdminUsuario) {
+    setDrawerUsuario(usuario);
+    setDrawerDetalle(null);
+    setLoadingDetalle(true);
+
+    try {
+      const res = await fetch(`${API}/admin/usuarios/${usuario.id}`, {
+        headers: authHeaders(token),
+      });
+
+      if (!res.ok) {
+        throw new Error();
+      }
+
+      const data = (await res.json()) as AdminUsuarioDetalle;
+      setDrawerDetalle(data);
+    } catch {
+      addToast("No pudimos cargar el detalle completo del usuario.", "warning");
+    } finally {
+      setLoadingDetalle(false);
+    }
+  }
+
+  const usuarioDetalle = drawerDetalle ?? drawerUsuario;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -102,7 +132,7 @@ export default function SectionPersonas({ token, addToast }: Props) {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <input
             type="text"
-            placeholder="Buscar por nombre, apellido o email…"
+            placeholder="Buscar por nombre, apellido o email..."
             value={buscar}
             onChange={(e) => setBuscar(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 w-72"
@@ -137,11 +167,11 @@ export default function SectionPersonas({ token, addToast }: Props) {
               <thead className="bg-gray-50">
                 <tr>
                   {[
-                    "Situación",
+                    "Situacion",
                     "Nombre",
                     "Email",
                     "DNI",
-                    "Teléfono",
+                    "Telefono",
                     "Rol",
                     "Registro",
                     "Acciones",
@@ -200,7 +230,7 @@ export default function SectionPersonas({ token, addToast }: Props) {
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => setDrawerUsuario(u)}
+                            onClick={() => void abrirDetalleUsuario(u)}
                             className="rounded-lg bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100 transition-colors"
                           >
                             Ver detalle
@@ -235,17 +265,23 @@ export default function SectionPersonas({ token, addToast }: Props) {
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/40 z-40"
-            onClick={() => setDrawerUsuario(null)}
+            onClick={() => {
+              setDrawerUsuario(null);
+              setDrawerDetalle(null);
+            }}
           />
           {/* Panel */}
           <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-50 overflow-y-auto flex flex-col">
             {/* Drawer header */}
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <h2 className="text-lg font-semibold text-gray-900 truncate">
-                {drawerUsuario.nombre} {drawerUsuario.apellido}
+                {usuarioDetalle?.nombre} {usuarioDetalle?.apellido}
               </h2>
               <button
-                onClick={() => setDrawerUsuario(null)}
+                onClick={() => {
+                  setDrawerUsuario(null);
+                  setDrawerDetalle(null);
+                }}
                 className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
               >
                 <X size={20} />
@@ -254,10 +290,16 @@ export default function SectionPersonas({ token, addToast }: Props) {
 
             {/* Drawer body */}
             <div className="flex-1 px-6 py-6 space-y-6">
+              {loadingDetalle && (
+                <div className="rounded-xl border border-violet-100 bg-violet-50 px-4 py-3 text-sm text-violet-700">
+                  Cargando informacion completa del usuario...
+                </div>
+              )}
+
               {/* Avatar */}
               <div className="flex justify-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-violet-600 text-white text-xl font-bold select-none">
-                  {drawerUsuario.nombre.charAt(0).toUpperCase()}
+                  {usuarioDetalle?.nombre.charAt(0).toUpperCase()}
                 </div>
               </div>
 
@@ -266,19 +308,19 @@ export default function SectionPersonas({ token, addToast }: Props) {
                 {[
                   {
                     label: "Nombre completo",
-                    value: `${drawerUsuario.nombre} ${drawerUsuario.apellido}`,
+                    value: `${usuarioDetalle?.nombre} ${usuarioDetalle?.apellido}`,
                   },
-                  { label: "Email", value: drawerUsuario.email },
-                  { label: "DNI", value: drawerUsuario.dni ?? "—" },
-                  { label: "Teléfono", value: drawerUsuario.telefono },
+                  { label: "Email", value: usuarioDetalle?.email },
+                  { label: "DNI", value: usuarioDetalle?.dni ?? "—" },
+                  { label: "Telefono", value: usuarioDetalle?.telefono || "—" },
                   {
                     label: "Fecha de nacimiento",
-                    value: fmtDate(drawerUsuario.fecha_nacimiento),
+                    value: usuarioDetalle?.fecha_nacimiento ? fmtDate(usuarioDetalle.fecha_nacimiento) : "—",
                   },
-                  { label: "Rol", value: drawerUsuario.rol },
+                  { label: "Rol", value: usuarioDetalle?.rol },
                   {
                     label: "Registro",
-                    value: fmtDate(drawerUsuario.created_at),
+                    value: usuarioDetalle?.created_at ? fmtDate(usuarioDetalle.created_at) : "—",
                   },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex flex-col gap-0.5">
@@ -291,15 +333,15 @@ export default function SectionPersonas({ token, addToast }: Props) {
                   </div>
                 ))}
 
-                {/* Situación */}
+                {/* Situacion */}
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                    Situación comercial
+                    Situacion comercial
                   </span>
                   <div className="flex items-center gap-2">
-                    <StatBadge estado={situacionUsuario(drawerUsuario)} />
-                    {drawerUsuario.plan_nombre && (
-                      <span className="text-sm text-gray-600">{drawerUsuario.plan_nombre}</span>
+                    <StatBadge estado={situacionUsuario(usuarioDetalle as AdminUsuario)} />
+                    {usuarioDetalle?.plan_nombre && (
+                      <span className="text-sm text-gray-600">{usuarioDetalle.plan_nombre}</span>
                     )}
                   </div>
                 </div>
@@ -309,8 +351,35 @@ export default function SectionPersonas({ token, addToast }: Props) {
                   <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                     Estado de cuenta
                   </span>
-                  <ActiveDot activo={drawerUsuario.activo} />
+                  <ActiveDot activo={!!usuarioDetalle?.activo} />
                 </div>
+
+                {"beneficiarios" in (usuarioDetalle ?? {}) && ((usuarioDetalle as AdminUsuarioDetalle).max_beneficiarios ?? 0) > 1 && (
+                  <div className="flex flex-col gap-2 pt-2">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                      Integrantes del plan familiar
+                    </span>
+
+                    {(usuarioDetalle as AdminUsuarioDetalle).beneficiarios.length > 0 ? (
+                      <div className="space-y-2">
+                        {(usuarioDetalle as AdminUsuarioDetalle).beneficiarios.map((beneficiario: AdminBeneficiario) => (
+                          <div key={beneficiario.id} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                            <p className="text-sm font-medium text-slate-900">
+                              {beneficiario.nombre} {beneficiario.apellido}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {beneficiario.relacion} · DNI {beneficiario.dni}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-500">
+                        Este usuario todavia no cargo integrantes adicionales.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -319,15 +388,17 @@ export default function SectionPersonas({ token, addToast }: Props) {
               <button
                 onClick={() => {
                   setMotivoBaja("");
-                  setModalBaja(drawerUsuario);
+                  if (drawerUsuario) {
+                    setModalBaja(drawerUsuario);
+                  }
                 }}
                 className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-                  drawerUsuario.activo
+                  usuarioDetalle?.activo
                     ? "bg-red-600 text-white hover:bg-red-700"
                     : "bg-green-600 text-white hover:bg-green-700"
                 }`}
               >
-                {drawerUsuario.activo ? "Dar de baja" : "Dar de alta"}
+                {usuarioDetalle?.activo ? "Dar de baja" : "Dar de alta"}
               </button>
             </div>
           </div>
@@ -352,7 +423,7 @@ export default function SectionPersonas({ token, addToast }: Props) {
                 rows={3}
                 value={motivoBaja}
                 onChange={(e) => setMotivoBaja(e.target.value)}
-                placeholder="Indicá el motivo…"
+                placeholder="Indica el motivo..."
                 className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm resize-none focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
               />
             </div>
@@ -377,7 +448,7 @@ export default function SectionPersonas({ token, addToast }: Props) {
                     : "bg-green-600 hover:bg-green-700"
                 }`}
               >
-                {procesando ? "Procesando…" : "Confirmar"}
+                {procesando ? "Procesando..." : "Confirmar"}
               </button>
             </div>
           </div>
