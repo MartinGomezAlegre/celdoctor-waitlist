@@ -135,7 +135,15 @@ function ConfirmModal({ open, onClose, onConfirm, title, description, loading }:
 
 const BENEFICIARIO_VACIO = { nombre: "", apellido: "", dni: "", fecha_nacimiento: "", relacion: "" };
 
-function BeneficiariosCard({ token, maxBeneficiarios }: { token: string; maxBeneficiarios: number }) {
+function BeneficiariosCard({
+    token,
+    maxBeneficiarios,
+    totalIntegrantes,
+}: {
+    token: string;
+    maxBeneficiarios: number;
+    totalIntegrantes: number;
+}) {
     const [beneficiarios, setBeneficiarios] = useState<Beneficiario[]>([]);
     const [cargando, setCargando] = useState(true);
     const [modalAgregar, setModalAgregar] = useState(false);
@@ -185,9 +193,14 @@ function BeneficiariosCard({ token, maxBeneficiarios }: { token: string; maxBene
 
     return (
         <Card>
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900">Beneficiarios</h3>
-                <span className="text-xs text-slate-500">{beneficiarios.length}/{maxBeneficiarios}</span>
+            <div className="flex items-center justify-between mb-4 gap-4">
+                <div>
+                    <h3 className="font-bold text-slate-900">Grupo familiar</h3>
+                    <p className="text-xs text-slate-500 mt-1">
+                        Titular + hasta {maxBeneficiarios} integrantes adicionales ({totalIntegrantes} personas en total)
+                    </p>
+                </div>
+                <span className="text-xs text-slate-500 shrink-0">{beneficiarios.length}/{maxBeneficiarios}</span>
             </div>
 
             {cargando ? (
@@ -196,7 +209,9 @@ function BeneficiariosCard({ token, maxBeneficiarios }: { token: string; maxBene
                     <SkeletonBlock className="h-10" />
                 </div>
             ) : beneficiarios.length === 0 ? (
-                <p className="text-sm text-slate-400 py-3">No hay beneficiarios cargados aún</p>
+                <p className="text-sm text-slate-400 py-3">
+                    Todavía no cargaste integrantes. Podés sumar hasta {maxBeneficiarios} personas además del titular.
+                </p>
             ) : (
                 <ul className="space-y-2 mb-4">
                     {beneficiarios.map((b) => (
@@ -208,7 +223,7 @@ function BeneficiariosCard({ token, maxBeneficiarios }: { token: string; maxBene
                             <button
                                 onClick={() => setModalEliminar(b.id)}
                                 className="text-slate-400 hover:text-red-500 transition-colors p-1"
-                                title="Eliminar beneficiario"
+                                title="Eliminar integrante"
                             >
                                 <X size={15} />
                             </button>
@@ -222,11 +237,11 @@ function BeneficiariosCard({ token, maxBeneficiarios }: { token: string; maxBene
                     onClick={() => setModalAgregar(true)}
                     className="w-full py-2.5 border border-dashed border-[#4C1D95]/30 text-[#4C1D95] rounded-xl text-sm font-semibold hover:bg-[#4C1D95]/5 transition-colors"
                 >
-                    + Agregar beneficiario
+                    + Agregar integrante
                 </button>
             )}
 
-            <Modal open={modalAgregar} onClose={() => { setModalAgregar(false); setForm(BENEFICIARIO_VACIO); setError(null); }} title="Agregar beneficiario">
+            <Modal open={modalAgregar} onClose={() => { setModalAgregar(false); setForm(BENEFICIARIO_VACIO); setError(null); }} title="Agregar integrante familiar">
                 <form onSubmit={handleAgregar} className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -268,7 +283,7 @@ function BeneficiariosCard({ token, maxBeneficiarios }: { token: string; maxBene
                             className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
                         <button type="submit" disabled={guardando}
                             className="px-4 py-2 rounded-xl bg-[#4C1D95] text-white text-sm font-semibold hover:bg-[#3b1675] disabled:opacity-60">
-                            {guardando ? "Guardando..." : "Agregar"}
+                            {guardando ? "Guardando..." : "Agregar integrante"}
                         </button>
                     </div>
                 </form>
@@ -279,7 +294,7 @@ function BeneficiariosCard({ token, maxBeneficiarios }: { token: string; maxBene
                 onClose={() => setModalEliminar(null)}
                 onConfirm={handleEliminar}
                 loading={eliminando}
-                title="¿Eliminar beneficiario?"
+                title="¿Eliminar integrante?"
                 description="Esta acción no se puede deshacer."
             />
         </Card>
@@ -576,8 +591,9 @@ export default function DashboardPage() {
     const vencida = diasRestantes !== null && diasRestantes <= 0;
     const estaActiva = suscripcion?.estado.toLowerCase() === "activa" && !vencida;
 
-    const maxBeneficiarios = suscripcion?.max_beneficiarios ?? 1;
-    const tieneBeneficiarios = maxBeneficiarios > 1;
+    const totalIntegrantes = suscripcion?.max_beneficiarios ?? 1;
+    const maxBeneficiarios = Math.max(totalIntegrantes - 1, 0);
+    const tieneBeneficiarios = maxBeneficiarios > 0;
 
     const precioMaxPlan = planes.length > 0 ? Math.max(...planes.map((p) => p.precio_mensual)) : 0;
     const esElMasCaro = suscripcion ? suscripcion.precio_pagado >= precioMaxPlan : false;
@@ -754,7 +770,11 @@ export default function DashboardPage() {
 
                             {/* Card 3 — Beneficiarios */}
                             {estaActiva && tieneBeneficiarios && (
-                                <BeneficiariosCard token={token} maxBeneficiarios={maxBeneficiarios} />
+                                <BeneficiariosCard
+                                    token={token}
+                                    maxBeneficiarios={maxBeneficiarios}
+                                    totalIntegrantes={totalIntegrantes}
+                                />
                             )}
 
                             {/* Card 4 — Soporte */}

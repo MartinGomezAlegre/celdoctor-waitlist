@@ -198,7 +198,7 @@ export default function PlanesCorporativosContent() {
                             </ul>
 
                             <Link
-                                href="/registro"
+                                href="/planes/corporativos#form-contacto-empresarial"
                                 className="inline-flex items-center gap-2 px-8 py-4 bg-[#4C1D95] text-white rounded-2xl font-bold text-base hover:bg-[#3b1675] transition-all shadow-xl shadow-[#4C1D95]/20 hover:-translate-y-1 active:scale-95"
                             >
                                 Solicitar propuesta
@@ -449,7 +449,7 @@ export default function PlanesCorporativosContent() {
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Link
-                                href="/registro"
+                                href="/planes/corporativos#form-contacto-empresarial"
                                 className="px-10 py-4 bg-white text-[#2E1065] rounded-2xl font-bold text-base hover:bg-slate-100 transition-all shadow-2xl hover:-translate-y-1 active:scale-95 flex items-center gap-2"
                             >
                                 Solicitar propuesta gratuita

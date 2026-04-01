@@ -15,10 +15,15 @@ type Estado = "idle" | "loading" | "success" | "error";
 
 function validar(form: typeof FORM_VACIO): string | null {
     if (form.nombre_contacto.trim().length < 2) return "El nombre debe tener al menos 2 caracteres";
+    if (form.razon_social.trim().length < 2) return "La razón social debe tener al menos 2 caracteres";
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email)) return "El email no es válido";
     const telefonoLimpio = form.telefono.replace(/\D/g, "");
     if (telefonoLimpio.length < 8) return "El teléfono debe tener al menos 8 dígitos";
+    const cantidadEmpleados = Number(form.cantidad_empleados);
+    if (!Number.isInteger(cantidadEmpleados) || cantidadEmpleados <= 0) {
+        return "Indicá la cantidad de empleados con un número válido";
+    }
     return null;
 }
 
@@ -45,12 +50,12 @@ export default function FormContactoEmpresarial() {
 
         try {
             const body = {
-                nombre_contacto: form.nombre_contacto,
-                email: form.email,
-                telefono: form.telefono,
-                razon_social: form.razon_social || undefined,
-                cantidad_empleados: form.cantidad_empleados || undefined,
-                mensaje: form.mensaje || undefined,
+                nombre_contacto: form.nombre_contacto.trim(),
+                email: form.email.trim(),
+                telefono: form.telefono.trim(),
+                razon_social: form.razon_social.trim(),
+                cantidad_empleados: Number(form.cantidad_empleados),
+                mensaje: form.mensaje.trim() || undefined,
             };
 
             const res = await fetch("/api/proxy/leads/empresarial", {
@@ -61,9 +66,11 @@ export default function FormContactoEmpresarial() {
 
             if (res.ok) {
                 setEstado("success");
+                setForm(FORM_VACIO);
             } else {
+                const detail = await res.json().catch(() => null) as { detail?: string } | null;
                 setEstado("error");
-                setError("No se pudo enviar el formulario. Intentá de nuevo.");
+                setError(detail?.detail || "No se pudo enviar el formulario. Intentá de nuevo.");
             }
         } catch {
             setEstado("error");
@@ -72,7 +79,7 @@ export default function FormContactoEmpresarial() {
     }
 
     return (
-        <section className="py-20 px-6 bg-slate-50">
+        <section id="form-contacto-empresarial" className="py-20 px-6 bg-slate-50 scroll-mt-28">
             <div className="max-w-2xl mx-auto">
 
                 {estado === "success" ? (
@@ -84,7 +91,7 @@ export default function FormContactoEmpresarial() {
                         </div>
                         <div>
                             <h3 className="text-2xl font-bold text-slate-900 mb-2">¡Gracias!</h3>
-                            <p className="text-slate-500">Te contactamos en las próximas 24 horas hábiles.</p>
+                            <p className="text-slate-500">Tu solicitud ya ingresó al tablero comercial y te contactamos dentro de las próximas 24 horas hábiles.</p>
                         </div>
                     </div>
                 ) : (
@@ -147,12 +154,13 @@ export default function FormContactoEmpresarial() {
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div>
                                     <label htmlFor="razon_social" className="block text-sm font-medium text-slate-700 mb-1.5">
-                                        Razón social
+                                        Razón social <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         id="razon_social"
                                         name="razon_social"
                                         type="text"
+                                        required
                                         value={form.razon_social}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
@@ -161,21 +169,20 @@ export default function FormContactoEmpresarial() {
                                 </div>
                                 <div>
                                     <label htmlFor="cantidad_empleados" className="block text-sm font-medium text-slate-700 mb-1.5">
-                                        Cantidad de empleados
+                                        Cantidad de empleados <span className="text-red-500">*</span>
                                     </label>
-                                    <select
+                                    <input
                                         id="cantidad_empleados"
                                         name="cantidad_empleados"
+                                        type="number"
+                                        min="1"
+                                        inputMode="numeric"
+                                        required
                                         value={form.cantidad_empleados}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors bg-white"
-                                    >
-                                        <option value="">Seleccioná</option>
-                                        <option value="1-10">1 - 10</option>
-                                        <option value="11-50">11 - 50</option>
-                                        <option value="51-200">51 - 200</option>
-                                        <option value="200+">200+</option>
-                                    </select>
+                                        placeholder="Ej: 35"
+                                    />
                                 </div>
                             </div>
 

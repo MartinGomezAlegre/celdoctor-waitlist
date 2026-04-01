@@ -17,7 +17,7 @@ const BENEFICIOS_PERSONAL = [
 ];
 const BENEFICIOS_FAMILIAR = [
     "Todo lo del plan personal",
-    "Hasta 5 integrantes incluidos",
+    "Titular + 3 integrantes incluidos",
     "Pediatría prioritaria",
     "Certificados escolares y deportivos",
     "Consultas simultáneas",
@@ -39,7 +39,7 @@ function getBeneficios(nombre: string): string[] {
 
 // ─── Fallback ─────────────────────────────────────────────────────────────────
 const FALLBACK_PLANES: Plan[] = [
-    { id: 1, nombre: "Personal", descripcion: "Cobertura ágil para vos. Sin vueltas.", precio_mensual: 4500, max_beneficiarios: 1 },
+    { id: 1, nombre: "Individual", descripcion: "Plan para una persona.", precio_mensual: 5000, max_beneficiarios: 1 },
     { id: 2, nombre: "Familiar", descripcion: "Protección total para tus seres queridos.", precio_mensual: 12500, max_beneficiarios: 4 },
     { id: 3, nombre: "Corporativo", descripcion: "Potenciá la salud de tu equipo.", precio_mensual: 0, max_beneficiarios: null },
 ];
@@ -129,7 +129,7 @@ function PlanCard({
                 ))}
             </ul>
             <Link
-                href={esCorporativo ? "/registro" : ctaHref}
+                href={esCorporativo ? "/planes/corporativos#form-contacto-empresarial" : ctaHref}
                 className="w-full py-4 text-center border border-[#4C1D95]/20 text-[#4C1D95] rounded-xl font-bold hover:bg-[#4C1D95] hover:text-white transition-all block"
             >
                 {esCorporativo ? "Solicitar cotización" : "Elegir este plan"}

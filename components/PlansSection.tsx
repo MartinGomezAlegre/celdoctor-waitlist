@@ -10,9 +10,9 @@ import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 const FALLBACK_PLANES: Plan[] = [
     {
         id: 1,
-        nombre: "Personal",
+        nombre: "Individual",
         descripcion: "Cobertura ágil para vos. Sin vueltas.",
-        precio_mensual: 4500,
+        precio_mensual: 5000,
         max_beneficiarios: 1,
     },
     {
@@ -42,7 +42,7 @@ const BENEFICIOS_PERSONAL = [
 
 const BENEFICIOS_FAMILIAR = [
     "Todo lo del plan personal",
-    "Hasta 5 integrantes incluidos",
+    "Titular + 3 integrantes incluidos",
     "Pediatría prioritaria",
     "Certificados escolares y deportivos",
     "Consultas simultáneas",
@@ -67,7 +67,7 @@ function getBeneficios(nombre: string): string[] {
 function formatBeneficiarios(max: number | null): string {
     if (max === null) return "Beneficiarios ilimitados";
     if (max === 1) return "1 beneficiario";
-    return `Hasta ${max} beneficiarios`;
+    return `${max} personas en total`;
 }
 
 // ─── Skeleton card ────────────────────────────────────────────────────────────
@@ -102,7 +102,13 @@ function PlanCard({
         ? "bg-linear-to-b from-[#4C1D95] to-[#2E1065] border-[#6D28D9] border shadow-2xl shadow-[#4C1D95]/40 hover:scale-[1.02]"
         : "bg-white/5 border border-white/10 hover:border-[#a78bfa]/50 hover:bg-white/10";
 
-    const ctaHref = token ? `/checkout/${plan.id}` : "/registro";
+    const esCorporativo =
+        plan.precio_mensual === 0 ||
+        plan.nombre.toLowerCase().includes("corporat") ||
+        plan.nombre.toLowerCase().includes("empresa");
+    const ctaHref = esCorporativo
+        ? "/planes/corporativos#form-contacto-empresarial"
+        : token ? `/checkout/${plan.id}` : "/registro";
 
     return (
         <div className={`p-8 rounded-3xl transition-all flex flex-col group ${baseCard}`}>
@@ -154,7 +160,7 @@ function PlanCard({
                         : "border border-white/20 text-white hover:bg-white hover:text-[#2E1065]"
                 }`}
             >
-                Contratar ahora
+                {esCorporativo ? "Solicitar propuesta" : "Contratar ahora"}
             </Link>
         </div>
     );

@@ -46,10 +46,21 @@ export function ListaEmpresas({
     async function guardarNueva() {
         setGuardando(true)
         try {
+            const empresaPayload = {
+                razon_social: form.razon_social.trim(),
+                cuit: form.cuit.trim(),
+                nombre_comercial: form.nombre_comercial.trim() || undefined,
+                rubro: form.rubro.trim() || undefined,
+                contacto_nombre: form.contacto_nombre.trim(),
+                contacto_cargo: form.contacto_cargo.trim() || undefined,
+                contacto_email: form.contacto_email.trim(),
+                contacto_telefono: form.contacto_telefono.trim() || undefined,
+            }
+
             const res = await fetch(`${API}/admin/empresas`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", ...authHeaders(token) },
-                body: JSON.stringify(form),
+                body: JSON.stringify(empresaPayload),
             })
             if (!res.ok) throw new Error(await getApiErrorDetail(res, "Error al crear la empresa"))
             const empresaCreada = await res.json() as { id: number }
