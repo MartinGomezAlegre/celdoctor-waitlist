@@ -21,7 +21,8 @@ export interface MetricasEmpresas {
 
 export interface AdminUsuario {
     id: number; nombre: string; apellido: string; email: string; telefono: string;
-    dni: string | null; fecha_nacimiento: string; rol: string; activo: boolean; created_at: string;
+    dni: string | null; fecha_nacimiento: string; rol: string; activo: boolean;
+    plan_nombre?: string | null; estado_suscripcion?: string | null; created_at: string;
 }
 
 export interface AdminSuscripcion {

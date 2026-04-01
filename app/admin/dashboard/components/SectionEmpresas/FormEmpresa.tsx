@@ -1,4 +1,5 @@
 "use client"
+
 import { Modal } from "../shared/Modal"
 import type { AdminPlan, EmpresaForm } from "../../types"
 
@@ -28,7 +29,7 @@ function Campo({ label, name, tipo, required, form, setForm }: {
             <input
                 type={tipo ?? "text"}
                 value={form[name]}
-                onChange={(e) => setForm((p) => ({ ...p, [name]: e.target.value }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, [name]: e.target.value }))}
                 className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]"
             />
         </div>
@@ -36,7 +37,9 @@ function Campo({ label, name, tipo, required, form, setForm }: {
 }
 
 export function FormEmpresa({ title, form, setForm, planes, guardando, onClose, onSave }: Props) {
-    const canSave = !!form.razon_social && !!form.cuit && !!form.contacto_nombre && !!form.contacto_email
+    const showSuscripcion = title === "Nueva empresa"
+    const suscripcionValida = !showSuscripcion || !form.plan_id || (!!form.cantidad_empleados && !!form.precio_por_empleado)
+    const canSave = !!form.razon_social && !!form.cuit && !!form.contacto_nombre && !!form.contacto_email && suscripcionValida
 
     return (
         <Modal
@@ -65,46 +68,59 @@ export function FormEmpresa({ title, form, setForm, planes, guardando, onClose, 
             <div className="space-y-5">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Datos comerciales</p>
                 <div className="grid grid-cols-2 gap-4">
-                    <Campo label="Razón social" name="razon_social" required form={form} setForm={setForm} />
+                    <Campo label="Razon social" name="razon_social" required form={form} setForm={setForm} />
                     <Campo label="CUIT" name="cuit" required form={form} setForm={setForm} />
                     <Campo label="Nombre comercial" name="nombre_comercial" form={form} setForm={setForm} />
                     <Campo label="Rubro" name="rubro" form={form} setForm={setForm} />
                 </div>
+
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider pt-2">Contacto</p>
                 <div className="grid grid-cols-2 gap-4">
                     <Campo label="Nombre contacto" name="contacto_nombre" required form={form} setForm={setForm} />
                     <Campo label="Cargo" name="contacto_cargo" form={form} setForm={setForm} />
                     <Campo label="Email contacto" name="contacto_email" tipo="email" required form={form} setForm={setForm} />
-                    <Campo label="Teléfono" name="contacto_telefono" form={form} setForm={setForm} />
+                    <Campo label="Telefono" name="contacto_telefono" form={form} setForm={setForm} />
                 </div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider pt-2">Suscripción (opcional)</p>
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Plan</label>
-                        <select
-                            value={form.plan_id}
-                            onChange={(e) => setForm((p) => ({ ...p, plan_id: e.target.value }))}
-                            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
-                        >
-                            <option value="">Sin plan</option>
-                            {planes.map((pl) => <option key={pl.id} value={pl.id}>{pl.nombre}</option>)}
-                        </select>
-                    </div>
-                    <Campo label="Cantidad empleados" name="cantidad_empleados" tipo="number" form={form} setForm={setForm} />
-                    <Campo label="Precio por empleado (ARS)" name="precio_por_empleado" tipo="number" form={form} setForm={setForm} />
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Periodicidad</label>
-                        <select
-                            value={form.periodicidad}
-                            onChange={(e) => setForm((p) => ({ ...p, periodicidad: e.target.value }))}
-                            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
-                        >
-                            <option value="mensual">Mensual</option>
-                            <option value="trimestral">Trimestral</option>
-                            <option value="anual">Anual</option>
-                        </select>
-                    </div>
-                </div>
+
+                {showSuscripcion && (
+                    <>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider pt-2">Suscripcion inicial (opcional)</p>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Plan</label>
+                                <select
+                                    value={form.plan_id}
+                                    onChange={(e) => setForm((prev) => ({ ...prev, plan_id: e.target.value }))}
+                                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
+                                >
+                                    <option value="">Sin plan</option>
+                                    {planes.map((plan) => (
+                                        <option key={plan.id} value={plan.id}>{plan.nombre}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <Campo label="Cantidad empleados" name="cantidad_empleados" tipo="number" form={form} setForm={setForm} />
+                            <Campo label="Precio por empleado (ARS)" name="precio_por_empleado" tipo="number" form={form} setForm={setForm} />
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Periodicidad</label>
+                                <select
+                                    value={form.periodicidad}
+                                    onChange={(e) => setForm((prev) => ({ ...prev, periodicidad: e.target.value }))}
+                                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
+                                >
+                                    <option value="mensual">Mensual</option>
+                                    <option value="trimestral">Trimestral</option>
+                                    <option value="anual">Anual</option>
+                                </select>
+                            </div>
+                        </div>
+                        {form.plan_id && !suscripcionValida && (
+                            <p className="text-xs text-amber-600">
+                                Si elegis un plan, completa cantidad de empleados y precio por empleado.
+                            </p>
+                        )}
+                    </>
+                )}
             </div>
         </Modal>
     )

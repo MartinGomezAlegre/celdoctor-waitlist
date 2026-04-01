@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import { Plus } from "lucide-react"
 import type { Empresa, AdminPlan, EmpresaForm, ToastType } from "../../types"
 import { EMPRESA_FORM_VACIO } from "../../types"
-import { API, authHeaders, fmtDate, diasParaVencer } from "../../lib"
+import { API, authHeaders, fmtDate, diasParaVencer, getApiErrorDetail } from "../../lib"
 import { Skeleton } from "../shared/Skeleton"
 import { StatBadge } from "../shared/StatBadge"
 import { Pagination } from "../shared/Pagination"
@@ -51,13 +51,33 @@ export function ListaEmpresas({
                 headers: { "Content-Type": "application/json", ...authHeaders(token) },
                 body: JSON.stringify(form),
             })
-            if (!res.ok) throw new Error()
+            if (!res.ok) throw new Error(await getApiErrorDetail(res, "Error al crear la empresa"))
+            const empresaCreada = await res.json() as { id: number }
+
+            if (form.plan_id && form.cantidad_empleados && form.precio_por_empleado) {
+                const suscripcionRes = await fetch(`${API}/admin/empresas/${empresaCreada.id}/suscripcion`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+                    body: JSON.stringify({
+                        plan_id: Number(form.plan_id),
+                        cantidad_empleados: Number(form.cantidad_empleados),
+                        precio_por_empleado: Number(form.precio_por_empleado),
+                        periodicidad: form.periodicidad,
+                        fecha_inicio: new Date().toISOString().slice(0, 10),
+                    }),
+                })
+
+                if (!suscripcionRes.ok) {
+                    throw new Error(await getApiErrorDetail(suscripcionRes, "La empresa se creó, pero no se pudo generar la suscripción inicial"))
+                }
+            }
+
             addToast("Empresa creada correctamente", "success")
             setModalNueva(false)
             setForm(EMPRESA_FORM_VACIO)
             onRefetch()
-        } catch {
-            addToast("Error al crear la empresa", "error")
+        } catch (error) {
+            addToast(error instanceof Error ? error.message : "Error al crear la empresa", "error")
         } finally {
             setGuardando(false)
         }

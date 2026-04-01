@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import { ArrowLeft } from "lucide-react"
 import type { Empresa, EventoHistorial, AdminPlan, EmpresaForm, ToastType } from "../../types"
 import { EMPRESA_FORM_VACIO } from "../../types"
-import { API, authHeaders, fmtCurrency, fmtDate, diasParaVencer } from "../../lib"
+import { API, authHeaders, fmtCurrency, fmtDate, diasParaVencer, getApiErrorDetail } from "../../lib"
 import { Skeleton } from "../shared/Skeleton"
 import { StatBadge } from "../shared/StatBadge"
 import { FormEmpresa } from "./FormEmpresa"
@@ -90,7 +90,7 @@ export function DetalleEmpresa({ empresa, token, addToast, planes, onVolver }: P
                 headers: { "Content-Type": "application/json", ...authHeaders(token) },
                 body: JSON.stringify(form),
             })
-            if (!res.ok) throw new Error()
+            if (!res.ok) throw new Error(await getApiErrorDetail(res, "Error al guardar la empresa"))
             // Re-fetch para obtener datos actualizados del backend
             const refreshRes = await fetch(`${API}/admin/empresas/${empresaLocal.id}`, {
                 headers: authHeaders(token),
@@ -101,8 +101,8 @@ export function DetalleEmpresa({ empresa, token, addToast, planes, onVolver }: P
             }
             addToast("Empresa actualizada correctamente", "success")
             setModalEditar(false)
-        } catch {
-            addToast("Error al guardar la empresa", "error")
+        } catch (error) {
+            addToast(error instanceof Error ? error.message : "Error al guardar la empresa", "error")
         } finally {
             setGuardando(false)
         }

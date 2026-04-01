@@ -83,9 +83,10 @@ function EstadoBadge({ estado }: { estado: string }) {
 }
 
 function TicketEstadoBadge({ estado }: { estado: string }) {
-    if (estado === "abierto") return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">Abierto</span>;
+    if (estado === "abierto" || estado === "nuevo") return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">Abierto</span>;
     if (estado === "respondido") return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">Respondido</span>;
-    return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">Cerrado</span>;
+    if (estado === "cerrado") return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">Cerrado</span>;
+    return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">{estado}</span>;
 }
 
 // ─── Modal base ───────────────────────────────────────────────────────────────

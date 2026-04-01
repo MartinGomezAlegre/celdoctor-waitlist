@@ -5,13 +5,17 @@ import { X } from "lucide-react";
 import { ToastType, AdminUsuario } from "../types";
 import { API, authHeaders, fmtDate } from "../lib";
 import { TableSkeleton } from "./shared/Skeleton";
-import { ActiveDot } from "./shared/StatBadge";
+import { ActiveDot, StatBadge } from "./shared/StatBadge";
 
 type Filtro = "todos" | "activos" | "inactivos" | "con_plan" | "sin_plan";
 
 interface Props {
   token: string;
   addToast: (msg: string, type: ToastType) => void;
+}
+
+function situacionUsuario(usuario: AdminUsuario): string {
+  return usuario.estado_suscripcion ?? "sin_plan";
 }
 
 export default function SectionPersonas({ token, addToast }: Props) {
@@ -54,7 +58,8 @@ export default function SectionPersonas({ token, addToast }: Props) {
     let matchFiltro = true;
     if (filtro === "activos") matchFiltro = u.activo;
     else if (filtro === "inactivos") matchFiltro = !u.activo;
-    // "con_plan" and "sin_plan" not yet available in interface; fall through to true
+    else if (filtro === "con_plan") matchFiltro = !!u.estado_suscripcion;
+    else if (filtro === "sin_plan") matchFiltro = !u.estado_suscripcion;
 
     return matchBuscar && matchFiltro;
   });
@@ -132,7 +137,7 @@ export default function SectionPersonas({ token, addToast }: Props) {
               <thead className="bg-gray-50">
                 <tr>
                   {[
-                    "Estado",
+                    "Situación",
                     "Nombre",
                     "Email",
                     "DNI",
@@ -164,10 +169,20 @@ export default function SectionPersonas({ token, addToast }: Props) {
                   filtrados.map((u) => (
                     <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
-                        <ActiveDot activo={u.activo} />
+                        <div className="space-y-1">
+                          <StatBadge estado={situacionUsuario(u)} />
+                          {!u.activo && (
+                            <p className="text-[11px] font-medium text-red-500">Cuenta inactiva</p>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
-                        {u.nombre} {u.apellido}
+                        <div>
+                          <p>{u.nombre} {u.apellido}</p>
+                          <p className="text-xs text-slate-400 font-normal">
+                            {u.plan_nombre ?? "Sin plan asignado"}
+                          </p>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-gray-600">{u.email}</td>
                       <td className="px-4 py-3 text-gray-600">
@@ -276,18 +291,25 @@ export default function SectionPersonas({ token, addToast }: Props) {
                   </div>
                 ))}
 
+                {/* Situación */}
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    Situación comercial
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <StatBadge estado={situacionUsuario(drawerUsuario)} />
+                    {drawerUsuario.plan_nombre && (
+                      <span className="text-sm text-gray-600">{drawerUsuario.plan_nombre}</span>
+                    )}
+                  </div>
+                </div>
+
                 {/* Estado */}
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                    Estado
+                    Estado de cuenta
                   </span>
                   <ActiveDot activo={drawerUsuario.activo} />
-                </div>
-
-                {/* Subscription placeholder */}
-                <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-500">
-                  Suscripción activa:{" "}
-                  <span className="italic">(pendiente de implementar)</span>
                 </div>
               </div>
             </div>
