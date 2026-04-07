@@ -3,7 +3,23 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Mail, Phone, CreditCard, Calendar, MapPin, X } from "lucide-react";
+import {
+    User,
+    Mail,
+    Phone,
+    CreditCard,
+    Calendar,
+    MapPin,
+    X,
+    Video,
+    Pill,
+    Stethoscope,
+    FileText,
+    ShoppingCart,
+    MessageSquareText,
+    TriangleAlert,
+    Ban,
+} from "lucide-react";
 import {
     obtenerMiSuscripcion,
     getMiPerfil,
@@ -40,8 +56,8 @@ function diasHasta(iso: string): number {
 
 function saludo(nombre: string): string {
     const h = new Date().getHours();
-    const parte = h >= 6 && h < 12 ? "Buenos dÃ­as" : h >= 12 && h < 19 ? "Buenas tardes" : "Buenas noches";
-    return `${parte}, ${nombre} ðŸ‘‹`;
+    const parte = h >= 6 && h < 12 ? "Buenos dias" : h >= 12 && h < 19 ? "Buenas tardes" : "Buenas noches";
+    return `${parte}, ${nombre}`;
 }
 
 // â”€â”€â”€ Componentes pequeÃ±os â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -210,7 +226,7 @@ function BeneficiariosCard({
                 </div>
             ) : beneficiarios.length === 0 ? (
                 <p className="text-sm text-slate-400 py-3">
-                    TodavÃ­a no cargaste integrantes. PodÃ©s sumar hasta {maxBeneficiarios} personas ademÃ¡s del titular.
+                    Todavia no cargaste integrantes. Podes sumar hasta {maxBeneficiarios} personas ademas del titular.
                 </p>
             ) : (
                 <ul className="space-y-2 mb-4">
@@ -218,7 +234,7 @@ function BeneficiariosCard({
                         <li key={b.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
                             <div>
                                 <p className="text-sm font-medium text-slate-900">{b.nombre} {b.apellido}</p>
-                                <p className="text-xs text-slate-500">{b.relacion} Â· DNI {b.dni}</p>
+                                <p className="text-xs text-slate-500">{b.relacion} - DNI {b.dni}</p>
                             </div>
                             <button
                                 onClick={() => setModalEliminar(b.id)}
@@ -266,11 +282,11 @@ function BeneficiariosCard({
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]" />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">RelaciÃ³n *</label>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">Relacion *</label>
                         <select required value={form.relacion} onChange={(e) => setForm((p) => ({ ...p, relacion: e.target.value }))}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] bg-white">
-                            <option value="">SeleccionÃ¡</option>
-                            <option>CÃ³nyuge</option>
+                            <option value="">Selecciona</option>
+                            <option>Conyuge</option>
                             <option>Hijo/a</option>
                             <option>Padre/Madre</option>
                             <option>Hermano/a</option>
@@ -294,8 +310,8 @@ function BeneficiariosCard({
                 onClose={() => setModalEliminar(null)}
                 onConfirm={handleEliminar}
                 loading={eliminando}
-                title="Â¿Eliminar integrante?"
-                description="Esta acciÃ³n no se puede deshacer."
+                title="Eliminar integrante?"
+                description="Esta accion no se puede deshacer."
             />
         </Card>
     );
@@ -363,59 +379,33 @@ function SoporteCard({ token }: { token: string }) {
 
     return (
         <Card>
-            <div className="mb-5 overflow-hidden rounded-3xl border border-slate-100 bg-gradient-to-br from-white via-slate-50 to-violet-50/70">
-                <div className="border-b border-slate-100 px-5 py-5">
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="min-w-0">
-                                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-violet-500">Soporte</p>
-                                <h3 className="text-lg font-bold text-slate-900">Consultas escritas con seguimiento</h3>
-                                <p className="mt-1 text-sm leading-6 text-slate-500">
-                                    Envia tu consulta desde el panel y segui la respuesta del equipo administrador en este mismo espacio.
-                                </p>
-                            </div>
-                            <button
-                                onClick={() => setModalNuevo(true)}
-                                className="inline-flex items-center justify-center rounded-2xl bg-[#4C1D95] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#4C1D95]/15 transition-colors hover:bg-[#3b1675]"
-                            >
-                                + Nueva consulta
-                            </button>
+            <div className="mb-5 flex flex-col gap-4 rounded-3xl border border-slate-100 bg-gradient-to-br from-white via-slate-50 to-violet-50/70 p-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-violet-500">Soporte</p>
+                        <div className="flex items-center gap-2">
+                            <MessageSquareText className="h-5 w-5 text-[#4C1D95]" />
+                            <h3 className="text-lg font-bold text-slate-900">Consultas desde tu panel</h3>
                         </div>
-
-                        <div className="rounded-2xl border border-violet-100 bg-white/90 p-4 shadow-sm">
-                            <div className="flex items-start gap-3">
-                                <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-lg font-bold text-violet-700">
-                                    +
-                                </span>
-                                <div className="min-w-0">
-                                    <p className="text-sm font-semibold text-slate-900">Canal interno con el equipo admin</p>
-                                    <p className="mt-1 text-sm leading-6 text-slate-500">
-                                        Cada mensaje queda registrado en tu cuenta y se envia al backoffice para que el equipo lo responda desde este mismo panel.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Canal habilitado</p>
-                                <p className="mt-1 text-sm font-medium text-slate-800">Soporte escrito</p>
-                            </div>
-                            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Casos registrados</p>
-                                <p className="mt-1 text-sm font-bold text-slate-900">{tickets.length}</p>
-                            </div>
-                        </div>
+                        <p className="mt-1 text-sm leading-6 text-slate-500">
+                            Escribinos desde aca y te respondemos en este mismo espacio.
+                        </p>
                     </div>
+                    <button
+                        onClick={() => setModalNuevo(true)}
+                        className="inline-flex items-center justify-center rounded-2xl bg-[#4C1D95] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#4C1D95]/15 transition-colors hover:bg-[#3b1675]"
+                    >
+                        Nueva consulta
+                    </button>
                 </div>
             </div>
 
             <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
                     <p className="text-sm font-semibold text-slate-900">Seguimiento de casos</p>
-                    <p className="mt-0.5 text-xs text-slate-400">Ultimas consultas enviadas desde tu cuenta.</p>
+                    <p className="mt-0.5 text-xs text-slate-400">Tus ultimas consultas y respuestas.</p>
                 </div>
-                <span className="text-xs font-medium text-slate-400">{tickets.length} ticket(s)</span>
+                <span className="text-xs font-medium text-slate-400">{tickets.length} caso(s)</span>
             </div>
 
             {cargando ? (
@@ -425,7 +415,7 @@ function SoporteCard({ token }: { token: string }) {
                 </div>
             ) : ultimos.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-5 text-sm text-slate-400">
-                    Todavia no tenes consultas cargadas. Cuando necesites ayuda podes abrir un caso nuevo y te responderemos desde este mismo panel.
+                    Todavia no tenes consultas cargadas. Cuando necesites ayuda podes abrir un caso nuevo desde este panel.
                 </div>
             ) : (
                 <ul className="space-y-2">
@@ -578,7 +568,7 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
                         <span className="text-sm text-slate-700">
                             {perfil.direccion}
                             {(perfil.localidad || perfil.provincia || perfil.codigo_postal || perfil.pais) && (
-                                <> Â· {[perfil.localidad, perfil.provincia, perfil.codigo_postal, perfil.pais].filter(Boolean).join(", ")}</>
+                                <> - {[perfil.localidad, perfil.provincia, perfil.codigo_postal, perfil.pais].filter(Boolean).join(", ")}</>
                             )}
                         </span>
                     </div>
@@ -606,7 +596,7 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
                         </div>
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">TelÃ©fono</label>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">Telefono</label>
                         <input type="tel" value={form.telefono} onChange={(e) => setForm((p) => ({ ...p, telefono: e.target.value }))}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]"
                             placeholder="+54 9 11 1234-5678" />
@@ -624,10 +614,10 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
                             placeholder="20-12345678-3" />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">DirecciÃ³n</label>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">Direccion</label>
                         <input value={form.direccion} onChange={(e) => setForm((p) => ({ ...p, direccion: e.target.value }))}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]"
-                            placeholder="Calle, nÃºmero, piso y departamento" />
+                            placeholder="Calle, numero, piso y departamento" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -636,7 +626,7 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
                                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]" />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-slate-700 mb-1">CÃ³digo postal</label>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">Codigo postal</label>
                             <input value={form.codigo_postal} onChange={(e) => setForm((p) => ({ ...p, codigo_postal: e.target.value }))}
                                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]" />
                         </div>
@@ -646,7 +636,7 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
                                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]" />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-slate-700 mb-1">PaÃ­s</label>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">Pais</label>
                             <input value={form.pais} onChange={(e) => setForm((p) => ({ ...p, pais: e.target.value }))}
                                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]" />
                         </div>
@@ -740,7 +730,7 @@ export default function DashboardPage() {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center px-6">
                 <div className="text-center">
-                    <p className="text-sm font-medium text-slate-600">Redirigiendo a inicio de sesiÃ³nâ€¦</p>
+                    <p className="text-sm font-medium text-slate-600">Redirigiendo a inicio de sesion...</p>
                 </div>
             </div>
         );
@@ -766,17 +756,17 @@ export default function DashboardPage() {
                                 {estaActiva && (
                                     <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                        Plan {nombrePlan} â€” Activo
+                                        Plan {nombrePlan} - Activo
                                     </span>
                                 )}
                             </div>
 
-                            {/* Banner vencimiento prÃ³ximo */}
+                            {/* Banner vencimiento proximo */}
                             {proxAVencer && !vencida && (
                                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-4 mt-4">
-                                    <span className="text-2xl shrink-0">âš ï¸</span>
+                                    <TriangleAlert className="h-7 w-7 shrink-0 text-amber-600" />
                                     <div className="flex-1">
-                                        <p className="font-bold text-amber-800">Tu plan vence en {diasRestantes} dÃ­as</p>
+                                        <p className="font-bold text-amber-800">Tu plan vence en {diasRestantes} dias</p>
                                         <p className="text-sm text-amber-600">Renovalo ahora para no perder el acceso</p>
                                     </div>
                                     <Link href="/planes" className="shrink-0 px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-bold hover:bg-amber-600 transition-colors">
@@ -788,9 +778,9 @@ export default function DashboardPage() {
                             {/* Banner plan vencido */}
                             {vencida && (
                                 <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center gap-4 mt-4">
-                                    <span className="text-2xl shrink-0">ðŸš«</span>
+                                    <Ban className="h-7 w-7 shrink-0 text-red-600" />
                                     <div className="flex-1">
-                                        <p className="font-bold text-red-800">Tu plan venciÃ³</p>
+                                        <p className="font-bold text-red-800">Tu plan vencio</p>
                                         <p className="text-sm text-red-600">Renovalo para recuperar el acceso a tus beneficios</p>
                                     </div>
                                     <Link href="/planes" className="shrink-0 px-4 py-2 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-colors">
@@ -819,7 +809,7 @@ export default function DashboardPage() {
                         {/* COLUMNA IZQUIERDA */}
                         <div className="lg:col-span-2 space-y-6">
 
-                            {/* Card 1 â€” Estado de suscripciÃ³n */}
+                            {/* Card 1 - Estado de suscripcion */}
                             {suscripcion ? (
                                 <Card>
                                     <div className="bg-linear-to-br from-[#4C1D95]/5 to-[#4C1D95]/10 border border-[#4C1D95]/10 rounded-xl p-5">
@@ -847,43 +837,43 @@ export default function DashboardPage() {
 
                                     {suscripcion.estado.toLowerCase() === "pendiente_pago" && (
                                         <p className="mt-3 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
-                                            Tu pago estÃ¡ siendo verificado. Te notificaremos cuando se acredite.
+                                            Tu pago esta siendo verificado. Te notificaremos cuando se acredite.
                                         </p>
                                     )}
 
                                     {estaActiva && (
                                         <div className="mt-4">
                                             <Link href="/planes" className="inline-flex items-center px-4 py-2 text-sm font-semibold text-[#4C1D95] border border-[#4C1D95]/20 rounded-lg hover:bg-[#4C1D95]/5 transition-colors">
-                                                Â¿QuerÃ©s mejorar tu plan?
+                                                Queres mejorar tu plan?
                                             </Link>
                                         </div>
                                     )}
                                 </Card>
                             ) : (
                                 <Card className="p-8">
-                                    <h2 className="text-lg font-bold text-slate-900 mb-2">Sin suscripciÃ³n activa</h2>
-                                    <p className="text-sm text-slate-500 mb-6">No tenÃ©s un plan activo. ElegÃ­ el que mejor se adapte a vos.</p>
+                                    <h2 className="text-lg font-bold text-slate-900 mb-2">Sin suscripcion activa</h2>
+                                    <p className="text-sm text-slate-500 mb-6">No tenes un plan activo. Elegi el que mejor se adapte a vos.</p>
                                     <Link href="/planes"
                                         className="inline-flex items-center px-6 py-3 bg-[#4C1D95] text-white rounded-xl text-sm font-bold hover:bg-[#3b1675] transition-all shadow-lg shadow-[#4C1D95]/20">
-                                        ElegÃ­ tu primer plan
+                                        Elegi tu primer plan
                                     </Link>
                                 </Card>
                             )}
 
-                            {/* Card 2 â€” Beneficios activos */}
+                            {/* Card 2 - Beneficios activos */}
                             {estaActiva && (
                                 <Card>
                                     <h3 className="font-bold text-slate-900 mb-4">Mis beneficios activos</h3>
                                     <ul className="space-y-3">
                                         {[
-                                            { icon: "ðŸŽ¥", titulo: "Videoconsultas 24/7", desc: "AtenciÃ³n mÃ©dica inmediata" },
-                                            { icon: "ðŸ’Š", titulo: "Recetas digitales", desc: "VÃ¡lidas en cualquier farmacia" },
-                                            { icon: "ðŸ¥", titulo: "Especialistas", desc: "Sin derivaciones previas" },
-                                            { icon: "ðŸ“‹", titulo: "Historia clÃ­nica digital", desc: "AccedÃ© desde la app" },
-                                            { icon: "ðŸ›’", titulo: "Descuentos en farmacias", desc: "Hasta 70% de descuento" },
+                                            { icon: Video, titulo: "Videoconsultas 24/7", desc: "Atencion medica inmediata" },
+                                            { icon: Pill, titulo: "Recetas digitales", desc: "Validas en cualquier farmacia" },
+                                            { icon: Stethoscope, titulo: "Especialistas", desc: "Sin derivaciones previas" },
+                                            { icon: FileText, titulo: "Historia clinica digital", desc: "Accede desde la app" },
+                                            { icon: ShoppingCart, titulo: "Descuentos en farmacias", desc: "Hasta 70% de descuento" },
                                         ].map((b) => (
                                             <li key={b.titulo} className="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
-                                                <span className="text-xl shrink-0">{b.icon}</span>
+                                                <b.icon className="h-5 w-5 shrink-0 text-[#4C1D95]" />
                                                 <div>
                                                     <p className="text-sm font-semibold text-slate-900">{b.titulo}</p>
                                                     <p className="text-xs text-slate-500">{b.desc}</p>
@@ -893,12 +883,14 @@ export default function DashboardPage() {
                                     </ul>
                                     <a href="https://mediquo.com" target="_blank" rel="noopener noreferrer"
                                         className="mt-5 flex items-center justify-center w-full py-3 bg-[#4C1D95] text-white rounded-xl text-sm font-bold hover:bg-[#3b1675] transition-all shadow-lg shadow-[#4C1D95]/20">
-                                        Acceder a Mediquo â†’
+                                        Acceder a Mediquo
                                     </a>
                                 </Card>
                             )}
 
-                            {/* Card 3 â€” Beneficiarios */}
+                            {estaActiva && <SoporteCard token={token} />}
+
+                            {/* Card 3 - Beneficiarios */}
                             {estaActiva && tieneBeneficiarios && (
                                 <BeneficiariosCard
                                     token={token}
@@ -906,8 +898,6 @@ export default function DashboardPage() {
                                     totalIntegrantes={totalIntegrantes}
                                 />
                             )}
-
-                            {/* Card 4 â€” Soporte */}
                         </div>
 
                         {/* COLUMNA DERECHA */}
@@ -917,19 +907,18 @@ export default function DashboardPage() {
                                 <DatosCuentaCard perfil={perfil} token={token} onActualizar={setPerfil} />
                             )}
 
-                            <SoporteCard token={token} />
                         </div>
                     </div>
                 )}
 
-                {/* SECCIÃ“N 3 â€” Upgrade CTA */}
+                {/* SECCION 3 - Upgrade CTA */}
                 {estaActiva && !esElMasCaro && planes.length > 0 && (
                     <div className="mt-8 p-5 rounded-2xl border border-[#4C1D95]/15 bg-[#4C1D95]/5 flex items-center justify-between gap-4">
                         <p className="text-sm text-slate-700">
-                            Â¿QuerÃ©s agregar mÃ¡s cobertura? <span className="font-semibold">ConocÃ© el Plan Familiar</span>
+                            Queres agregar mas cobertura? <span className="font-semibold">Conoce el Plan Familiar</span>
                         </p>
                         <Link href="/planes" className="shrink-0 text-sm font-bold text-[#4C1D95] hover:underline whitespace-nowrap">
-                            Ver planes â†’
+                            Ver planes
                         </Link>
                     </div>
                 )}
