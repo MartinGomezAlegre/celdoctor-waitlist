@@ -43,7 +43,9 @@ export interface AdminUsuarioDetalle extends AdminUsuario {
     cuit?: string | null
     direccion?: string | null
     localidad?: string | null
+    codigo_postal?: string | null
     provincia?: string | null
+    pais?: string | null
     beneficiarios: AdminBeneficiario[]
 }
 

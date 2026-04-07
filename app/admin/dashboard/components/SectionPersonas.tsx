@@ -314,7 +314,9 @@ export default function SectionPersonas({ token, addToast }: Props) {
                   { label: "CUIT", value: drawerDetalle?.cuit ?? "—" },
                   { label: "Direccion", value: drawerDetalle?.direccion || "—" },
                   { label: "Localidad", value: drawerDetalle?.localidad || "—" },
+                  { label: "Codigo postal", value: drawerDetalle?.codigo_postal || "—" },
                   { label: "Provincia", value: drawerDetalle?.provincia || "—" },
+                  { label: "Pais", value: drawerDetalle?.pais || "—" },
                   { label: "DNI", value: usuarioDetalle?.dni ?? "—" },
                   { label: "Telefono", value: usuarioDetalle?.telefono || "—" },
                   {

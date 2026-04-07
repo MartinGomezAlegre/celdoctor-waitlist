@@ -16,6 +16,10 @@ export default function RegistroPage() {
         dni: "",
         cuit: "",
         direccion: "",
+        localidad: "",
+        codigo_postal: "",
+        provincia: "",
+        pais: "",
         fecha_nacimiento: "",
         contrasenia: "",
     });
@@ -34,6 +38,10 @@ export default function RegistroPage() {
         if (!dniRegex.test(form.dni)) return "Ingresá un DNI válido (7-8 dígitos).";
         if (form.cuit.trim().length < 8) return "Ingresá un CUIT o CUIL válido.";
         if (form.direccion.trim().length < 6) return "Ingresá una dirección válida.";
+        if (form.localidad.trim().length < 2) return "Ingresá una localidad válida.";
+        if (form.codigo_postal.trim().length < 3) return "Ingresá un código postal válido.";
+        if (form.provincia.trim().length < 2) return "Ingresá una provincia válida.";
+        if (form.pais.trim().length < 2) return "Ingresá un país válido.";
         if (form.contrasenia.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
         if (!aceptaTerminos) return "Debés aceptar los términos y condiciones.";
         return null;
@@ -62,7 +70,7 @@ export default function RegistroPage() {
     }
 
     return (
-        <div className="w-full max-w-lg">
+        <div className="w-full max-w-2xl">
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
                 <h1 className="text-2xl font-bold text-slate-900 mb-1">Crear cuenta</h1>
                 <p className="text-sm text-slate-500 mb-8">
@@ -73,6 +81,13 @@ export default function RegistroPage() {
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">Alta de cuenta</p>
+                        <p className="text-sm text-slate-600">
+                            Completá tus datos personales y tu domicilio para dejar la cuenta lista para validación y facturación.
+                        </p>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label htmlFor="nombre" className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -175,21 +190,83 @@ export default function RegistroPage() {
                         />
                     </div>
 
-                    <div>
-                        <label htmlFor="direccion" className="block text-sm font-medium text-slate-700 mb-1.5">
-                            Dirección
-                        </label>
-                        <input
-                            id="direccion"
-                            name="direccion"
-                            type="text"
-                            required
-                            autoComplete="street-address"
-                            value={form.direccion}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
-                            placeholder="Calle, número, piso y departamento"
-                        />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="sm:col-span-2">
+                            <label htmlFor="direccion" className="block text-sm font-medium text-slate-700 mb-1.5">
+                                Dirección
+                            </label>
+                            <input
+                                id="direccion"
+                                name="direccion"
+                                type="text"
+                                required
+                                autoComplete="street-address"
+                                value={form.direccion}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                                placeholder="Calle, número, piso y departamento"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="localidad" className="block text-sm font-medium text-slate-700 mb-1.5">
+                                Localidad
+                            </label>
+                            <input
+                                id="localidad"
+                                name="localidad"
+                                type="text"
+                                required
+                                value={form.localidad}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                                placeholder="CABA"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="codigo_postal" className="block text-sm font-medium text-slate-700 mb-1.5">
+                                Código postal
+                            </label>
+                            <input
+                                id="codigo_postal"
+                                name="codigo_postal"
+                                type="text"
+                                required
+                                value={form.codigo_postal}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                                placeholder="1425"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="provincia" className="block text-sm font-medium text-slate-700 mb-1.5">
+                                Provincia
+                            </label>
+                            <input
+                                id="provincia"
+                                name="provincia"
+                                type="text"
+                                required
+                                value={form.provincia}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                                placeholder="Buenos Aires"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="pais" className="block text-sm font-medium text-slate-700 mb-1.5">
+                                País
+                            </label>
+                            <input
+                                id="pais"
+                                name="pais"
+                                type="text"
+                                required
+                                value={form.pais}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                                placeholder="Argentina"
+                            />
+                        </div>
                     </div>
 
                     <div>

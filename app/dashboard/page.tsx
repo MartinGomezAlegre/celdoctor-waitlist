@@ -363,39 +363,77 @@ function SoporteCard({ token }: { token: string }) {
 
     return (
         <Card>
-            <div className="flex items-center justify-between mb-4">
-                <div>
-                    <h3 className="font-bold text-slate-900">Soporte</h3>
-                    <p className="text-xs text-slate-400 mt-1">Canales rápidos y seguimiento de tus consultas.</p>
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 mb-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 mb-2">Soporte</p>
+                        <h3 className="text-lg font-bold text-slate-900">Canales rápidos y seguimiento</h3>
+                        <p className="text-sm text-slate-500 mt-1 max-w-sm">
+                            Abrí una consulta, escribinos por WhatsApp o seguí el estado de tus casos desde el mismo panel.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setModalNuevo(true)}
+                        className="inline-flex items-center justify-center rounded-xl bg-[#4C1D95] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#4C1D95]/15 transition-colors hover:bg-[#3b1675]"
+                    >
+                        + Nueva consulta
+                    </button>
                 </div>
-                <button onClick={() => setModalNuevo(true)}
-                    className="text-xs font-semibold text-[#4C1D95] hover:underline">
-                    + Nueva consulta
-                </button>
-            </div>
 
-            <div className="grid gap-3 mb-5 sm:grid-cols-2">
-                <a href="https://wa.me/5491100000000" target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors">
-                    <span className="text-xl">💬</span>
+                <div className="grid gap-3 mt-5 sm:grid-cols-2">
+                    <a
+                        href="https://wa.me/5491100000000"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 transition-colors hover:bg-emerald-100"
+                    >
+                        <div className="flex items-start gap-3">
+                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white text-xl shadow-sm">💬</span>
+                            <div>
+                                <p className="text-sm font-semibold text-emerald-900">WhatsApp prioritario</p>
+                                <p className="text-xs text-emerald-700 mt-1">Respuesta inmediata para resolver dudas rápidas.</p>
+                                <span className="mt-3 inline-flex text-xs font-semibold text-emerald-800 group-hover:translate-x-0.5 transition-transform">
+                                    Abrir chat →
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a
+                        href="mailto:soporte@celdoctor.com"
+                        className="group rounded-2xl border border-slate-200 bg-white px-4 py-4 transition-colors hover:bg-slate-50"
+                    >
+                        <div className="flex items-start gap-3">
+                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-xl">✉️</span>
+                            <div>
+                                <p className="text-sm font-semibold text-slate-900">Email de soporte</p>
+                                <p className="text-xs text-slate-500 mt-1 break-all">soporte@celdoctor.com</p>
+                                <span className="mt-3 inline-flex text-xs font-semibold text-slate-700 group-hover:translate-x-0.5 transition-transform">
+                                    Enviar mail →
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
                     <div>
-                        <p className="text-sm font-semibold text-emerald-800">WhatsApp</p>
-                        <p className="text-xs text-emerald-600">Respuesta inmediata</p>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Horario</p>
+                        <p className="text-sm font-medium text-slate-700">Lunes a viernes · 9 a 18 hs</p>
                     </div>
-                </a>
-                <a href="mailto:soporte@celdoctor.com"
-                    className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
-                    <span className="text-xl">✉️</span>
-                    <div>
-                        <p className="text-sm font-semibold text-slate-700">Email</p>
-                        <p className="text-xs text-slate-500">soporte@celdoctor.com</p>
+                    <div className="text-right">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Casos registrados</p>
+                        <p className="text-sm font-bold text-slate-900">{tickets.length}</p>
                     </div>
-                </a>
+                </div>
             </div>
 
             <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold text-slate-900">Seguimiento de casos</p>
-                <span className="text-xs text-slate-400">{tickets.length} ticket(s)</span>
+                <div>
+                    <p className="text-sm font-semibold text-slate-900">Seguimiento de casos</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Últimas consultas enviadas desde tu cuenta.</p>
+                </div>
+                <span className="text-xs font-medium text-slate-400">{tickets.length} ticket(s)</span>
             </div>
 
             {cargando ? (
@@ -404,30 +442,34 @@ function SoporteCard({ token }: { token: string }) {
                     <SkeletonBlock className="h-12" />
                 </div>
             ) : ultimos.length === 0 ? (
-                <p className="text-sm text-slate-400 py-3">Todavía no tenés consultas abiertas.</p>
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-5 text-sm text-slate-400">
+                    Todavía no tenés consultas abiertas. Si necesitás ayuda, podés escribirnos por WhatsApp o crear un ticket nuevo.
+                </div>
             ) : (
                 <ul className="space-y-2">
                     {ultimos.map((t) => (
-                        <li key={t.id} className="border border-slate-100 rounded-xl overflow-hidden">
+                        <li key={t.id} className="rounded-2xl border border-slate-100 bg-white overflow-hidden shadow-sm">
                             <button
-                                className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 transition-colors"
+                                className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 transition-colors"
                                 onClick={() => setExpandido(expandido === t.id ? null : t.id)}
                             >
                                 <div className="min-w-0 flex-1 mr-3">
-                                    <p className="text-sm font-medium text-slate-900 truncate">{t.asunto}</p>
-                                    <p className="text-xs text-slate-400 mt-0.5">{new Date(t.created_at).toLocaleDateString("es-AR")}</p>
+                                    <p className="text-sm font-semibold text-slate-900 truncate">{t.asunto}</p>
+                                    <p className="text-xs text-slate-400 mt-1">
+                                        Creado el {new Date(t.created_at).toLocaleDateString("es-AR")}
+                                    </p>
                                 </div>
                                 <TicketEstadoBadge estado={t.estado} />
                             </button>
                             {expandido === t.id && (
-                                <div className="px-3 pb-3 pt-0">
+                                <div className="px-4 pb-4 pt-0 border-t border-slate-100 bg-slate-50/70">
                                     {t.respuesta ? (
                                         <>
-                                            <p className="text-xs font-semibold text-slate-500 mb-1">Respuesta:</p>
-                                            <p className="text-sm text-slate-700 bg-slate-50 rounded-lg p-3">{t.respuesta}</p>
+                                            <p className="text-xs font-semibold text-slate-500 mb-2 mt-3">Respuesta del equipo</p>
+                                            <p className="text-sm text-slate-700 bg-white rounded-xl border border-slate-200 p-3">{t.respuesta}</p>
                                         </>
                                     ) : (
-                                        <p className="text-xs text-slate-400">Todavía estamos revisando tu caso.</p>
+                                        <p className="text-xs text-slate-500 mt-3">Todavía estamos revisando tu caso. Cuando haya novedades te las mostramos acá.</p>
                                     )}
                                 </div>
                             )}
@@ -479,7 +521,9 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
         cuit: perfil.cuit ?? "",
         direccion: perfil.direccion ?? "",
         localidad: perfil.localidad ?? "",
+        codigo_postal: perfil.codigo_postal ?? "",
         provincia: perfil.provincia ?? "",
+        pais: perfil.pais ?? "",
     });
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -512,7 +556,9 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
                         cuit: perfil.cuit ?? "",
                         direccion: perfil.direccion ?? "",
                         localidad: perfil.localidad ?? "",
+                        codigo_postal: perfil.codigo_postal ?? "",
                         provincia: perfil.provincia ?? "",
+                        pais: perfil.pais ?? "",
                     });
                     setModalEditar(true);
                 }}
@@ -552,7 +598,9 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
                         <MapPin size={15} className="text-slate-400 shrink-0 mt-0.5" />
                         <span className="text-sm text-slate-700">
                             {perfil.direccion}
-                            {(perfil.localidad || perfil.provincia) && <> · {[perfil.localidad, perfil.provincia].filter(Boolean).join(", ")}</>}
+                            {(perfil.localidad || perfil.provincia || perfil.codigo_postal || perfil.pais) && (
+                                <> · {[perfil.localidad, perfil.provincia, perfil.codigo_postal, perfil.pais].filter(Boolean).join(", ")}</>
+                            )}
                         </span>
                     </div>
                 )}
@@ -609,8 +657,18 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
                                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]" />
                         </div>
                         <div>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">Código postal</label>
+                            <input value={form.codigo_postal} onChange={(e) => setForm((p) => ({ ...p, codigo_postal: e.target.value }))}
+                                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]" />
+                        </div>
+                        <div>
                             <label className="block text-xs font-medium text-slate-700 mb-1">Provincia</label>
                             <input value={form.provincia} onChange={(e) => setForm((p) => ({ ...p, provincia: e.target.value }))}
+                                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">País</label>
+                            <input value={form.pais} onChange={(e) => setForm((p) => ({ ...p, pais: e.target.value }))}
                                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]" />
                         </div>
                     </div>
