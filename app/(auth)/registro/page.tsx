@@ -14,6 +14,8 @@ export default function RegistroPage() {
         email: "",
         telefono: "",
         dni: "",
+        cuit: "",
+        direccion: "",
         fecha_nacimiento: "",
         contrasenia: "",
     });
@@ -30,6 +32,8 @@ export default function RegistroPage() {
         if (!emailRegex.test(form.email)) return "El email no es válido.";
         const dniRegex = /^\d{7,8}$/;
         if (!dniRegex.test(form.dni)) return "Ingresá un DNI válido (7-8 dígitos).";
+        if (form.cuit.trim().length < 8) return "Ingresá un CUIT o CUIL válido.";
+        if (form.direccion.trim().length < 6) return "Ingresá una dirección válida.";
         if (form.contrasenia.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
         if (!aceptaTerminos) return "Debés aceptar los términos y condiciones.";
         return null;
@@ -152,6 +156,39 @@ export default function RegistroPage() {
                             onChange={handleChange}
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
                             placeholder="12345678"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="cuit" className="block text-sm font-medium text-slate-700 mb-1.5">
+                            CUIT / CUIL
+                        </label>
+                        <input
+                            id="cuit"
+                            name="cuit"
+                            type="text"
+                            required
+                            value={form.cuit}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                            placeholder="20-12345678-3"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="direccion" className="block text-sm font-medium text-slate-700 mb-1.5">
+                            Dirección
+                        </label>
+                        <input
+                            id="direccion"
+                            name="direccion"
+                            type="text"
+                            required
+                            autoComplete="street-address"
+                            value={form.direccion}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                            placeholder="Calle, número, piso y departamento"
                         />
                     </div>
 

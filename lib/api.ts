@@ -68,6 +68,10 @@ export interface MiPerfil {
     email: string;
     telefono?: string;
     dni?: string;
+    cuit?: string;
+    direccion?: string;
+    localidad?: string;
+    provincia?: string;
     fecha_nacimiento?: string;
     rol?: string;
 }
@@ -129,6 +133,8 @@ export async function registrarUsuario(datos: {
     email: string;
     telefono: string;
     dni: string;
+    cuit: string;
+    direccion: string;
     fecha_nacimiento: string;
     contrasenia: string;
 }): Promise<Usuario> {

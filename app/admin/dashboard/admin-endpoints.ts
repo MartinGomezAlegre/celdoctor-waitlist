@@ -29,10 +29,14 @@ export const adminEndpoints = {
         `/admin/empresas/${empId}/empleados/${empId2}/estado`,
 
     // Catálogo
+    catalogoPlanes:          "/admin/catalogo/planes",
+    catalogoPlan: (id: number) => `/admin/catalogo/planes/${id}`,
     planes:                  "/admin/planes",
     plan: (id: number) =>    `/admin/planes/${id}`,
     cupones:                 "/admin/catalogo/cupones",
     cupon: (id: number) =>   `/admin/catalogo/cupones/${id}`,
+    cuponEstado: (id: number) => `/admin/catalogo/cupones/${id}/estado`,
+    catalogoHistorial:       "/admin/catalogo/historial",
 
     // Facturación
     pagos:                   "/admin/facturacion/pagos",

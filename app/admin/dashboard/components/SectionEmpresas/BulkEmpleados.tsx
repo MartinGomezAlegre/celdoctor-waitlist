@@ -66,11 +66,13 @@ export function BulkEmpleados({ empresaId, token, addToast, onClose, onSuccess }
             }
         >
             <div className="space-y-4">
-                <p className="text-xs text-slate-400">Formato: Nombre,Apellido,DNI,Email,Cargo (una por línea)</p>
+                <p className="text-xs text-slate-400">
+                    Formato: Nombre,Apellido,DNI,Email,Cargo,Telefono. El teléfono es opcional, pero conviene incluirlo para seguimiento.
+                </p>
                 <textarea
                     value={textoBulk}
                     onChange={(e) => setTextoBulk(e.target.value)}
-                    placeholder={"Juan,Pérez,12345678,juan@empresa.com,Desarrollador\nMaría,López,87654321,maria@empresa.com,Diseñadora"}
+                    placeholder={"Juan,Pérez,12345678,juan@empresa.com,Desarrollador,1150012233\nMaría,López,87654321,maria@empresa.com,Diseñadora,"}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm resize-none h-40 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 font-mono"
                 />
                 {lineas > 0 && !resultado && (

@@ -311,6 +311,10 @@ export default function SectionPersonas({ token, addToast }: Props) {
                     value: `${usuarioDetalle?.nombre} ${usuarioDetalle?.apellido}`,
                   },
                   { label: "Email", value: usuarioDetalle?.email },
+                  { label: "CUIT", value: drawerDetalle?.cuit ?? "—" },
+                  { label: "Direccion", value: drawerDetalle?.direccion || "—" },
+                  { label: "Localidad", value: drawerDetalle?.localidad || "—" },
+                  { label: "Provincia", value: drawerDetalle?.provincia || "—" },
                   { label: "DNI", value: usuarioDetalle?.dni ?? "—" },
                   { label: "Telefono", value: usuarioDetalle?.telefono || "—" },
                   {

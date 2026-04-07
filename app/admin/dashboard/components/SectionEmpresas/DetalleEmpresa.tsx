@@ -70,6 +70,10 @@ export function DetalleEmpresa({ empresa, token, addToast, planes, onVolver }: P
             cuit: empresaLocal.cuit,
             nombre_comercial: empresaLocal.nombre_comercial ?? "",
             rubro: empresaLocal.rubro ?? "",
+            direccion: empresaLocal.direccion ?? "",
+            localidad: empresaLocal.localidad ?? "",
+            provincia: empresaLocal.provincia ?? "",
+            responsabilidad_iva: empresaLocal.responsabilidad_iva ?? "",
             contacto_nombre: empresaLocal.contacto_nombre,
             contacto_cargo: empresaLocal.contacto_cargo ?? "",
             contacto_email: empresaLocal.contacto_email,
@@ -196,6 +200,10 @@ export function DetalleEmpresa({ empresa, token, addToast, planes, onVolver }: P
                         <InfoRow label="CUIT" value={empresaLocal.cuit} />
                         <InfoRow label="Nombre comercial" value={empresaLocal.nombre_comercial} />
                         <InfoRow label="Rubro" value={empresaLocal.rubro} />
+                        <InfoRow label="Responsabilidad IVA" value={empresaLocal.responsabilidad_iva} />
+                        <InfoRow label="Direccion" value={empresaLocal.direccion} />
+                        <InfoRow label="Localidad" value={empresaLocal.localidad} />
+                        <InfoRow label="Provincia" value={empresaLocal.provincia} />
                     </div>
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-3">
                         <h3 className="font-semibold text-slate-800 text-sm">Contacto</h3>

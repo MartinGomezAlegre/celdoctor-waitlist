@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { ToggleLeft, ToggleRight, Plus, Tag } from "lucide-react"
-import type { AdminPlan, Cupon, ToastType } from "../types"
+import { useCallback, useEffect, useState } from "react"
+import { Clock3, Plus, Tag, ToggleLeft, ToggleRight } from "lucide-react"
+import type { AdminPlan, CatalogoHistorialItem, Cupon, ToastType } from "../types"
 import { API, authHeaders, fmtCurrency, fmtDate } from "../lib"
+import { adminEndpoints } from "../admin-endpoints"
 import { Skeleton } from "./shared/Skeleton"
 import { ActiveDot } from "./shared/StatBadge"
 
@@ -14,9 +15,82 @@ interface Props {
     addToast: (msg: string, type: ToastType) => void
 }
 
-// ─── PLANES ───────────────────────────────────────────────────────────────────
+interface CatalogoManagedProps extends Props {
+    onCatalogChange: () => Promise<void>
+}
 
-function SubPlanes({ token, addToast }: Props) {
+async function getErrorMessage(res: Response, fallback: string) {
+    try {
+        const data = (await res.json()) as { detail?: string }
+        if (typeof data.detail === "string" && data.detail.trim()) {
+            return data.detail
+        }
+    } catch {
+        // no-op
+    }
+
+    return fallback
+}
+
+function HistorialCatalogoCard({
+    historial,
+    loading,
+}: {
+    historial: CatalogoHistorialItem[]
+    loading: boolean
+}) {
+    return (
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            <div className="flex items-center justify-between gap-3 mb-4">
+                <div>
+                    <h2 className="text-base font-semibold text-slate-900">Historial del catálogo</h2>
+                    <p className="text-sm text-slate-500 mt-1">
+                        Seguimiento de cambios de precio y emisión o modificación de cupones.
+                    </p>
+                </div>
+                <span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-200 rounded-full px-3 py-1">
+                    <Clock3 size={14} />
+                    Últimos movimientos
+                </span>
+            </div>
+
+            {loading ? (
+                <div className="space-y-3">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <Skeleton key={i} className="h-16" />
+                    ))}
+                </div>
+            ) : historial.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-6 text-sm text-slate-400">
+                    Todavía no hay cambios registrados en planes o cupones.
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {historial.map((item) => (
+                        <div
+                            key={`${item.accion}-${item.registro_id}-${item.created_at ?? "sin-fecha"}`}
+                            className="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3"
+                        >
+                            <div className="flex items-start justify-between gap-3">
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-800">{item.descripcion}</p>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        {item.tabla === "planes" ? "Plan" : "Cupón"} #{item.registro_id}
+                                    </p>
+                                </div>
+                                <span className="text-xs text-slate-400 shrink-0">
+                                    {item.created_at ? fmtDate(item.created_at) : "Sin fecha"}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+}
+
+function SubPlanes({ token, addToast, onCatalogChange }: CatalogoManagedProps) {
     const [planes, setPlanes] = useState<AdminPlan[]>([])
     const [loading, setLoading] = useState(true)
     const [editPrecio, setEditPrecio] = useState<Record<number, string>>({})
@@ -30,34 +104,44 @@ function SubPlanes({ token, addToast }: Props) {
     const fetchPlanes = useCallback(async () => {
         setLoading(true)
         try {
-            const r = await fetch(`${API}/planes`)
+            const r = await fetch(`${API}${adminEndpoints.catalogoPlanes}`, { headers: authHeaders(token) })
             const d: unknown = await r.json()
             const lista = Array.isArray(d) ? (d as AdminPlan[]) : []
             setPlanes(lista)
             const precios: Record<number, string> = {}
-            lista.forEach((p) => { precios[p.id] = String(p.precio_mensual) })
+            lista.forEach((p) => {
+                precios[p.id] = String(p.precio_mensual)
+            })
             setEditPrecio(precios)
         } catch {
             setPlanes([])
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [token])
 
-    useEffect(() => { fetchPlanes() }, [fetchPlanes])
+    useEffect(() => {
+        void fetchPlanes()
+    }, [fetchPlanes])
 
     async function guardarCambio(id: number, activo: boolean, precio: number) {
         setSaving(id)
         try {
-            await fetch(`${API}/admin/planes/${id}`, {
+            const res = await fetch(`${API}${adminEndpoints.plan(id)}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json", ...authHeaders(token) },
                 body: JSON.stringify({ activo, precio_mensual: precio }),
             })
+
+            if (!res.ok) {
+                throw new Error(await getErrorMessage(res, "Error al guardar el plan"))
+            }
+
             await fetchPlanes()
+            await onCatalogChange()
             addToast("Plan actualizado correctamente", "success")
-        } catch {
-            addToast("Error al guardar el plan", "error")
+        } catch (error) {
+            addToast(error instanceof Error ? error.message : "Error al guardar el plan", "error")
         } finally {
             setSaving(null)
             setConfirmModal(null)
@@ -84,7 +168,8 @@ function SubPlanes({ token, addToast }: Props) {
                 {planes.map((plan) => {
                     const precioEditable = editPrecio[plan.id] ?? String(plan.precio_mensual)
                     const precioNum = parseFloat(precioEditable)
-                    const precioValido = !isNaN(precioNum) && precioNum > 0
+                    const precioValido = !Number.isNaN(precioNum) && precioNum > 0
+
                     return (
                         <div key={plan.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
                             <div className="flex items-start justify-between gap-2">
@@ -101,6 +186,7 @@ function SubPlanes({ token, addToast }: Props) {
                                         : <ToggleLeft size={28} className="text-slate-300" />}
                                 </button>
                             </div>
+
                             {plan.suscriptores !== undefined && (
                                 <p className="text-xs text-slate-500">
                                     <span className="font-semibold text-slate-700">{plan.suscriptores}</span> suscriptores
@@ -109,6 +195,7 @@ function SubPlanes({ token, addToast }: Props) {
                                     )}
                                 </p>
                             )}
+
                             <div>
                                 <label className="text-xs font-medium text-slate-500 mb-1 block">Precio mensual (ARS)</label>
                                 <div className="flex gap-2">
@@ -128,6 +215,7 @@ function SubPlanes({ token, addToast }: Props) {
                                     </button>
                                 </div>
                             </div>
+
                             <ActiveDot activo={plan.activo} />
                         </div>
                     )
@@ -154,7 +242,7 @@ function SubPlanes({ token, addToast }: Props) {
                                 onClick={() => {
                                     const activo = confirmModal.campo === "activo" ? (confirmModal.valor as boolean) : confirmPlan.activo
                                     const precio = confirmModal.campo === "precio" ? (confirmModal.valor as number) : confirmPlan.precio_mensual
-                                    guardarCambio(confirmPlan.id, activo, precio)
+                                    void guardarCambio(confirmPlan.id, activo, precio)
                                 }}
                                 className="px-4 py-2 rounded-xl bg-[#4C1D95] text-white text-sm font-semibold hover:bg-[#3b1675] disabled:opacity-60"
                             >
@@ -168,9 +256,7 @@ function SubPlanes({ token, addToast }: Props) {
     )
 }
 
-// ─── CUPONES ──────────────────────────────────────────────────────────────────
-
-function SubCupones({ token, addToast }: Props) {
+function SubCupones({ token, addToast, onCatalogChange }: CatalogoManagedProps) {
     const [cupones, setCupones] = useState<Cupon[]>([])
     const [loading, setLoading] = useState(true)
     const [modalNuevo, setModalNuevo] = useState(false)
@@ -188,7 +274,7 @@ function SubCupones({ token, addToast }: Props) {
     const fetchCupones = useCallback(async () => {
         setLoading(true)
         try {
-            const r = await fetch(`${API}/admin/catalogo/cupones`, { headers: authHeaders(token) })
+            const r = await fetch(`${API}${adminEndpoints.cupones}`, { headers: authHeaders(token) })
             const d: unknown = await r.json()
             setCupones(Array.isArray(d) ? (d as Cupon[]) : [])
         } catch {
@@ -198,46 +284,71 @@ function SubCupones({ token, addToast }: Props) {
         }
     }, [token])
 
-    useEffect(() => { fetchCupones() }, [fetchCupones])
+    useEffect(() => {
+        void fetchCupones()
+    }, [fetchCupones])
 
     async function toggleActivo(cupon: Cupon) {
         try {
-            const res = await fetch(`${API}/admin/catalogo/cupones/${cupon.id}`, {
+            const res = await fetch(`${API}${adminEndpoints.cuponEstado(cupon.id)}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json", ...authHeaders(token) },
                 body: JSON.stringify({ activo: !cupon.activo }),
             })
-            if (!res.ok) throw new Error()
+
+            if (!res.ok) {
+                throw new Error(await getErrorMessage(res, "Error al actualizar el cupón"))
+            }
+
             setCupones((prev) =>
                 prev.map((c) => (c.id === cupon.id ? { ...c, activo: !c.activo } : c))
             )
+            await onCatalogChange()
             addToast(`Cupón ${!cupon.activo ? "activado" : "desactivado"}`, "success")
-        } catch {
-            addToast("Error al actualizar el cupón", "error")
+        } catch (error) {
+            addToast(error instanceof Error ? error.message : "Error al actualizar el cupón", "error")
         }
     }
 
     async function crearCupon() {
         if (!form.codigo || !form.valor) return
+
         setGuardando(true)
         try {
-            const res = await fetch(`${API}/admin/catalogo/cupones`, {
+            const res = await fetch(`${API}${adminEndpoints.cupones}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", ...authHeaders(token) },
                 body: JSON.stringify({
-                    ...form,
+                    codigo: form.codigo.trim().toUpperCase(),
+                    descripcion: form.descripcion.trim() || null,
+                    tipo_descuento: form.tipo_descuento,
                     valor: parseFloat(form.valor),
-                    max_usos: form.max_usos ? parseInt(form.max_usos) : null,
+                    max_usos: form.max_usos ? parseInt(form.max_usos, 10) : null,
+                    valido_desde: new Date().toISOString().slice(0, 10),
                     valido_hasta: form.valido_hasta || null,
+                    solo_nuevos_usuarios: form.solo_nuevos,
                 }),
             })
-            if (!res.ok) throw new Error()
+
+            if (!res.ok) {
+                throw new Error(await getErrorMessage(res, "Error al crear el cupón"))
+            }
+
             addToast("Cupón creado correctamente", "success")
             setModalNuevo(false)
-            setForm({ codigo: "", descripcion: "", tipo_descuento: "porcentaje", valor: "", max_usos: "", valido_hasta: "", solo_nuevos: false })
-            fetchCupones()
-        } catch {
-            addToast("Error al crear el cupón", "error")
+            setForm({
+                codigo: "",
+                descripcion: "",
+                tipo_descuento: "porcentaje",
+                valor: "",
+                max_usos: "",
+                valido_hasta: "",
+                solo_nuevos: false,
+            })
+            await fetchCupones()
+            await onCatalogChange()
+        } catch (error) {
+            addToast(error instanceof Error ? error.message : "Error al crear el cupón", "error")
         } finally {
             setGuardando(false)
         }
@@ -273,39 +384,43 @@ function SubCupones({ token, addToast }: Props) {
                             </tr>
                         </thead>
                         <tbody>
-                            {cupones.map((c) => (
-                                <tr key={c.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-5 py-3.5">
-                                        <span className="inline-flex items-center gap-1.5 font-mono font-semibold text-slate-900">
-                                            <Tag size={13} className="text-violet-500" />
-                                            {c.codigo}
-                                        </span>
-                                        {c.descripcion && <p className="text-xs text-slate-400 mt-0.5">{c.descripcion}</p>}
-                                    </td>
-                                    <td className="px-5 py-3.5 font-semibold text-slate-700">
-                                        {c.tipo_descuento === "porcentaje" ? `${c.valor}%` : fmtCurrency(c.valor)}
-                                    </td>
-                                    <td className="px-5 py-3.5 text-slate-600">
-                                        {c.usos}{c.max_usos ? ` / ${c.max_usos}` : ""}
-                                    </td>
-                                    <td className="px-5 py-3.5 text-slate-600">{c.plan_nombre ?? "Todos"}</td>
-                                    <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">
-                                        {c.valido_hasta ? fmtDate(c.valido_hasta) : "Sin vencimiento"}
-                                    </td>
-                                    <td className="px-5 py-3.5 text-slate-600">{c.solo_nuevos ? "Sí" : "No"}</td>
-                                    <td className="px-5 py-3.5">
-                                        <ActiveDot activo={c.activo} />
-                                    </td>
-                                    <td className="px-5 py-3.5">
-                                        <button
-                                            onClick={() => toggleActivo(c)}
-                                            className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-                                        >
-                                            {c.activo ? "Desactivar" : "Activar"}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                            {cupones.map((c) => {
+                                const usosActuales = c.usos_actuales ?? c.usos ?? 0
+
+                                return (
+                                    <tr key={c.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-5 py-3.5">
+                                            <span className="inline-flex items-center gap-1.5 font-mono font-semibold text-slate-900">
+                                                <Tag size={13} className="text-violet-500" />
+                                                {c.codigo}
+                                            </span>
+                                            {c.descripcion && <p className="text-xs text-slate-400 mt-0.5">{c.descripcion}</p>}
+                                        </td>
+                                        <td className="px-5 py-3.5 font-semibold text-slate-700">
+                                            {c.tipo_descuento === "porcentaje" ? `${c.valor}%` : fmtCurrency(c.valor)}
+                                        </td>
+                                        <td className="px-5 py-3.5 text-slate-600">
+                                            {usosActuales}{c.max_usos ? ` / ${c.max_usos}` : ""}
+                                        </td>
+                                        <td className="px-5 py-3.5 text-slate-600">{c.plan_nombre ?? "Todos"}</td>
+                                        <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">
+                                            {c.valido_hasta ? fmtDate(c.valido_hasta) : "Sin vencimiento"}
+                                        </td>
+                                        <td className="px-5 py-3.5 text-slate-600">{c.solo_nuevos ? "Sí" : "No"}</td>
+                                        <td className="px-5 py-3.5">
+                                            <ActiveDot activo={c.activo} />
+                                        </td>
+                                        <td className="px-5 py-3.5">
+                                            <button
+                                                onClick={() => void toggleActivo(c)}
+                                                className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                                            >
+                                                {c.activo ? "Desactivar" : "Activar"}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -399,7 +514,7 @@ function SubCupones({ token, addToast }: Props) {
                                 Cancelar
                             </button>
                             <button
-                                onClick={crearCupon}
+                                onClick={() => void crearCupon()}
                                 disabled={!form.codigo || !form.valor || guardando}
                                 className="px-5 py-2 rounded-xl bg-[#4C1D95] text-white text-sm font-semibold hover:bg-[#3b1675] disabled:opacity-60"
                             >
@@ -413,10 +528,27 @@ function SubCupones({ token, addToast }: Props) {
     )
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
-
 export default function SectionCatalogo({ token, addToast }: Props) {
     const [tab, setTab] = useState<Tab>("planes")
+    const [historial, setHistorial] = useState<CatalogoHistorialItem[]>([])
+    const [loadingHistorial, setLoadingHistorial] = useState(true)
+
+    const fetchHistorial = useCallback(async () => {
+        setLoadingHistorial(true)
+        try {
+            const res = await fetch(`${API}${adminEndpoints.catalogoHistorial}`, { headers: authHeaders(token) })
+            const data: unknown = await res.json()
+            setHistorial(Array.isArray(data) ? (data as CatalogoHistorialItem[]) : [])
+        } catch {
+            setHistorial([])
+        } finally {
+            setLoadingHistorial(false)
+        }
+    }, [token])
+
+    useEffect(() => {
+        void fetchHistorial()
+    }, [fetchHistorial])
 
     return (
         <div className="space-y-6">
@@ -437,8 +569,10 @@ export default function SectionCatalogo({ token, addToast }: Props) {
                 </div>
             </div>
 
-            {tab === "planes" && <SubPlanes token={token} addToast={addToast} />}
-            {tab === "cupones" && <SubCupones token={token} addToast={addToast} />}
+            {tab === "planes" && <SubPlanes token={token} addToast={addToast} onCatalogChange={fetchHistorial} />}
+            {tab === "cupones" && <SubCupones token={token} addToast={addToast} onCatalogChange={fetchHistorial} />}
+
+            <HistorialCatalogoCard historial={historial} loading={loadingHistorial} />
         </div>
     )
 }

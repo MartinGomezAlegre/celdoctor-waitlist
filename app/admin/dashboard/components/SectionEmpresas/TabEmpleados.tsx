@@ -136,7 +136,7 @@ export function TabEmpleados({ empresa, token, addToast }: Props) {
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-slate-100 bg-slate-50">
-                            {["Nombre", "DNI", "Email", "Cargo", "Estado", "Fecha alta", "Acciones"].map((h) => (
+                            {["Nombre", "DNI", "Email", "Telefono", "Cargo", "Estado", "Fecha alta", "Acciones"].map((h) => (
                                 <th key={h} className="text-left px-5 py-3.5 font-semibold text-slate-600 whitespace-nowrap">{h}</th>
                             ))}
                         </tr>
@@ -145,14 +145,14 @@ export function TabEmpleados({ empresa, token, addToast }: Props) {
                         {loading ? (
                             Array.from({ length: 4 }).map((_, i) => (
                                 <tr key={i} className="border-b border-slate-50">
-                                    {Array.from({ length: 7 }).map((_, j) => (
+                                    {Array.from({ length: 8 }).map((_, j) => (
                                         <td key={j} className="px-5 py-3.5"><Skeleton className="h-4 w-full" /></td>
                                     ))}
                                 </tr>
                             ))
                         ) : empleados.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="text-center text-slate-400 py-12 text-sm">
+                                <td colSpan={8} className="text-center text-slate-400 py-12 text-sm">
                                     No hay empleados registrados.
                                 </td>
                             </tr>
@@ -162,6 +162,7 @@ export function TabEmpleados({ empresa, token, addToast }: Props) {
                                     <td className="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">{emp.nombre} {emp.apellido}</td>
                                     <td className="px-5 py-3.5 text-slate-600">{emp.dni}</td>
                                     <td className="px-5 py-3.5 text-slate-600">{emp.email}</td>
+                                    <td className="px-5 py-3.5 text-slate-600">{emp.telefono ?? "—"}</td>
                                     <td className="px-5 py-3.5 text-slate-500">{emp.cargo ?? "—"}</td>
                                     <td className="px-5 py-3.5"><ActiveDot activo={emp.activo} /></td>
                                     <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">{fmtDate(emp.fecha_alta)}</td>
@@ -214,11 +215,11 @@ export function TabEmpleados({ empresa, token, addToast }: Props) {
                 }
             >
                 <div className="grid grid-cols-2 gap-4">
-                    {(["nombre", "apellido", "dni", "email", "cargo"] as (keyof EmpleadoForm)[]).map((field) => (
+                    {(["nombre", "apellido", "dni", "email", "telefono", "cargo"] as (keyof EmpleadoForm)[]).map((field) => (
                         <div key={field} className={field === "email" || field === "cargo" ? "col-span-2" : ""}>
                             <label className="block text-sm font-medium text-slate-700 mb-1 capitalize">{field}</label>
                             <input
-                                type={field === "email" ? "email" : "text"}
+                                type={field === "email" ? "email" : field === "telefono" ? "tel" : "text"}
                                 value={empleadoForm[field]}
                                 onChange={(e) => setEmpleadoForm((p) => ({ ...p, [field]: e.target.value }))}
                                 className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"

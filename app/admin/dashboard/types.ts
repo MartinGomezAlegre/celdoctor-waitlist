@@ -40,6 +40,10 @@ export interface AdminUsuarioDetalle extends AdminUsuario {
     fecha_inicio_suscripcion?: string | null
     fecha_vencimiento?: string | null
     max_beneficiarios?: number | null
+    cuit?: string | null
+    direccion?: string | null
+    localidad?: string | null
+    provincia?: string | null
     beneficiarios: AdminBeneficiario[]
 }
 
@@ -56,7 +60,8 @@ export interface AdminPlan {
 
 export interface Empresa {
     id: number; razon_social: string; nombre_comercial: string | null; cuit: string;
-    rubro: string | null; contacto_nombre: string; contacto_cargo: string | null;
+    rubro: string | null; direccion?: string | null; localidad?: string | null; provincia?: string | null;
+    responsabilidad_iva?: string | null; contacto_nombre: string; contacto_cargo: string | null;
     contacto_email: string; contacto_telefono: string | null; activo: boolean;
     created_at: string; plan_nombre: string | null; plan_id: number | null;
     cantidad_empleados: number; precio_por_empleado: number | null; precio_total: number | null;
@@ -67,17 +72,24 @@ export interface Empresa {
 
 export interface EmpleadoEmpresa {
     id: number; nombre: string; apellido: string; dni: string; email: string;
-    cargo: string | null; activo: boolean; fecha_alta: string;
+    cargo: string | null; telefono?: string | null; activo: boolean; fecha_alta: string;
 }
 
 export interface EventoHistorial { descripcion: string; fecha: string }
+export interface CatalogoHistorialItem {
+    accion: string
+    tabla: string
+    registro_id: number
+    descripcion: string
+    created_at: string | null
+}
 export interface ResultadoBulk { cargados: number; fallidos: number; errores: string[] }
 
 export interface Cupon {
     id: number; codigo: string; descripcion: string | null; tipo_descuento: string;
     valor: number; plan_id: number | null; plan_nombre: string | null;
-    max_usos: number | null; usos: number; valido_desde: string | null;
-    valido_hasta: string | null; solo_nuevos: boolean; activo: boolean;
+    max_usos: number | null; usos: number; usos_actuales?: number; valido_desde: string | null;
+    valido_hasta: string | null; solo_nuevos: boolean; activo: boolean; created_at?: string | null;
 }
 
 export interface PagoFacturacion {
@@ -123,12 +135,13 @@ export interface MetricasRetencion {
 
 export const EMPRESA_FORM_VACIO = {
     razon_social: "", cuit: "", nombre_comercial: "", rubro: "",
+    direccion: "", localidad: "", provincia: "", responsabilidad_iva: "",
     contacto_nombre: "", contacto_cargo: "", contacto_email: "", contacto_telefono: "",
     plan_id: "", cantidad_empleados: "", precio_por_empleado: "", periodicidad: "mensual",
 }
 export type EmpresaForm = typeof EMPRESA_FORM_VACIO
 
-export const EMPLEADO_FORM_VACIO = { nombre: "", apellido: "", dni: "", email: "", cargo: "" }
+export const EMPLEADO_FORM_VACIO = { nombre: "", apellido: "", dni: "", email: "", cargo: "", telefono: "" }
 export type EmpleadoForm = typeof EMPLEADO_FORM_VACIO
 
 export interface Ticket {

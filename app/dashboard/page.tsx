@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Mail, Phone, CreditCard, Calendar, X } from "lucide-react";
+import { User, Mail, Phone, CreditCard, Calendar, MapPin, X } from "lucide-react";
 import {
     obtenerMiSuscripcion,
     getMiPerfil,
@@ -364,11 +364,38 @@ function SoporteCard({ token }: { token: string }) {
     return (
         <Card>
             <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900">Mis consultas</h3>
+                <div>
+                    <h3 className="font-bold text-slate-900">Soporte</h3>
+                    <p className="text-xs text-slate-400 mt-1">Canales rápidos y seguimiento de tus consultas.</p>
+                </div>
                 <button onClick={() => setModalNuevo(true)}
                     className="text-xs font-semibold text-[#4C1D95] hover:underline">
                     + Nueva consulta
                 </button>
+            </div>
+
+            <div className="grid gap-3 mb-5 sm:grid-cols-2">
+                <a href="https://wa.me/5491100000000" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors">
+                    <span className="text-xl">💬</span>
+                    <div>
+                        <p className="text-sm font-semibold text-emerald-800">WhatsApp</p>
+                        <p className="text-xs text-emerald-600">Respuesta inmediata</p>
+                    </div>
+                </a>
+                <a href="mailto:soporte@celdoctor.com"
+                    className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+                    <span className="text-xl">✉️</span>
+                    <div>
+                        <p className="text-sm font-semibold text-slate-700">Email</p>
+                        <p className="text-xs text-slate-500">soporte@celdoctor.com</p>
+                    </div>
+                </a>
+            </div>
+
+            <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold text-slate-900">Seguimiento de casos</p>
+                <span className="text-xs text-slate-400">{tickets.length} ticket(s)</span>
             </div>
 
             {cargando ? (
@@ -377,7 +404,7 @@ function SoporteCard({ token }: { token: string }) {
                     <SkeletonBlock className="h-12" />
                 </div>
             ) : ultimos.length === 0 ? (
-                <p className="text-sm text-slate-400 py-3">No tenés consultas aún</p>
+                <p className="text-sm text-slate-400 py-3">Todavía no tenés consultas abiertas.</p>
             ) : (
                 <ul className="space-y-2">
                     {ultimos.map((t) => (
@@ -392,10 +419,16 @@ function SoporteCard({ token }: { token: string }) {
                                 </div>
                                 <TicketEstadoBadge estado={t.estado} />
                             </button>
-                            {expandido === t.id && t.respuesta && (
+                            {expandido === t.id && (
                                 <div className="px-3 pb-3 pt-0">
-                                    <p className="text-xs font-semibold text-slate-500 mb-1">Respuesta:</p>
-                                    <p className="text-sm text-slate-700 bg-slate-50 rounded-lg p-3">{t.respuesta}</p>
+                                    {t.respuesta ? (
+                                        <>
+                                            <p className="text-xs font-semibold text-slate-500 mb-1">Respuesta:</p>
+                                            <p className="text-sm text-slate-700 bg-slate-50 rounded-lg p-3">{t.respuesta}</p>
+                                        </>
+                                    ) : (
+                                        <p className="text-xs text-slate-400">Todavía estamos revisando tu caso.</p>
+                                    )}
                                 </div>
                             )}
                         </li>
@@ -438,7 +471,16 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
     perfil: MiPerfil; token: string; onActualizar: (p: MiPerfil) => void;
 }) {
     const [modalEditar, setModalEditar] = useState(false);
-    const [form, setForm] = useState({ nombre: perfil.nombre, apellido: perfil.apellido, telefono: perfil.telefono ?? "", dni: perfil.dni ?? "" });
+    const [form, setForm] = useState({
+        nombre: perfil.nombre,
+        apellido: perfil.apellido,
+        telefono: perfil.telefono ?? "",
+        dni: perfil.dni ?? "",
+        cuit: perfil.cuit ?? "",
+        direccion: perfil.direccion ?? "",
+        localidad: perfil.localidad ?? "",
+        provincia: perfil.provincia ?? "",
+    });
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -461,7 +503,19 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
         <Card>
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Datos de cuenta</h3>
-                <button onClick={() => { setForm({ nombre: perfil.nombre, apellido: perfil.apellido, telefono: perfil.telefono ?? "", dni: perfil.dni ?? "" }); setModalEditar(true); }}
+                <button onClick={() => {
+                    setForm({
+                        nombre: perfil.nombre,
+                        apellido: perfil.apellido,
+                        telefono: perfil.telefono ?? "",
+                        dni: perfil.dni ?? "",
+                        cuit: perfil.cuit ?? "",
+                        direccion: perfil.direccion ?? "",
+                        localidad: perfil.localidad ?? "",
+                        provincia: perfil.provincia ?? "",
+                    });
+                    setModalEditar(true);
+                }}
                     className="text-xs font-semibold text-[#4C1D95] hover:underline">
                     Editar
                 </button>
@@ -485,6 +539,21 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
                     <div className="flex items-center gap-3">
                         <CreditCard size={15} className="text-slate-400 shrink-0" />
                         <span className="text-sm text-slate-700">DNI {perfil.dni}</span>
+                    </div>
+                )}
+                {perfil.cuit && (
+                    <div className="flex items-center gap-3">
+                        <CreditCard size={15} className="text-slate-400 shrink-0" />
+                        <span className="text-sm text-slate-700">CUIT / CUIL {perfil.cuit}</span>
+                    </div>
+                )}
+                {perfil.direccion && (
+                    <div className="flex items-start gap-3">
+                        <MapPin size={15} className="text-slate-400 shrink-0 mt-0.5" />
+                        <span className="text-sm text-slate-700">
+                            {perfil.direccion}
+                            {(perfil.localidad || perfil.provincia) && <> · {[perfil.localidad, perfil.provincia].filter(Boolean).join(", ")}</>}
+                        </span>
                     </div>
                 )}
                 {perfil.fecha_nacimiento && (
@@ -520,6 +589,30 @@ function DatosCuentaCard({ perfil, token, onActualizar }: {
                         <input inputMode="numeric" value={form.dni} onChange={(e) => setForm((p) => ({ ...p, dni: e.target.value }))}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]"
                             placeholder="12345678" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">CUIT / CUIL</label>
+                        <input value={form.cuit} onChange={(e) => setForm((p) => ({ ...p, cuit: e.target.value }))}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]"
+                            placeholder="20-12345678-3" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">Dirección</label>
+                        <input value={form.direccion} onChange={(e) => setForm((p) => ({ ...p, direccion: e.target.value }))}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]"
+                            placeholder="Calle, número, piso y departamento" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">Localidad</label>
+                            <input value={form.localidad} onChange={(e) => setForm((p) => ({ ...p, localidad: e.target.value }))}
+                                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">Provincia</label>
+                            <input value={form.provincia} onChange={(e) => setForm((p) => ({ ...p, provincia: e.target.value }))}
+                                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95]" />
+                        </div>
                     </div>
                     {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>}
                     <div className="flex gap-3 justify-end pt-2">
@@ -778,7 +871,6 @@ export default function DashboardPage() {
                             )}
 
                             {/* Card 4 — Soporte */}
-                            <SoporteCard token={token} />
                         </div>
 
                         {/* COLUMNA DERECHA */}
@@ -788,29 +880,7 @@ export default function DashboardPage() {
                                 <DatosCuentaCard perfil={perfil} token={token} onActualizar={setPerfil} />
                             )}
 
-                            {/* Soporte rápido */}
-                            <Card>
-                                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Soporte rápido</h3>
-                                <div className="space-y-3">
-                                    <a href="https://wa.me/5491100000000" target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors group">
-                                        <span className="text-xl">💬</span>
-                                        <div>
-                                            <p className="text-sm font-semibold text-emerald-800">WhatsApp</p>
-                                            <p className="text-xs text-emerald-600">Respuesta inmediata</p>
-                                        </div>
-                                    </a>
-                                    <a href="mailto:soporte@celdoctor.com"
-                                        className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
-                                        <span className="text-xl">✉️</span>
-                                        <div>
-                                            <p className="text-sm font-semibold text-slate-700">Email</p>
-                                            <p className="text-xs text-slate-500">soporte@celdoctor.com</p>
-                                        </div>
-                                    </a>
-                                    <p className="text-xs text-slate-400 text-center pt-1">Lunes a viernes · 9 a 18hs</p>
-                                </div>
-                            </Card>
+                            <SoporteCard token={token} />
                         </div>
                     </div>
                 )}

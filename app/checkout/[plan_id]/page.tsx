@@ -156,11 +156,15 @@ export default function CheckoutPage() {
         if (!storedEmail) {
             getMiPerfil(storedToken)
                 .then((perfil) => {
-                    if (!perfil?.email) return;
-                    localStorage.setItem("celdoctor_email", perfil.email);
-                    setEmail(perfil.email);
+                    if (!perfil) return;
+                    if (perfil.email) {
+                        localStorage.setItem("celdoctor_email", perfil.email);
+                        setEmail(perfil.email);
+                    }
                 })
                 .catch(() => null);
+        } else {
+            getMiPerfil(storedToken).catch(() => null);
         }
 
         obtenerPlanes().then((planes) => {
@@ -306,7 +310,7 @@ export default function CheckoutPage() {
 
                                 <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3.5 mb-6">
                                     <p className="text-sm text-blue-800 leading-relaxed">
-                                        Estos son los datos de tu cuenta CelDoctor. Tu suscripción quedará asociada a este perfil.
+                                        Estos son los datos de tu cuenta CelDoctor. La suscripción quedará asociada a este perfil.
                                     </p>
                                 </div>
 
