@@ -81,13 +81,6 @@ export default function RegistroPage() {
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">Alta de cuenta</p>
-                        <p className="text-sm text-slate-600">
-                            Completá tus datos personales y tu domicilio para dejar la cuenta lista para validación y facturación.
-                        </p>
-                    </div>
-
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label htmlFor="nombre" className="block text-sm font-medium text-slate-700 mb-1.5">
