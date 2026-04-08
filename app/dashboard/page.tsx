@@ -29,6 +29,7 @@ import {
     eliminarBeneficiario,
     obtenerMisTickets,
     crearTicket,
+    cancelarMiSuscripcion,
     editarPerfil,
     ApiError,
     type Suscripcion,
@@ -666,6 +667,8 @@ export default function DashboardPage() {
     const [perfil, setPerfil] = useState<MiPerfil | null>(null);
     const [planes, setPlanes] = useState<Plan[]>([]);
     const [nombreFallback, setNombreFallback] = useLocalStorageValue("celdoctor_nombre", "");
+    const [modalBaja, setModalBaja] = useState(false);
+    const [cancelandoPlan, setCancelandoPlan] = useState(false);
 
     useEffect(() => {
         if (!tokenHydrated) {
@@ -717,6 +720,20 @@ export default function DashboardPage() {
 
     const precioMaxPlan = planes.length > 0 ? Math.max(...planes.map((p) => p.precio_mensual)) : 0;
     const esElMasCaro = suscripcion ? suscripcion.precio_pagado >= precioMaxPlan : false;
+
+    async function handleCancelarPlan() {
+        if (!token) return;
+        setCancelandoPlan(true);
+        try {
+            await cancelarMiSuscripcion(token);
+            setSuscripcion(null);
+            setModalBaja(false);
+        } catch (err) {
+            window.alert(err instanceof Error ? err.message : "No se pudo dar de baja el plan");
+        } finally {
+            setCancelandoPlan(false);
+        }
+    }
 
     if (!tokenHydrated) {
         return (
@@ -841,13 +858,20 @@ export default function DashboardPage() {
                                         </p>
                                     )}
 
-                                    {estaActiva && (
-                                        <div className="mt-4">
+                                    <div className="mt-4 flex flex-wrap gap-3">
+                                        {estaActiva && (
                                             <Link href="/planes" className="inline-flex items-center px-4 py-2 text-sm font-semibold text-[#4C1D95] border border-[#4C1D95]/20 rounded-lg hover:bg-[#4C1D95]/5 transition-colors">
                                                 Queres mejorar tu plan?
                                             </Link>
-                                        </div>
-                                    )}
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => setModalBaja(true)}
+                                            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                                        >
+                                            Dar de baja
+                                        </button>
+                                    </div>
                                 </Card>
                             ) : (
                                 <Card className="p-8">
@@ -922,6 +946,15 @@ export default function DashboardPage() {
                         </Link>
                     </div>
                 )}
+
+                <ConfirmModal
+                    open={modalBaja}
+                    onClose={() => setModalBaja(false)}
+                    onConfirm={handleCancelarPlan}
+                    loading={cancelandoPlan}
+                    title="Dar de baja tu plan?"
+                    description="Tu suscripcion se marcara como cancelada y dejaras de verla como plan activo en el panel."
+                />
             </main>
         </div>
     );

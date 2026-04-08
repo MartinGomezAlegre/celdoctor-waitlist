@@ -190,6 +190,24 @@ export async function contratarPlan(
     return res.json() as Promise<Suscripcion>;
 }
 
+export async function cancelarMiSuscripcion(token: string): Promise<void> {
+    let res: Response;
+    try {
+        res = await fetch(getApiUrl("/suscripciones/mia/cancelar"), {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+    } catch {
+        throw new Error("Error al solicitar la baja del plan");
+    }
+
+    if (res.status === 401) throw new ApiError("Sesion expirada. Inicia sesion nuevamente", "UNAUTHORIZED");
+    if (res.status === 404) throw new Error(await getErrorDetail(res, "No encontramos una suscripcion para dar de baja"));
+    if (!res.ok) throw new Error(await getErrorDetail(res, "No se pudo dar de baja el plan"));
+}
+
 /**
  * GET /usuarios/me
  * Requiere token Bearer.

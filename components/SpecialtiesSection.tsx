@@ -1,70 +1,71 @@
 import Link from "next/link";
 import {
-  Stethoscope, Baby, Brain, Heart, Eye, Activity,
-  Pill, Microscope, UserCheck, Ear, ArrowRight
+  Stethoscope,
+  Baby,
+  Brain,
+  Heart,
+  Eye,
+  Activity,
+  Pill,
+  Microscope,
+  UserCheck,
+  Ear,
+  ArrowRight,
 } from "lucide-react";
 
 const allSpecialties = [
-  { name: "Clínica Médica", icon: Stethoscope, image: "/MedicoClinico.jpeg" },
-  { name: "Pediatría", icon: Baby, image: "/Pediatra.jpeg" },
-  { name: "Cardiología", icon: Heart, image: null },
-  { name: "Psicología", icon: Brain, image: "/Psicologo.jpeg" },
-  { name: "Oftalmología", icon: Eye, image: null },
-  { name: "Nutrición", icon: Activity, image: "/Nutricionista.jpeg" },
-  { name: "Dermatología", icon: UserCheck, image: "/Dermatologo.jpeg" },
-  { name: "Ginecología", icon: UserCheck, image: "/Ginecologa.jpeg" },
-  { name: "Traumatología", icon: Activity, image: null },
-  { name: "Otorrino", icon: Ear, image: null },
-  { name: "Urología", icon: Microscope, image: null },
-  { name: "Psiquiatría", icon: Pill, image: null },
+  { name: "Clinica medica", icon: Stethoscope },
+  { name: "Pediatria", icon: Baby },
+  { name: "Cardiologia", icon: Heart },
+  { name: "Psicologia", icon: Brain },
+  { name: "Oftalmologia", icon: Eye },
+  { name: "Nutricion", icon: Activity },
+  { name: "Dermatologia", icon: UserCheck },
+  { name: "Ginecologia", icon: UserCheck },
+  { name: "Traumatologia", icon: Activity },
+  { name: "Otorrino", icon: Ear },
+  { name: "Urologia", icon: Microscope },
+  { name: "Psiquiatria", icon: Pill },
 ];
 
 const visibleSpecialties = allSpecialties.slice(0, 6);
 
 export default function SpecialtiesSection() {
   return (
-    <section id="especialidades" className="bg-[#1e0b4b] py-24 relative overflow-hidden">
+    <section id="especialidades" className="relative overflow-hidden bg-[#1e0b4b] py-24">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-200 w-200 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#4C1D95]/30 blur-[150px]" />
 
-      {/* Decoración de fondo */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-200 bg-[#4C1D95]/30 rounded-full blur-[150px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-[#a78bfa] font-bold text-xs uppercase tracking-wider mb-2 block">Cartilla Digital</span>
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+      <div className="relative z-10 mx-auto max-w-7xl px-6">
+        <div className="mx-auto mb-16 max-w-2xl text-center">
+          <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
+            Cartilla digital
+          </span>
+          <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
             Especialistas al instante.
           </h2>
-          <p className="text-white/70 text-lg">
-            Accedé a consultas programadas o de guardia sin derivaciones previas.
+          <p className="text-lg text-white/70">
+            Accede a consultas programadas o de guardia sin derivaciones previas.
           </p>
         </div>
 
-        {/* GRID DE ESPECIALIDADES */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {visibleSpecialties.map((esp, i) => (
-            <div key={i} className="bg-white/5 p-6 rounded-2xl border border-white/10 hover:border-[#a78bfa]/50 hover:bg-white/10 hover:shadow-lg hover:shadow-[#4C1D95]/20 transition-all group cursor-pointer text-center flex flex-col items-center gap-4">
-                {esp.image ? (
-                <div
-                  className="w-14 h-14 rounded-full border border-white/10 shrink-0 bg-cover bg-center bg-no-repeat"
-                  style={{ backgroundImage: `url(${esp.image})` }}
-                  role="img"
-                  aria-label={esp.name}
-                />
-              ) : (
-                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center text-[#a78bfa] group-hover:text-white group-hover:bg-[#4C1D95] transition-colors border border-white/5">
-                  <esp.icon size={28} strokeWidth={1.5} />
-                </div>
-              )}
-              <h3 className="font-semibold text-white text-sm">{esp.name}</h3>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+          {visibleSpecialties.map((specialty) => (
+            <div
+              key={specialty.name}
+              className="group flex cursor-pointer flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-6 text-center transition-all hover:border-[#a78bfa]/50 hover:bg-white/10 hover:shadow-lg hover:shadow-[#4C1D95]/20"
+            >
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/5 bg-white/10 text-[#a78bfa] transition-colors group-hover:bg-[#4C1D95] group-hover:text-white">
+                <specialty.icon size={28} strokeWidth={1.5} />
+              </div>
+              <h3 className="text-sm font-semibold text-white">{specialty.name}</h3>
             </div>
           ))}
         </div>
 
-        {/* CTA ÚNICO */}
         <div className="mt-12 text-center">
           <Link
             href="/atencion-medica/especialidades-medicas"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-[#4C1D95] text-white rounded-xl font-bold text-base hover:bg-[#3b1675] transition-all shadow-xl shadow-[#4C1D95]/20 hover:-translate-y-1 active:scale-95"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#4C1D95] px-8 py-4 text-base font-bold text-white shadow-xl shadow-[#4C1D95]/20 transition-all hover:-translate-y-1 hover:bg-[#3b1675] active:scale-95"
           >
             Ver todas las especialidades (+6)
             <ArrowRight size={18} />
