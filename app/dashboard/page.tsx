@@ -858,7 +858,7 @@ export default function DashboardPage() {
                                         </p>
                                     )}
 
-                                    <div className="mt-4 flex flex-wrap gap-3">
+                                    <div className="mt-4 flex flex-wrap items-center gap-3">
                                         {estaActiva && (
                                             <Link href="/planes" className="inline-flex items-center px-4 py-2 text-sm font-semibold text-[#4C1D95] border border-[#4C1D95]/20 rounded-lg hover:bg-[#4C1D95]/5 transition-colors">
                                                 Queres mejorar tu plan?
@@ -867,9 +867,9 @@ export default function DashboardPage() {
                                         <button
                                             type="button"
                                             onClick={() => setModalBaja(true)}
-                                            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                                            className="inline-flex items-center text-xs font-medium text-slate-400 underline-offset-4 transition-colors hover:text-slate-600 hover:underline"
                                         >
-                                            Dar de baja
+                                            Gestionar plan
                                         </button>
                                     </div>
                                 </Card>
@@ -953,7 +953,7 @@ export default function DashboardPage() {
                     onConfirm={handleCancelarPlan}
                     loading={cancelandoPlan}
                     title="Dar de baja tu plan?"
-                    description="Tu suscripcion se marcara como cancelada y dejaras de verla como plan activo en el panel."
+                    description="Tu suscripcion se marcara como cancelada y dejara de verse como plan activo en el panel."
                 />
             </main>
         </div>

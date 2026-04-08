@@ -25,13 +25,12 @@ export default function SectionSuscripciones({ token, addToast }: Props) {
     useEffect(() => {
         setLoading(true)
         setError(false)
-        const qs = filtroEstado ? `?estado=${filtroEstado}` : ""
-        fetch(`${API}/admin/suscripciones${qs}`, { headers: authHeaders(token) })
+        fetch(`${API}/admin/suscripciones`, { headers: authHeaders(token) })
             .then((r) => r.json())
             .then((d: unknown) => setSuscripciones(Array.isArray(d) ? (d as AdminSuscripcion[]) : []))
             .catch(() => setError(true))
             .finally(() => setLoading(false))
-    }, [token, filtroEstado])
+    }, [token])
 
     async function cambiarEstado() {
         if (!modalGestion || !nuevoEstado) return
@@ -59,11 +58,15 @@ export default function SectionSuscripciones({ token, addToast }: Props) {
 
     const filtradas = suscripciones.filter((s) => {
         const q = buscar.toLowerCase()
+        const coincideEstado = !filtroEstado || s.estado === filtroEstado
         return (
-            !q ||
-            s.nombre_completo.toLowerCase().includes(q) ||
-            s.email.toLowerCase().includes(q) ||
-            s.plan_nombre.toLowerCase().includes(q)
+            coincideEstado &&
+            (
+                !q ||
+                s.nombre_completo.toLowerCase().includes(q) ||
+                s.email.toLowerCase().includes(q) ||
+                s.plan_nombre.toLowerCase().includes(q)
+            )
         )
     })
 
