@@ -4,6 +4,7 @@ import "./globals.css";
 import JsonLd from "@/components/JsonLd";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import CookieConsent from "@/components/CookieConsent";
 
 // URL de tu sitio real (Cuando lo subas a Vercel, poné tu dominio acá)
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://celdoctor.com";
@@ -107,6 +108,7 @@ export default async function RootLayout({
           {!sinNavbar && <Footer />}
         </div>
         <JsonLd />
+        <CookieConsent />
       </body>
     </html>
   );

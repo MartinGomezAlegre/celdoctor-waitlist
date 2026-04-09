@@ -13,6 +13,7 @@ import {
     LogOut,
     MessageSquare,
     Briefcase,
+    ShieldPlus,
     Menu,
     X,
 } from "lucide-react";
@@ -30,6 +31,7 @@ import SectionCatalogo from "./components/SectionCatalogo";
 import SectionReportes from "./components/SectionReportes";
 import SectionSoporte from "./components/SectionSoporte";
 import SectionLeads from "./components/SectionLeads";
+import SectionUpsells from "./components/SectionUpsells";
 
 interface NavItem {
     id: Section;
@@ -116,6 +118,7 @@ export default function AdminDashboardPage() {
     const [metricasEmpresas, setMetricasEmpresas] = useState<MetricasEmpresas | null>(null);
     const [ticketsAbiertos, setTicketsAbiertos] = useState(0);
     const [leadsNuevos, setLeadsNuevos] = useState(0);
+    const [upsellsNuevos, setUpsellsNuevos] = useState(0);
     const [token, setToken, tokenHydrated] = useLocalStorageValue("celdoctor_admin_token");
 
     useEffect(() => {
@@ -146,6 +149,11 @@ export default function AdminDashboardPage() {
         fetch(`${API}${adminEndpoints.leads}?estado=nuevo`, { headers: authHeaders(token) })
             .then((response) => response.json())
             .then((data: unknown) => setLeadsNuevos(Array.isArray(data) ? (data as unknown[]).length : 0))
+            .catch(() => null);
+
+        fetch(`${API}${adminEndpoints.upsellsSeguro}?estado=nuevo`, { headers: authHeaders(token) })
+            .then((response) => response.json())
+            .then((data: unknown) => setUpsellsNuevos(Array.isArray(data) ? (data as unknown[]).length : 0))
             .catch(() => null);
     }, [router, token, tokenHydrated]);
 
@@ -216,6 +224,7 @@ export default function AdminDashboardPage() {
             label: "Comercial",
             items: [
                 { id: "leads", label: "Leads", Icon: Briefcase, badge: leadsNuevos > 0 ? leadsNuevos : undefined },
+                { id: "upsells", label: "Seguro medico", Icon: ShieldPlus, badge: upsellsNuevos > 0 ? upsellsNuevos : undefined },
                 { id: "soporte", label: "Soporte", Icon: MessageSquare, badge: ticketsAbiertos > 0 ? ticketsAbiertos : undefined },
             ],
         },
@@ -279,6 +288,7 @@ export default function AdminDashboardPage() {
                         {section === "reportes" && <SectionReportes token={token} addToast={addToast} />}
                         {section === "soporte" && <SectionSoporte token={token} addToast={addToast} />}
                         {section === "leads" && <SectionLeads token={token} addToast={addToast} />}
+                        {section === "upsells" && <SectionUpsells token={token} addToast={addToast} />}
                     </div>
                 </main>
             </div>

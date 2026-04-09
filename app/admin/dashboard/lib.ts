@@ -40,6 +40,7 @@ export async function getApiErrorDetail(res: Response, fallback: string): Promis
 
 export const ESTADO_BADGE: Record<string, string> = {
     activa: "bg-emerald-100 text-emerald-800",
+    cancelacion_programada: "bg-blue-100 text-blue-800",
     pendiente_pago: "bg-yellow-100 text-amber-700",
     cancelada: "bg-red-100 text-red-800",
     aprobado: "bg-emerald-100 text-emerald-800",

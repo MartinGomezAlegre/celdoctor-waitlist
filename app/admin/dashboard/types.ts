@@ -1,4 +1,4 @@
-export type Section = "overview" | "personas" | "empresas" | "suscripciones" | "facturacion" | "catalogo" | "reportes" | "soporte" | "leads"
+export type Section = "overview" | "personas" | "empresas" | "suscripciones" | "facturacion" | "catalogo" | "reportes" | "soporte" | "leads" | "upsells"
 export type ToastType = "success" | "error" | "warning"
 
 export interface Toast { id: number; msg: string; type: ToastType }
@@ -12,6 +12,9 @@ export interface DashboardMetrics {
     churn_rate: number; tasa_conversion: number; pendientes_pago: number;
     revenue_por_plan: RevenuePlan[]; nuevos_registros_hoy: number;
     ultimas_suscripciones: UltimaSuscripcion[];
+    mrr_empresarial?: number;
+    empresas_activas?: number;
+    empleados_activos?: number;
 }
 
 export interface MetricasEmpresas {
@@ -84,6 +87,20 @@ export interface CatalogoHistorialItem {
     registro_id: number
     descripcion: string
     created_at: string | null
+}
+
+export interface UpsellSeguroAdmin {
+    id: number;
+    usuario_id: number;
+    suscripcion_id: number;
+    plan_nombre: string;
+    precio_ofertado: number;
+    estado: "nuevo" | "contactado" | "aceptado" | "rechazado" | "descartado";
+    nota_admin: string | null;
+    usuario_nombre: string;
+    usuario_email: string;
+    created_at: string | null;
+    updated_at: string | null;
 }
 export interface ResultadoBulk { cargados: number; fallidos: number; errores: string[] }
 

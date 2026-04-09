@@ -19,6 +19,7 @@ import {
     MessageSquareText,
     TriangleAlert,
     Ban,
+    ShieldPlus,
 } from "lucide-react";
 import {
     obtenerMiSuscripcion,
@@ -31,15 +32,19 @@ import {
     crearTicket,
     cancelarMiSuscripcion,
     editarPerfil,
+    obtenerMiUpsellSeguro,
+    solicitarUpsellSeguro,
     ApiError,
     type Suscripcion,
     type MiPerfil,
     type Beneficiario,
     type TicketUsuario,
     type Plan,
+    type UpsellSeguro,
 } from "@/lib/api";
 import { clearSessionCookie } from "@/lib/session-cookie";
 import { useLocalStorageValue } from "@/lib/use-local-storage-value";
+import { perfilFacturacionCompleto } from "@/lib/profile-completion";
 
 // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -80,6 +85,11 @@ function EstadoBadge({ estado }: { estado: string }) {
     if (lower === "activa") return (
         <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Activa
+        </span>
+    );
+    if (lower === "cancelacion_programada") return (
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Baja programada
         </span>
     );
     if (lower === "pendiente_pago") return (
@@ -127,9 +137,9 @@ function Modal({ open, onClose, title, children }: {
     );
 }
 
-function ConfirmModal({ open, onClose, onConfirm, title, description, loading }: {
+function ConfirmModal({ open, onClose, onConfirm, title, description, loading, confirmLabel = "Eliminar" }: {
     open: boolean; onClose: () => void; onConfirm: () => void;
-    title: string; description?: string; loading?: boolean;
+    title: string; description?: string; loading?: boolean; confirmLabel?: string;
 }) {
     if (!open) return null;
     return (
@@ -140,7 +150,7 @@ function ConfirmModal({ open, onClose, onConfirm, title, description, loading }:
                 <div className="flex gap-3 justify-end pt-2">
                     <button onClick={onClose} className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
                     <button onClick={onConfirm} disabled={loading} className="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-60">
-                        {loading ? "Eliminando..." : "Eliminar"}
+                        {loading ? "Procesando..." : confirmLabel}
                     </button>
                 </div>
             </div>
@@ -386,25 +396,25 @@ function SoporteCard({ token }: { token: string }) {
                         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-violet-500">Soporte</p>
                         <div className="flex items-center gap-2">
                             <MessageSquareText className="h-5 w-5 text-[#4C1D95]" />
-                            <h3 className="text-lg font-bold text-slate-900">Consultas desde tu panel</h3>
+                            <h3 className="text-lg font-bold text-slate-900">Mensajes con el equipo</h3>
                         </div>
                         <p className="mt-1 text-sm leading-6 text-slate-500">
-                            Escribinos desde aca y te respondemos en este mismo espacio.
+                            Escribinos desde aca y seguimos todo desde este mismo panel.
                         </p>
                     </div>
                     <button
                         onClick={() => setModalNuevo(true)}
                         className="inline-flex items-center justify-center rounded-2xl bg-[#4C1D95] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#4C1D95]/15 transition-colors hover:bg-[#3b1675]"
                     >
-                        Nueva consulta
+                        Abrir mensaje
                     </button>
                 </div>
             </div>
 
             <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
-                    <p className="text-sm font-semibold text-slate-900">Seguimiento de casos</p>
-                    <p className="mt-0.5 text-xs text-slate-400">Tus ultimas consultas y respuestas.</p>
+                    <p className="text-sm font-semibold text-slate-900">Seguimiento</p>
+                    <p className="mt-0.5 text-xs text-slate-400">Tus ultimos mensajes y respuestas.</p>
                 </div>
                 <span className="text-xs font-medium text-slate-400">{tickets.length} caso(s)</span>
             </div>
@@ -416,7 +426,7 @@ function SoporteCard({ token }: { token: string }) {
                 </div>
             ) : ultimos.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-5 text-sm text-slate-400">
-                    Todavia no tenes consultas cargadas. Cuando necesites ayuda podes abrir un caso nuevo desde este panel.
+                    Todavia no tenes mensajes cargados. Cuando necesites ayuda podes abrir uno nuevo desde este panel.
                 </div>
             ) : (
                 <ul className="space-y-2">
@@ -451,19 +461,19 @@ function SoporteCard({ token }: { token: string }) {
                 </ul>
             )}
 
-            <Modal open={modalNuevo} onClose={() => { setModalNuevo(false); setAsunto(""); setMensaje(""); setErrorEnvio(null); }} title="Nueva consulta">
+            <Modal open={modalNuevo} onClose={() => { setModalNuevo(false); setAsunto(""); setMensaje(""); setErrorEnvio(null); }} title="Nuevo mensaje al equipo">
                 <form onSubmit={handleCrearTicket} className="space-y-4">
                     <div>
                         <label className="mb-1 block text-xs font-medium text-slate-700">Asunto *</label>
                         <input required minLength={5} maxLength={200} value={asunto} onChange={(e) => setAsunto(e.target.value)}
                             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
-                            placeholder="En que podemos ayudarte?" />
+                            placeholder="Escribi un titulo breve" />
                     </div>
                     <div>
                         <label className="mb-1 block text-xs font-medium text-slate-700">Mensaje *</label>
                         <textarea required minLength={10} maxLength={2000} rows={4} value={mensaje} onChange={(e) => setMensaje(e.target.value)}
                             className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
-                            placeholder="Describi tu consulta..." />
+                            placeholder="Contanos que necesitas y el equipo te responde por este canal..." />
                     </div>
                     {errorEnvio && <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">{errorEnvio}</p>}
                     <div className="flex justify-end gap-3 pt-2">
@@ -471,7 +481,7 @@ function SoporteCard({ token }: { token: string }) {
                             className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
                         <button type="submit" disabled={enviando}
                             className="rounded-xl bg-[#4C1D95] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3b1675] disabled:opacity-60">
-                            {enviando ? "Enviando..." : "Enviar"}
+                            {enviando ? "Enviando..." : "Enviar mensaje"}
                         </button>
                     </div>
                 </form>
@@ -479,6 +489,75 @@ function SoporteCard({ token }: { token: string }) {
         </Card>
     );
 }
+
+function UpsellSeguroCard({
+    token,
+    activo,
+    upsell,
+    onChange,
+}: {
+    token: string;
+    activo: boolean;
+    upsell: UpsellSeguro | null;
+    onChange: (value: UpsellSeguro) => void;
+}) {
+    const [loading, setLoading] = useState(false);
+    const precio = upsell?.precio_ofertado ?? 10000;
+
+    if (!activo) return null;
+
+    async function handleSolicitar() {
+        setLoading(true);
+        try {
+            const data = await solicitarUpsellSeguro(token);
+            onChange(data);
+        } catch (err) {
+            window.alert(err instanceof Error ? err.message : "No se pudo registrar tu interes");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <Card>
+            <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-500 mb-2">Adicional</p>
+                    <div className="flex items-center gap-2">
+                        <ShieldPlus className="h-5 w-5 text-[#4C1D95]" />
+                        <h3 className="text-lg font-bold text-slate-900">Seguro medico complementario</h3>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                        Si te interesa sumar este servicio, dejanos tu solicitud y el equipo comercial la gestiona desde el backoffice.
+                    </p>
+                </div>
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+                    ${precio.toLocaleString("es-AR")}
+                </span>
+            </div>
+
+            {upsell ? (
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+                    <p className="text-sm font-semibold text-slate-900">Estado actual</p>
+                    <p className="mt-1 text-sm text-slate-600 capitalize">{upsell.estado.replace(/_/g, " ")}</p>
+                    <p className="mt-2 text-xs text-slate-500">
+                        El equipo revisa esta solicitud desde el panel admin y te contacta con el siguiente paso.
+                    </p>
+                </div>
+            ) : (
+                <button
+                    type="button"
+                    onClick={handleSolicitar}
+                    disabled={loading}
+                    className="w-full rounded-xl bg-[#4C1D95] py-3 text-sm font-bold text-white shadow-lg shadow-[#4C1D95]/20 transition-all hover:bg-[#3b1675] disabled:opacity-60"
+                >
+                    {loading ? "Enviando solicitud..." : "Quiero que me contacten"}
+                </button>
+            )}
+        </Card>
+    );
+}
+
 function DatosCuentaCard({ perfil, token, onActualizar }: {
     perfil: MiPerfil; token: string; onActualizar: (p: MiPerfil) => void;
 }) {
@@ -666,6 +745,7 @@ export default function DashboardPage() {
     const [suscripcion, setSuscripcion] = useState<Suscripcion | null | undefined>(undefined);
     const [perfil, setPerfil] = useState<MiPerfil | null>(null);
     const [planes, setPlanes] = useState<Plan[]>([]);
+    const [upsellSeguro, setUpsellSeguro] = useState<UpsellSeguro | null>(null);
     const [nombreFallback, setNombreFallback] = useLocalStorageValue("celdoctor_nombre", "");
     const [modalBaja, setModalBaja] = useState(false);
     const [cancelandoPlan, setCancelandoPlan] = useState(false);
@@ -684,11 +764,13 @@ export default function DashboardPage() {
             obtenerMiSuscripcion(token),
             getMiPerfil(token),
             obtenerPlanesUsuario(),
+            obtenerMiUpsellSeguro(token),
         ])
-            .then(([sus, prof, pl]) => {
+            .then(([sus, prof, pl, upsell]) => {
                 setSuscripcion(sus);
                 setPerfil(prof);
                 setPlanes(pl);
+                setUpsellSeguro(upsell);
             })
             .catch((err) => {
                 if (err instanceof ApiError && err.code === "UNAUTHORIZED") {
@@ -708,13 +790,17 @@ export default function DashboardPage() {
     const cargando = !tokenHydrated || suscripcion === undefined;
     const nombre = perfil?.nombre ?? nombreFallback ?? "";
     const nombrePlan = suscripcion?.nombre_plan ?? (suscripcion ? `Plan #${suscripcion.plan_id}` : "");
+    const perfilCompleto = perfilFacturacionCompleto(perfil);
 
     const diasRestantes = suscripcion?.fecha_vencimiento ? diasHasta(suscripcion.fecha_vencimiento) : null;
     const proxAVencer = diasRestantes !== null && diasRestantes > 0 && diasRestantes <= 7;
     const vencida = diasRestantes !== null && diasRestantes <= 0;
-    const estaActiva = suscripcion?.estado.toLowerCase() === "activa" && !vencida;
+    const estadoSuscripcion = suscripcion?.estado.toLowerCase();
+    const estaActiva = !!estadoSuscripcion && ["activa", "cancelacion_programada"].includes(estadoSuscripcion) && !vencida;
 
-    const totalIntegrantes = suscripcion?.max_beneficiarios ?? 1;
+    const totalIntegrantes = suscripcion?.tipo_plan?.toLowerCase() === "familiar"
+        ? Math.min(suscripcion?.max_beneficiarios ?? 1, 4)
+        : suscripcion?.max_beneficiarios ?? 1;
     const maxBeneficiarios = Math.max(totalIntegrantes - 1, 0);
     const tieneBeneficiarios = maxBeneficiarios > 0;
 
@@ -725,9 +811,11 @@ export default function DashboardPage() {
         if (!token) return;
         setCancelandoPlan(true);
         try {
-            await cancelarMiSuscripcion(token);
-            setSuscripcion(null);
+            const result = await cancelarMiSuscripcion(token);
+            const actualizada = await obtenerMiSuscripcion(token);
+            setSuscripcion(actualizada);
             setModalBaja(false);
+            window.alert(result.mensaje);
         } catch (err) {
             window.alert(err instanceof Error ? err.message : "No se pudo dar de baja el plan");
         } finally {
@@ -809,6 +897,15 @@ export default function DashboardPage() {
                     )}
                 </div>
 
+                {!cargando && !perfilCompleto && (
+                    <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                        <p className="font-bold text-amber-800">Completa tus datos para contratar un plan</p>
+                        <p className="mt-1 text-sm text-amber-700">
+                            Te falta cargar CUIT, direccion, localidad, codigo postal, provincia y pais en Datos de cuenta.
+                        </p>
+                    </div>
+                )}
+
                 {/* SECCIÃ“N 2 â€” Grid principal */}
                 {cargando ? (
                     <div className="grid lg:grid-cols-3 gap-6">
@@ -855,6 +952,12 @@ export default function DashboardPage() {
                                     {suscripcion.estado.toLowerCase() === "pendiente_pago" && (
                                         <p className="mt-3 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
                                             Tu pago esta siendo verificado. Te notificaremos cuando se acredite.
+                                        </p>
+                                    )}
+
+                                    {suscripcion.estado.toLowerCase() === "cancelacion_programada" && (
+                                        <p className="mt-3 text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                                            Tu baja esta programada. Mantenes el servicio hasta el ultimo dia de la suscripcion.
                                         </p>
                                     )}
 
@@ -914,6 +1017,15 @@ export default function DashboardPage() {
 
                             {estaActiva && <SoporteCard token={token} />}
 
+                            {estaActiva && (
+                                <UpsellSeguroCard
+                                    token={token}
+                                    activo={estaActiva}
+                                    upsell={upsellSeguro}
+                                    onChange={setUpsellSeguro}
+                                />
+                            )}
+
                             {/* Card 3 - Beneficiarios */}
                             {estaActiva && tieneBeneficiarios && (
                                 <BeneficiariosCard
@@ -953,7 +1065,8 @@ export default function DashboardPage() {
                     onConfirm={handleCancelarPlan}
                     loading={cancelandoPlan}
                     title="Dar de baja tu plan?"
-                    description="Tu suscripcion se marcara como cancelada y dejara de verse como plan activo en el panel."
+                    description="La baja se programa para el final del ciclo actual. Vas a mantener el servicio hasta el ultimo dia de la suscripcion."
+                    confirmLabel="Programar baja"
                 />
             </main>
         </div>

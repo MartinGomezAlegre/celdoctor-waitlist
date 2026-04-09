@@ -1,25 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import { registrarUsuario } from "@/lib/api";
 
 export default function RegistroPage() {
     const router = useRouter();
-
     const [form, setForm] = useState({
         nombre: "",
         apellido: "",
         email: "",
         telefono: "",
         dni: "",
-        cuit: "",
-        direccion: "",
-        localidad: "",
-        codigo_postal: "",
-        provincia: "",
-        pais: "",
         fecha_nacimiento: "",
         contrasenia: "",
     });
@@ -33,17 +27,11 @@ export default function RegistroPage() {
 
     function validate(): string | null {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(form.email)) return "El email no es válido.";
+        if (!emailRegex.test(form.email)) return "El email no es valido.";
         const dniRegex = /^\d{7,8}$/;
-        if (!dniRegex.test(form.dni)) return "Ingresá un DNI válido (7-8 dígitos).";
-        if (form.cuit.trim().length < 8) return "Ingresá un CUIT o CUIL válido.";
-        if (form.direccion.trim().length < 6) return "Ingresá una dirección válida.";
-        if (form.localidad.trim().length < 2) return "Ingresá una localidad válida.";
-        if (form.codigo_postal.trim().length < 3) return "Ingresá un código postal válido.";
-        if (form.provincia.trim().length < 2) return "Ingresá una provincia válida.";
-        if (form.pais.trim().length < 2) return "Ingresá un país válido.";
-        if (form.contrasenia.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
-        if (!aceptaTerminos) return "Debés aceptar los términos y condiciones.";
+        if (!dniRegex.test(form.dni)) return "Ingresa un DNI valido (7-8 digitos).";
+        if (form.contrasenia.length < 8) return "La contrasena debe tener al menos 8 caracteres.";
+        if (!aceptaTerminos) return "Debes aceptar los terminos y condiciones.";
         return null;
     }
 
@@ -58,12 +46,11 @@ export default function RegistroPage() {
         }
 
         setLoading(true);
-
         try {
             await registrarUsuario(form);
             router.push("/login?success=1");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error de conexión");
+            setError(err instanceof Error ? err.message : "Error de conexion");
         } finally {
             setLoading(false);
         }
@@ -71,19 +58,19 @@ export default function RegistroPage() {
 
     return (
         <div className="w-full max-w-2xl">
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
-                <h1 className="text-2xl font-bold text-slate-900 mb-1">Crear cuenta</h1>
-                <p className="text-sm text-slate-500 mb-8">
-                    ¿Ya tenés cuenta?{" "}
-                    <Link href="/login" className="text-[#4C1D95] font-semibold hover:underline">
-                        Iniciar sesión
+            <div className="rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
+                <h1 className="mb-1 text-2xl font-bold text-slate-900">Crear cuenta</h1>
+                <p className="mb-8 text-sm text-slate-500">
+                    Ya tenes cuenta?{" "}
+                    <Link href="/login" className="font-semibold text-[#4C1D95] hover:underline">
+                        Iniciar sesion
                     </Link>
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="nombre" className="block text-sm font-medium text-slate-700 mb-1.5">
+                            <label htmlFor="nombre" className="mb-1.5 block text-sm font-medium text-slate-700">
                                 Nombre
                             </label>
                             <input
@@ -94,12 +81,12 @@ export default function RegistroPage() {
                                 autoComplete="given-name"
                                 value={form.nombre}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
                                 placeholder="Juan"
                             />
                         </div>
                         <div>
-                            <label htmlFor="apellido" className="block text-sm font-medium text-slate-700 mb-1.5">
+                            <label htmlFor="apellido" className="mb-1.5 block text-sm font-medium text-slate-700">
                                 Apellido
                             </label>
                             <input
@@ -110,14 +97,14 @@ export default function RegistroPage() {
                                 autoComplete="family-name"
                                 value={form.apellido}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
-                                placeholder="Pérez"
+                                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
+                                placeholder="Perez"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-700">
                             Email
                         </label>
                         <input
@@ -128,14 +115,14 @@ export default function RegistroPage() {
                             autoComplete="email"
                             value={form.email}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
                             placeholder="tu@email.com"
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="telefono" className="block text-sm font-medium text-slate-700 mb-1.5">
-                            Teléfono / WhatsApp
+                        <label htmlFor="telefono" className="mb-1.5 block text-sm font-medium text-slate-700">
+                            Telefono / WhatsApp
                         </label>
                         <input
                             id="telefono"
@@ -145,13 +132,13 @@ export default function RegistroPage() {
                             autoComplete="tel"
                             value={form.telefono}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
                             placeholder="+54 9 11 1234-5678"
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="dni" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        <label htmlFor="dni" className="mb-1.5 block text-sm font-medium text-slate-700">
                             DNI
                         </label>
                         <input
@@ -162,108 +149,13 @@ export default function RegistroPage() {
                             inputMode="numeric"
                             value={form.dni}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
                             placeholder="12345678"
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="cuit" className="block text-sm font-medium text-slate-700 mb-1.5">
-                            CUIT / CUIL
-                        </label>
-                        <input
-                            id="cuit"
-                            name="cuit"
-                            type="text"
-                            required
-                            value={form.cuit}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
-                            placeholder="20-12345678-3"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="sm:col-span-2">
-                            <label htmlFor="direccion" className="block text-sm font-medium text-slate-700 mb-1.5">
-                                Dirección
-                            </label>
-                            <input
-                                id="direccion"
-                                name="direccion"
-                                type="text"
-                                required
-                                autoComplete="street-address"
-                                value={form.direccion}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
-                                placeholder="Calle, número, piso y departamento"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="localidad" className="block text-sm font-medium text-slate-700 mb-1.5">
-                                Localidad
-                            </label>
-                            <input
-                                id="localidad"
-                                name="localidad"
-                                type="text"
-                                required
-                                value={form.localidad}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
-                                placeholder="CABA"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="codigo_postal" className="block text-sm font-medium text-slate-700 mb-1.5">
-                                Código postal
-                            </label>
-                            <input
-                                id="codigo_postal"
-                                name="codigo_postal"
-                                type="text"
-                                required
-                                value={form.codigo_postal}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
-                                placeholder="1425"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="provincia" className="block text-sm font-medium text-slate-700 mb-1.5">
-                                Provincia
-                            </label>
-                            <input
-                                id="provincia"
-                                name="provincia"
-                                type="text"
-                                required
-                                value={form.provincia}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
-                                placeholder="Buenos Aires"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="pais" className="block text-sm font-medium text-slate-700 mb-1.5">
-                                País
-                            </label>
-                            <input
-                                id="pais"
-                                name="pais"
-                                type="text"
-                                required
-                                value={form.pais}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
-                                placeholder="Argentina"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label htmlFor="fecha_nacimiento" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        <label htmlFor="fecha_nacimiento" className="mb-1.5 block text-sm font-medium text-slate-700">
                             Fecha de nacimiento
                         </label>
                         <input
@@ -273,13 +165,13 @@ export default function RegistroPage() {
                             required
                             value={form.fecha_nacimiento}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 transition-colors focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="contrasenia" className="block text-sm font-medium text-slate-700 mb-1.5">
-                            Contraseña
+                        <label htmlFor="contrasenia" className="mb-1.5 block text-sm font-medium text-slate-700">
+                            Contrasena
                         </label>
                         <input
                             id="contrasenia"
@@ -290,12 +182,16 @@ export default function RegistroPage() {
                             minLength={8}
                             value={form.contrasenia}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
-                            placeholder="Mínimo 8 caracteres"
+                            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
+                            placeholder="Minimo 8 caracteres"
                         />
                     </div>
 
-                    <label className="flex items-start gap-3 cursor-pointer">
+                    <div className="rounded-2xl border border-[#4C1D95]/10 bg-[#4C1D95]/5 px-4 py-3 text-sm text-slate-600">
+                        Despues de iniciar sesion te vamos a pedir tus datos fiscales y de domicilio para habilitar la contratacion de planes.
+                    </div>
+
+                    <label className="flex cursor-pointer items-start gap-3">
                         <input
                             type="checkbox"
                             checked={aceptaTerminos}
@@ -305,18 +201,18 @@ export default function RegistroPage() {
                         <span className="text-sm text-slate-600">
                             Acepto los{" "}
                             <Link href="/terminos" target="_blank" className="text-[#4C1D95] underline">
-                                Términos y Condiciones
+                                Terminos y Condiciones
                             </Link>{" "}
                             y la{" "}
                             <Link href="/privacidad" target="_blank" className="text-[#4C1D95] underline">
-                                Política de Privacidad
+                                Politica de Privacidad
                             </Link>
                             .
                         </span>
                     </label>
 
                     {error && (
-                        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                        <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
                             {error}
                         </p>
                     )}
@@ -324,7 +220,7 @@ export default function RegistroPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3.5 bg-[#4C1D95] text-white rounded-xl font-bold text-sm hover:bg-[#3b1675] transition-all shadow-lg shadow-[#4C1D95]/20 disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="w-full rounded-xl bg-[#4C1D95] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#4C1D95]/20 transition-all hover:bg-[#3b1675] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {loading ? "Creando cuenta..." : "Crear cuenta"}
                     </button>

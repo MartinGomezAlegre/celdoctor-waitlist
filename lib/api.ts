@@ -76,6 +76,25 @@ export interface MiPerfil {
     pais?: string;
     fecha_nacimiento?: string;
     rol?: string;
+    perfil_completo_facturacion?: boolean;
+}
+
+export interface CancelacionSuscripcionResponse {
+    ok: boolean;
+    mensaje: string;
+    fecha_vencimiento?: string | null;
+}
+
+export interface UpsellSeguro {
+    id: number;
+    usuario_id: number;
+    suscripcion_id: number;
+    plan_nombre: string;
+    precio_ofertado: number;
+    estado: string;
+    nota_admin?: string | null;
+    created_at?: string | null;
+    updated_at?: string | null;
 }
 
 export interface LoginResponse {
@@ -135,12 +154,6 @@ export async function registrarUsuario(datos: {
     email: string;
     telefono: string;
     dni: string;
-    cuit: string;
-    direccion: string;
-    localidad: string;
-    codigo_postal: string;
-    provincia: string;
-    pais: string;
     fecha_nacimiento: string;
     contrasenia: string;
 }): Promise<Usuario> {
@@ -190,7 +203,7 @@ export async function contratarPlan(
     return res.json() as Promise<Suscripcion>;
 }
 
-export async function cancelarMiSuscripcion(token: string): Promise<void> {
+export async function cancelarMiSuscripcion(token: string): Promise<CancelacionSuscripcionResponse> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/suscripciones/mia/cancelar"), {
@@ -206,6 +219,8 @@ export async function cancelarMiSuscripcion(token: string): Promise<void> {
     if (res.status === 401) throw new ApiError("Sesion expirada. Inicia sesion nuevamente", "UNAUTHORIZED");
     if (res.status === 404) throw new Error(await getErrorDetail(res, "No encontramos una suscripcion para dar de baja"));
     if (!res.ok) throw new Error(await getErrorDetail(res, "No se pudo dar de baja el plan"));
+
+    return res.json() as Promise<CancelacionSuscripcionResponse>;
 }
 
 /**
@@ -428,4 +443,39 @@ export async function editarPerfil(token: string, datos: Partial<MiPerfil>): Pro
     if (res.status === 400) throw new Error("Datos inválidos. Verificá los campos ingresados");
     if (!res.ok) throw new Error("No se pudo actualizar el perfil");
     return res.json() as Promise<MiPerfil>;
+}
+
+export async function obtenerMiUpsellSeguro(token: string): Promise<UpsellSeguro | null> {
+    let res: Response;
+    try {
+        res = await fetch(getApiUrl("/upsells/seguro/mio"), {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+    } catch {
+        return null;
+    }
+
+    if (res.status === 401) throw new ApiError("Sesion expirada. Inicia sesion nuevamente", "UNAUTHORIZED");
+    if (!res.ok) return null;
+    return res.json() as Promise<UpsellSeguro | null>;
+}
+
+export async function solicitarUpsellSeguro(token: string): Promise<UpsellSeguro> {
+    let res: Response;
+    try {
+        res = await fetch(getApiUrl("/upsells/seguro"), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ acepta: true }),
+        });
+    } catch {
+        throw new Error("No se pudo registrar tu interes en el seguro medico");
+    }
+
+    if (res.status === 401) throw new ApiError("Sesion expirada. Inicia sesion nuevamente", "UNAUTHORIZED");
+    if (!res.ok) throw new Error(await getErrorDetail(res, "No se pudo registrar tu interes en el seguro medico"));
+    return res.json() as Promise<UpsellSeguro>;
 }

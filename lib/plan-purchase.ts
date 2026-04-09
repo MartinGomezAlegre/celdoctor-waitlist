@@ -54,15 +54,17 @@ export function getPlanPurchaseState(
         };
     }
 
-    if (estado === "activa" && esMismoPlan) {
+    const mantieneServicio = estado === "activa" || estado === "cancelacion_programada";
+
+    if (mantieneServicio && esMismoPlan) {
         return {
             href: null,
-            label: "Plan actual",
+            label: estado === "cancelacion_programada" ? "Plan vigente hasta el vencimiento" : "Plan actual",
             disabled: true,
         };
     }
 
-    if (estado === "activa" && capacidadPlan < capacidadActual) {
+    if (mantieneServicio && capacidadPlan < capacidadActual) {
         return {
             href: null,
             label: "Ya tenes un plan superior",
@@ -70,7 +72,7 @@ export function getPlanPurchaseState(
         };
     }
 
-    if (estado === "activa" && capacidadPlan > capacidadActual) {
+    if (mantieneServicio && capacidadPlan > capacidadActual) {
         return {
             href: `/checkout/${plan.id}`,
             label: capacidadPlan > 1 ? "Pasar a plan familiar" : "Cambiar de plan",

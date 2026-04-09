@@ -1,382 +1,346 @@
-"use client";
+"use client"
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import InteractiveDemo from "./InteractiveDemo";
-import { Menu, X, Play, ChevronDown, LogOut } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
-import { clearSessionCookie } from "@/lib/session-cookie";
-import { useLocalStorageValue } from "@/lib/use-local-storage-value";
+import { useCallback, useEffect, useRef, useState } from "react"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import { AnimatePresence, motion } from "framer-motion"
+import { ChevronDown, LogOut, Menu, Play, X } from "lucide-react"
+import InteractiveDemo from "./InteractiveDemo"
+import { clearSessionCookie } from "@/lib/session-cookie"
+import { useLocalStorageValue } from "@/lib/use-local-storage-value"
 
-/* ─── Estructura de navegación ─── */
 interface NavChild {
-  href: string;
-  label: string;
+    href: string
+    label: string
 }
+
 interface NavItem {
-  label: string;
-  href?: string;
-  children?: NavChild[];
+    label: string
+    href?: string
+    children?: NavChild[]
 }
 
 const navItems: NavItem[] = [
-  {
-    label: "Atención Médica",
-    children: [
-      { href: "/atencion-medica/especialidades-medicas", label: "Especialidades Médicas" },
-      { href: "/atencion-medica/receta-medica", label: "Receta médica homologada" },
-      { href: "/atencion-medica/historial-medico", label: "Historial Médico" },
-    ],
-  },
-  {
-    label: "Planes",
-    children: [
-      { href: "/planes/personales-familiares", label: "Planes Personales" },
-      { href: "/planes/familiares", label: "Planes Familiares" },
-      { href: "/planes/corporativos", label: "Planes Corporativos" },
-    ],
-  },
-  {
-    label: "App",
-    children: [
-      { href: "/app/como-funciona", label: "Cómo funciona" },
-    ],
-  },
-  {
-    label: "Blog",
-    children: [
-      { href: "/blog/preguntas-frecuentes", label: "Preguntas frecuentes (FAQ)" },
-      { href: "/blog/noticias", label: "Noticias" },
-    ],
-  },
-];
+    {
+        label: "Atencion Medica",
+        children: [
+            { href: "/atencion-medica/especialidades-medicas", label: "Especialidades Medicas" },
+            { href: "/atencion-medica/receta-medica", label: "Receta medica homologada" },
+            { href: "/atencion-medica/historial-medico", label: "Historial Medico" },
+        ],
+    },
+    {
+        label: "Planes",
+        children: [
+            { href: "/planes/personales-familiares", label: "Planes Personales" },
+            { href: "/planes/familiares", label: "Planes Familiares" },
+            { href: "/planes/corporativos", label: "Planes Corporativos" },
+        ],
+    },
+    {
+        label: "App",
+        children: [
+            { href: "/app/como-funciona", label: "Como funciona" },
+        ],
+    },
+    {
+        label: "Blog",
+        children: [
+            { href: "/blog/preguntas-frecuentes", label: "Preguntas frecuentes (FAQ)" },
+            { href: "/blog/noticias", label: "Noticias" },
+        ],
+    },
+]
 
-/* ─── Dropdown Desktop ─── */
 function DesktopDropdown({ item }: { item: NavItem }) {
-  const [open, setOpen] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pathname = usePathname();
+    const [open, setOpen] = useState(false)
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const pathname = usePathname()
 
-  const handleEnter = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setOpen(true);
-  };
-  const handleLeave = () => {
-    timeoutRef.current = setTimeout(() => setOpen(false), 150);
-  };
+    const handleEnter = () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        setOpen(true)
+    }
 
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
+    const handleLeave = () => {
+        timeoutRef.current = setTimeout(() => setOpen(false), 150)
+    }
 
-  const isActive = item.children?.some((c) => pathname.startsWith(c.href));
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        }
+    }, [])
 
-  if (!item.children) {
+    const isActive = item.children?.some((child) => pathname.startsWith(child.href))
+
+    if (!item.children) {
+        return (
+            <Link
+                href={item.href || "/"}
+                className={`transition-colors hover:text-[#4C1D95] ${pathname === item.href ? "text-[#4C1D95]" : ""}`}
+            >
+                {item.label}
+            </Link>
+        )
+    }
+
     return (
-      <Link
-        href={item.href || "/"}
-        className={`hover:text-[#4C1D95] transition-colors ${pathname === item.href ? "text-[#4C1D95]" : ""
-          }`}
-      >
-        {item.label}
-      </Link>
-    );
-  }
+        <div className="relative" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+            <button
+                className={`flex items-center gap-1 transition-colors hover:text-[#4C1D95] ${isActive ? "text-[#4C1D95]" : ""}`}
+                onClick={() => setOpen(!open)}
+                aria-expanded={open}
+            >
+                {item.label}
+                <ChevronDown size={14} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+            </button>
 
-  return (
-    <div
-      className="relative"
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
-    >
-      <button
-        className={`flex items-center gap-1 hover:text-[#4C1D95] transition-colors ${isActive ? "text-[#4C1D95]" : ""
-          }`}
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-      >
-        {item.label}
-        <ChevronDown
-          size={14}
-          className={`transition-transform duration-200 ${open ? "rotate-180" : ""
-            }`}
-        />
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.15 }}
-            className="absolute top-full left-1/2 -translate-x-1/2 pt-3 z-50"
-          >
-            <div className="bg-white rounded-xl border border-slate-100 shadow-xl shadow-slate-200/50 py-2 min-w-[240px]">
-              {item.children.map((child) => (
-                <Link
-                  key={child.href}
-                  href={child.href}
-                  onClick={() => setOpen(false)}
-                  className={`block px-5 py-2.5 text-sm hover:bg-[#4C1D95]/5 hover:text-[#4C1D95] transition-colors ${pathname === child.href
-                    ? "text-[#4C1D95] bg-[#4C1D95]/5"
-                    : "text-slate-600"
-                    }`}
-                >
-                  {child.label}
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-/* ─── Acordeón Mobile ─── */
-function MobileAccordion({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
-  const [open, setOpen] = useState(false);
-  const pathname = usePathname();
-
-  if (!item.children) {
-    return (
-      <Link
-        href={item.href || "/"}
-        onClick={onNavigate}
-        className="block py-3 px-4 rounded-xl text-sm font-medium text-slate-700 hover:bg-[#4C1D95]/5 hover:text-[#4C1D95] transition-colors"
-      >
-        {item.label}
-      </Link>
-    );
-  }
-
-  return (
-    <div>
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-3 px-4 rounded-xl text-sm font-medium text-slate-700 hover:bg-[#4C1D95]/5 hover:text-[#4C1D95] transition-colors"
-        aria-expanded={open}
-      >
-        {item.label}
-        <ChevronDown
-          size={16}
-          className={`transition-transform duration-200 ${open ? "rotate-180 text-[#4C1D95]" : ""
-            }`}
-        />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="overflow-hidden"
-          >
-            <div className="pl-4 pb-1 space-y-0.5">
-              {item.children.map((child) => (
-                <Link
-                  key={child.href}
-                  href={child.href}
-                  onClick={onNavigate}
-                  className={`block py-2.5 px-4 rounded-lg text-sm transition-colors ${pathname === child.href
-                    ? "text-[#4C1D95] bg-[#4C1D95]/5 font-semibold"
-                    : "text-slate-500 hover:text-[#4C1D95] hover:bg-[#4C1D95]/5"
-                    }`}
-                >
-                  {child.label}
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-/* ─── Navbar Principal ─── */
-export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [token, setToken] = useLocalStorageValue("celdoctor_token");
-  const [nombre, setNombre] = useLocalStorageValue("celdoctor_nombre");
-  const router = useRouter();
-
-  const closeMenu = useCallback(() => {
-    setIsMenuOpen(false);
-  }, []);
-
-  function handleLogout() {
-    localStorage.removeItem("celdoctor_token");
-    localStorage.removeItem("celdoctor_nombre");
-    localStorage.removeItem("celdoctor_email");
-    clearSessionCookie("celdoctor_token");
-    setToken(null);
-    setNombre(null);
-    closeMenu();
-    router.push("/login");
-  }
-
-  return (
-    <nav className="sticky top-0 w-full bg-white/95 backdrop-blur-xl border-b border-slate-100 z-50 h-20 transition-all">
-      <div className="max-w-7xl mx-auto px-6 w-full h-full flex items-center justify-between">
-
-        {/* Logo */}
-        <Link
-          href="/"
-          onClick={closeMenu}
-          className="flex items-center gap-2 cursor-pointer select-none"
-        >
-          <span className="font-bold text-2xl md:text-3xl tracking-tight text-slate-900">
-            CELDOCTOR
-          </span>
-        </Link>
-
-        {/* Menú Desktop */}
-        <div className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-600">
-          {navItems.map((item) => (
-            <DesktopDropdown key={item.label} item={item} />
-          ))}
-        </div>
-
-        {/* Botones de Acción (Desktop) */}
-        <div className="flex items-center gap-3">
-          <div className="hidden md:block">
-            <InteractiveDemo />
-          </div>
-
-          {token ? (
-            /* ── Con sesión ── */
-            <>
-              {nombre && (
-                <span className="hidden md:block text-xs text-slate-500 font-medium whitespace-nowrap">
-                  Hola, {nombre}
-                </span>
-              )}
-              <Link
-                href="/dashboard"
-                className="hidden sm:inline-flex items-center px-4 py-2.5 rounded-lg text-xs font-bold border border-[#4C1D95] text-[#4C1D95] hover:bg-[#4C1D95]/5 transition-all whitespace-nowrap"
-              >
-                Mi cuenta
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="hidden sm:inline-flex items-center gap-1.5 bg-[#4C1D95] text-white px-4 md:px-5 py-2.5 rounded-lg text-xs font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25 whitespace-nowrap"
-              >
-                <LogOut size={13} />
-                Cerrar sesión
-              </button>
-            </>
-          ) : (
-            /* ── Sin sesión ── */
-            <>
-              <Link
-                href="/login"
-                className="hidden sm:inline-flex items-center px-4 py-2.5 rounded-lg text-xs font-bold border border-[#4C1D95] text-[#4C1D95] hover:bg-[#4C1D95]/5 transition-all whitespace-nowrap"
-              >
-                Iniciar sesión
-              </Link>
-              <Link
-                href="/registro"
-                className="hidden sm:inline-flex bg-[#4C1D95] text-white px-4 md:px-6 py-2.5 rounded-lg text-xs font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25 hover:-translate-y-0.5 whitespace-nowrap"
-              >
-                Registrarme
-              </Link>
-            </>
-          )}
-
-          {/* Botón Hamburguesa (Mobile) */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-700"
-            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Panel Mobile */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="lg:hidden bg-white border-b border-slate-100 shadow-lg overflow-hidden"
-          >
-            <div className="px-6 py-4 space-y-1 max-h-[calc(100vh-5rem)] overflow-y-auto">
-              {navItems.map((item) => (
-                <MobileAccordion
-                  key={item.label}
-                  item={item}
-                  onNavigate={closeMenu}
-                />
-              ))}
-
-              {/* CTA Mobile */}
-              <div className="pt-3 space-y-2.5">
-                {token ? (
-                  <>
-                    {nombre && (
-                      <p className="text-center text-xs text-slate-500 font-medium pb-1">
-                        Hola, {nombre}
-                      </p>
-                    )}
-                    <Link
-                      href="/dashboard"
-                      onClick={closeMenu}
-                      className="block w-full text-center border border-[#4C1D95] text-[#4C1D95] py-3.5 rounded-xl text-sm font-bold hover:bg-[#4C1D95]/5 transition-all"
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute top-full left-1/2 z-50 -translate-x-1/2 pt-3"
                     >
-                      Mi cuenta
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center justify-center gap-2 w-full bg-[#4C1D95] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25"
-                    >
-                      <LogOut size={15} />
-                      Cerrar sesión
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/registro"
-                      onClick={closeMenu}
-                      className="block w-full text-center bg-[#4C1D95] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-[#2E1065] transition-all shadow-lg shadow-[#4C1D95]/25"
-                    >
-                      Registrarme
-                    </Link>
-                    <Link
-                      href="/login"
-                      onClick={closeMenu}
-                      className="block w-full text-center border border-[#4C1D95] text-[#4C1D95] py-3.5 rounded-xl text-sm font-bold hover:bg-[#4C1D95]/5 transition-all"
-                    >
-                      Iniciar sesión
-                    </Link>
-                  </>
+                        <div className="min-w-[240px] rounded-xl border border-slate-100 bg-white py-2 shadow-xl shadow-slate-200/50">
+                            {item.children.map((child) => (
+                                <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    onClick={() => setOpen(false)}
+                                    className={`block px-5 py-2.5 text-sm transition-colors hover:bg-[#4C1D95]/5 hover:text-[#4C1D95] ${
+                                        pathname === child.href ? "bg-[#4C1D95]/5 text-[#4C1D95]" : "text-slate-600"
+                                    }`}
+                                >
+                                    {child.label}
+                                </Link>
+                            ))}
+                        </div>
+                    </motion.div>
                 )}
+            </AnimatePresence>
+        </div>
+    )
+}
 
-                {/* Ver Demo */}
-                <div
-                  className="relative flex items-center justify-center gap-2 w-full py-3.5 rounded-xl text-sm font-bold border border-[#4C1D95]/20 text-[#4C1D95] bg-[#4C1D95]/5 hover:bg-[#4C1D95]/10 transition-all overflow-hidden"
-                >
-                  <Play size={16} className="fill-[#4C1D95]/20 pointer-events-none" />
-                  <span className="pointer-events-none">Ver Demo Interactiva</span>
-                  <div className="absolute inset-0 opacity-0 z-10 [&_button]:w-full [&_button]:h-full [&_button]:cursor-pointer">
-                    <InteractiveDemo />
-                  </div>
+function MobileAccordion({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
+    const [open, setOpen] = useState(false)
+    const pathname = usePathname()
+
+    if (!item.children) {
+        return (
+            <Link
+                href={item.href || "/"}
+                onClick={onNavigate}
+                className="block rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-[#4C1D95]/5 hover:text-[#4C1D95]"
+            >
+                {item.label}
+            </Link>
+        )
+    }
+
+    return (
+        <div>
+            <button
+                onClick={() => setOpen(!open)}
+                className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-[#4C1D95]/5 hover:text-[#4C1D95]"
+                aria-expanded={open}
+            >
+                {item.label}
+                <ChevronDown size={16} className={`transition-transform duration-200 ${open ? "rotate-180 text-[#4C1D95]" : ""}`} />
+            </button>
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="space-y-0.5 pb-1 pl-4">
+                            {item.children.map((child) => (
+                                <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    onClick={onNavigate}
+                                    className={`block rounded-lg px-4 py-2.5 text-sm transition-colors ${
+                                        pathname === child.href
+                                            ? "bg-[#4C1D95]/5 font-semibold text-[#4C1D95]"
+                                            : "text-slate-500 hover:bg-[#4C1D95]/5 hover:text-[#4C1D95]"
+                                    }`}
+                                >
+                                    {child.label}
+                                </Link>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    )
+}
+
+export default function Navbar() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [token, setToken] = useLocalStorageValue("celdoctor_token")
+    const [nombre, setNombre] = useLocalStorageValue("celdoctor_nombre")
+    const router = useRouter()
+
+    const closeMenu = useCallback(() => {
+        setIsMenuOpen(false)
+    }, [])
+
+    function handleLogout() {
+        localStorage.removeItem("celdoctor_token")
+        localStorage.removeItem("celdoctor_nombre")
+        localStorage.removeItem("celdoctor_email")
+        clearSessionCookie("celdoctor_token")
+        setToken(null)
+        setNombre(null)
+        closeMenu()
+        router.push("/login")
+    }
+
+    return (
+        <nav className="sticky top-0 z-50 h-20 w-full border-b border-slate-100 bg-white/95 backdrop-blur-xl transition-all">
+            <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-between px-6">
+                <Link href="/" onClick={closeMenu} className="flex cursor-pointer select-none items-center gap-2">
+                    <span className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
+                        CELDOCTOR
+                    </span>
+                </Link>
+
+                <div className="hidden items-center gap-8 text-sm font-medium text-slate-600 lg:flex">
+                    {navItems.map((item) => (
+                        <DesktopDropdown key={item.label} item={item} />
+                    ))}
                 </div>
-              </div>
+
+                <div className="flex items-center gap-3">
+                    <div className="hidden md:block">
+                        <InteractiveDemo />
+                    </div>
+
+                    {token ? (
+                        <>
+                            {nombre && (
+                                <span className="hidden whitespace-nowrap text-xs font-medium text-slate-500 md:block">
+                                    Hola, {nombre}
+                                </span>
+                            )}
+                            <Link
+                                href="/dashboard"
+                                className="hidden items-center whitespace-nowrap rounded-lg border border-[#4C1D95] px-4 py-2.5 text-xs font-bold text-[#4C1D95] transition-all hover:bg-[#4C1D95]/5 sm:inline-flex"
+                            >
+                                Mi cuenta
+                            </Link>
+                            <button
+                                onClick={handleLogout}
+                                className="hidden items-center gap-1.5 whitespace-nowrap rounded-lg bg-[#4C1D95] px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-[#4C1D95]/25 transition-all hover:bg-[#2E1065] sm:inline-flex md:px-5"
+                            >
+                                <LogOut size={13} />
+                                Cerrar sesion
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link
+                                href="/login"
+                                className="hidden items-center whitespace-nowrap rounded-lg border border-[#4C1D95] px-4 py-2.5 text-xs font-bold text-[#4C1D95] transition-all hover:bg-[#4C1D95]/5 sm:inline-flex"
+                            >
+                                Iniciar sesion
+                            </Link>
+                            <Link
+                                href="/registro"
+                                className="hidden whitespace-nowrap rounded-lg bg-[#4C1D95] px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-[#4C1D95]/25 transition-all hover:-translate-y-0.5 hover:bg-[#2E1065] sm:inline-flex md:px-6"
+                            >
+                                Registrarme
+                            </Link>
+                        </>
+                    )}
+
+                    <button
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        className="rounded-lg p-2 text-slate-700 transition-colors hover:bg-slate-100 lg:hidden"
+                        aria-label={isMenuOpen ? "Cerrar menu" : "Abrir menu"}
+                    >
+                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
-  );
+
+            <AnimatePresence>
+                {isMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="overflow-hidden border-b border-slate-100 bg-white shadow-lg lg:hidden"
+                    >
+                        <div className="max-h-[calc(100vh-5rem)] space-y-1 overflow-y-auto px-6 py-4">
+                            {navItems.map((item) => (
+                                <MobileAccordion key={item.label} item={item} onNavigate={closeMenu} />
+                            ))}
+
+                            <div className="space-y-2.5 pt-3">
+                                {token ? (
+                                    <>
+                                        {nombre && (
+                                            <p className="pb-1 text-center text-xs font-medium text-slate-500">
+                                                Hola, {nombre}
+                                            </p>
+                                        )}
+                                        <Link
+                                            href="/dashboard"
+                                            onClick={closeMenu}
+                                            className="block w-full rounded-xl border border-[#4C1D95] py-3.5 text-center text-sm font-bold text-[#4C1D95] transition-all hover:bg-[#4C1D95]/5"
+                                        >
+                                            Mi cuenta
+                                        </Link>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#4C1D95] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#4C1D95]/25 transition-all hover:bg-[#2E1065]"
+                                        >
+                                            <LogOut size={15} />
+                                            Cerrar sesion
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Link
+                                            href="/registro"
+                                            onClick={closeMenu}
+                                            className="block w-full rounded-xl bg-[#4C1D95] py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-[#4C1D95]/25 transition-all hover:bg-[#2E1065]"
+                                        >
+                                            Registrarme
+                                        </Link>
+                                        <Link
+                                            href="/login"
+                                            onClick={closeMenu}
+                                            className="block w-full rounded-xl border border-[#4C1D95] py-3.5 text-center text-sm font-bold text-[#4C1D95] transition-all hover:bg-[#4C1D95]/5"
+                                        >
+                                            Iniciar sesion
+                                        </Link>
+                                    </>
+                                )}
+
+                                <div className="relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border border-[#4C1D95]/20 bg-[#4C1D95]/5 py-3.5 text-sm font-bold text-[#4C1D95] transition-all hover:bg-[#4C1D95]/10">
+                                    <Play size={16} className="pointer-events-none fill-[#4C1D95]/20" />
+                                    <span className="pointer-events-none">Ver Demo Interactiva</span>
+                                    <div className="absolute inset-0 z-10 opacity-0 [&_button]:h-full [&_button]:w-full [&_button]:cursor-pointer">
+                                        <InteractiveDemo />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </nav>
+    )
 }

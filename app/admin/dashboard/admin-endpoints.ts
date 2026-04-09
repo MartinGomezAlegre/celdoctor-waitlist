@@ -54,6 +54,10 @@ export const adminEndpoints = {
     leads:                   "/admin/leads/empresariales",
     lead: (id: number) =>    `/admin/leads/empresariales/${id}`,
 
+    // Upsells
+    upsellsSeguro:           "/admin/upsells/seguro",
+    upsellSeguro: (id: number) => `/admin/upsells/seguro/${id}`,
+
     // Reportes
     reporteMensual:          "/admin/reporte-mensual",
     metricasEmbudo:          "/admin/metricas-embudo",
