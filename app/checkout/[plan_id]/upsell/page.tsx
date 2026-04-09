@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2, ShieldCheck, ShieldPlus, Sparkles, X } from "lucide-react";
+import { ShieldCheck, ShieldPlus, X } from "lucide-react";
 import {
     obtenerMiUpsellSeguro,
     obtenerPlanes,
@@ -17,6 +18,19 @@ const FALLBACK_PLANES: Plan[] = [
     { id: 3, nombre: "Corporativo", descripcion: "Salud para tu equipo.", precio_mensual: 0, max_beneficiarios: null },
 ];
 
+const STEPS = [
+    { num: 1, label: "Confirmar plan" },
+    { num: 2, label: "Tus datos" },
+    { num: 3, label: "Pago" },
+    { num: 4, label: "Seguro" },
+];
+
+const BENEFICIOS_SEGURO = [
+    "Queda asociado a la misma suscripcion.",
+    "El equipo comercial lo gestiona desde el backoffice.",
+    "Podes avanzar aunque no quieras contratarlo ahora.",
+];
+
 function precioSeguro(plan: Plan | null, upsell: UpsellSeguro | null) {
     if (upsell?.precio_ofertado) return upsell.precio_ofertado;
     return (plan?.max_beneficiarios ?? 1) > 1 ? 15000 : 10000;
@@ -24,6 +38,94 @@ function precioSeguro(plan: Plan | null, upsell: UpsellSeguro | null) {
 
 function esFamiliar(plan: Plan | null) {
     return (plan?.max_beneficiarios ?? 1) > 1 || plan?.nombre.toLowerCase().includes("famil");
+}
+
+function StepIndicator({ current }: { current: number }) {
+    return (
+        <div className="mb-10 flex items-center justify-center">
+            {STEPS.map((step, index) => (
+                <div key={step.num} className="flex items-center">
+                    {index > 0 && (
+                        <div
+                            className={`mx-1 h-px w-10 transition-colors duration-300 sm:w-16 ${
+                                current > index ? "bg-[#4C1D95]" : "bg-slate-200"
+                            }`}
+                        />
+                    )}
+                    <div className="flex flex-col items-center gap-1">
+                        <div
+                            className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 ${
+                                current > step.num
+                                    ? "bg-emerald-500 text-white"
+                                    : current === step.num
+                                      ? "bg-[#4C1D95] text-white shadow-lg shadow-[#4C1D95]/30"
+                                      : "border-2 border-slate-200 bg-white text-slate-400"
+                            }`}
+                        >
+                            {current > step.num ? (
+                                <svg
+                                    viewBox="0 0 12 10"
+                                    className="h-3.5 w-3.5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <polyline points="1,5 4,9 11,1" />
+                                </svg>
+                            ) : (
+                                step.num
+                            )}
+                        </div>
+                        <span className={`hidden text-[11px] font-medium sm:block ${current === step.num ? "text-[#4C1D95]" : "text-slate-400"}`}>
+                            {step.label}
+                        </span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function OrderSidebar({ plan, precio, decision }: { plan: Plan | null; precio: number; decision: string | null }) {
+    return (
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-8">
+            <p className="mb-5 text-xs font-bold uppercase tracking-wider text-slate-400">Resumen</p>
+
+            <div className="mb-5">
+                <p className="text-lg font-bold text-slate-900">{plan?.nombre ?? "Plan seleccionado"}</p>
+                <p className="mt-0.5 text-sm text-slate-500">{plan?.descripcion ?? "Suscripcion CelDoctor"}</p>
+            </div>
+
+            <div className="mb-5 rounded-2xl border border-[#4C1D95]/10 bg-[#4C1D95]/3 p-4">
+                <div className="mb-3 flex items-center gap-2">
+                    <ShieldPlus size={16} className="text-[#4C1D95]" />
+                    <p className="text-sm font-bold text-slate-900">Seguro medico</p>
+                </div>
+                <p className="text-xs leading-5 text-slate-500">
+                    Decision opcional antes de finalizar la contratacion.
+                </p>
+            </div>
+
+            <div className="space-y-2 border-t border-slate-100 pt-4">
+                <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500">Plan CelDoctor</span>
+                    <span className="font-medium text-slate-700">
+                        {plan?.precio_mensual ? `$${plan.precio_mensual.toLocaleString("es-AR")}` : "A consultar"}
+                    </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500">Seguro medico</span>
+                    <span className="font-medium text-slate-700">${precio.toLocaleString("es-AR")}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                    <span>Estado</span>
+                    <span>{decision ?? "Pendiente de decision"}</span>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default function UpsellSeguroPage() {
@@ -55,8 +157,7 @@ export default function UpsellSeguroPage() {
             setUpsell(upsellActual);
             setListo(true);
         }).catch(() => {
-            const lista = FALLBACK_PLANES;
-            const encontrado = lista.find((item) => item.id === Number(params.plan_id)) ?? lista[0];
+            const encontrado = FALLBACK_PLANES.find((item) => item.id === Number(params.plan_id)) ?? FALLBACK_PLANES[0];
             setToken(storedToken);
             setPlan(encontrado);
             setListo(true);
@@ -79,131 +180,121 @@ export default function UpsellSeguroPage() {
 
     if (!listo) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-[#12052f]">
-                <div className="h-9 w-9 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+            <div className="flex min-h-screen items-center justify-center bg-slate-50">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#4C1D95]/20 border-t-[#4C1D95]" />
             </div>
         );
     }
 
     const precio = precioSeguro(plan, upsell);
     const familiar = esFamiliar(plan);
-    const decisionTomada = upsell?.estado === "nuevo" || upsell?.estado === "contactado" || upsell?.estado === "aceptado";
+    const decisionLabel = upsell?.estado
+        ? upsell.estado === "rechazado" || upsell.estado === "descartado"
+            ? "No interesado"
+            : "Interesado"
+        : null;
 
     return (
-        <div className="min-h-screen overflow-hidden bg-[#12052f] text-white">
-            <div className="pointer-events-none fixed inset-0">
-                <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-violet-500/30 blur-3xl" />
-                <div className="absolute right-0 top-1/3 h-96 w-96 rounded-full bg-emerald-400/15 blur-3xl" />
-                <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-fuchsia-400/15 blur-3xl" />
-            </div>
+        <div className="min-h-screen bg-slate-50">
+            <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+                <div className="mb-8 flex items-center gap-2 text-sm text-slate-400">
+                    <Link href="/planes" className="transition-colors hover:text-[#4C1D95]">
+                        Planes
+                    </Link>
+                    <span>/</span>
+                    <span>Checkout</span>
+                    <span>/</span>
+                    <span className="font-medium text-slate-600">Seguro medico</span>
+                </div>
 
-            <main className="relative mx-auto flex min-h-screen max-w-6xl items-center px-4 py-12 sm:px-6">
-                <div className="grid w-full gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-                    <section>
-                        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-violet-100 backdrop-blur">
-                            <Sparkles className="h-4 w-4" />
-                            Antes de finalizar
+                <StepIndicator current={4} />
+
+                <div className="flex flex-col-reverse items-start gap-6 lg:grid lg:grid-cols-[1fr_300px] lg:gap-8">
+                    <section className="w-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                        <p className="mb-1 text-xs font-bold uppercase tracking-wider text-slate-400">Paso opcional</p>
+                        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <h1 className="text-2xl font-bold text-slate-900">Seguro medico complementario</h1>
+                                <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-500">
+                                    Antes de finalizar, podes indicar si te interesa sumar el seguro medico a tu contratacion.
+                                </p>
+                            </div>
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#4C1D95]/10 bg-[#4C1D95]/5">
+                                <ShieldPlus size={23} className="text-[#4C1D95]" />
+                            </div>
                         </div>
 
-                        <h1 className="max-w-2xl text-4xl font-black leading-tight tracking-tight sm:text-5xl">
-                            Queres sumar el seguro medico a tu plan CelDoctor?
-                        </h1>
-
-                        <p className="mt-5 max-w-xl text-base leading-8 text-violet-100/80">
-                            Este adicional se gestiona junto con tu suscripcion para que el equipo comercial pueda dejar todo preparado desde el backoffice.
-                        </p>
-
-                        <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                            {[
-                                "Solicitud registrada en tu cuenta",
-                                "Seguimiento desde administracion",
-                                "Sin duplicar datos del usuario",
-                            ].map((item) => (
-                                <div key={item} className="rounded-2xl border border-white/10 bg-white/8 p-4 backdrop-blur">
-                                    <CheckCircle2 className="mb-3 h-5 w-5 text-emerald-300" />
-                                    <p className="text-sm font-semibold leading-6 text-white/85">{item}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    <section className="rounded-[2rem] border border-white/15 bg-white p-3 text-slate-900 shadow-2xl shadow-black/30">
-                        <div className="rounded-[1.5rem] bg-linear-to-br from-slate-50 to-violet-50 p-6 sm:p-8">
-                            <div className="mb-6 flex items-start justify-between gap-4">
+                        <div className="mb-6 rounded-2xl border border-[#4C1D95]/10 bg-[#4C1D95]/3 p-6">
+                            <div className="mb-4 flex items-start justify-between gap-4">
                                 <div>
-                                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#4C1D95]">Seguro medico</p>
-                                    <h2 className="text-2xl font-black text-slate-950">Cobertura complementaria</h2>
-                                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                                    <p className="text-xl font-bold text-slate-900">
+                                        {familiar ? "Seguro familiar" : "Seguro individual"}
+                                    </p>
+                                    <p className="mt-0.5 text-sm text-slate-500">
                                         Oferta adicional para el plan {plan?.nombre ?? "seleccionado"}.
                                     </p>
                                 </div>
-                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#4C1D95] text-white shadow-lg shadow-[#4C1D95]/25">
-                                    <ShieldPlus className="h-7 w-7" />
+                                <div className="shrink-0 text-right">
+                                    <p className="text-2xl font-bold text-[#4C1D95]">
+                                        ${precio.toLocaleString("es-AR")}
+                                    </p>
+                                    <p className="text-xs text-slate-400">por mes</p>
                                 </div>
                             </div>
 
-                            <div className="mb-6 rounded-3xl border border-violet-100 bg-white p-5 shadow-sm">
-                                <div className="flex items-end justify-between gap-4">
-                                    <div>
-                                        <p className="text-sm font-semibold text-slate-500">Valor adicional</p>
-                                        <p className="mt-1 text-4xl font-black tracking-tight text-slate-950">
-                                            ${precio.toLocaleString("es-AR")}
-                                            <span className="ml-1 text-base font-semibold text-slate-400">/mes</span>
-                                        </p>
-                                    </div>
-                                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-                                        {familiar ? "Familiar" : "Individual"}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <ul className="mb-7 space-y-3">
-                                {[
-                                    "Queda asociado a la misma suscripcion.",
-                                    "El equipo puede gestionarlo desde el dashboard admin.",
-                                    "Podes avanzar aunque no lo quieras contratar ahora.",
-                                ].map((item) => (
-                                    <li key={item} className="flex items-start gap-3 text-sm leading-6 text-slate-600">
-                                        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#4C1D95]" />
-                                        {item}
+                            <ul className="space-y-2">
+                                {BENEFICIOS_SEGURO.map((beneficio) => (
+                                    <li key={beneficio} className="flex items-center gap-2.5 text-sm text-slate-600">
+                                        <ShieldCheck size={15} className="shrink-0 text-[#4C1D95]" />
+                                        {beneficio}
                                     </li>
                                 ))}
                             </ul>
+                        </div>
 
-                            {decisionTomada && (
-                                <div className="mb-4 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                                    Ya registramos tu interes. Podes continuar a la confirmacion.
-                                </div>
-                            )}
-
-                            {error && (
-                                <div className="mb-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-                                    {error}
-                                </div>
-                            )}
-
-                            <div className="grid gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => decidir(true)}
-                                    disabled={!!procesando}
-                                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#4C1D95] px-5 py-4 text-sm font-black text-white shadow-lg shadow-[#4C1D95]/25 transition-all hover:-translate-y-0.5 hover:bg-[#3b1675] disabled:translate-y-0 disabled:opacity-60"
-                                >
-                                    {procesando === "acepta" ? "Registrando..." : "Me interesa"}
-                                    {!procesando && <ArrowRight className="h-4 w-4" />}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => decidir(false)}
-                                    disabled={!!procesando}
-                                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-60"
-                                >
-                                    <X className="h-4 w-4" />
-                                    {procesando === "rechaza" ? "Continuando..." : "No me interesa"}
-                                </button>
+                        {decisionLabel && (
+                            <div className="mb-5 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3.5">
+                                <p className="text-sm leading-relaxed text-emerald-800">
+                                    Ya registramos tu decision: <span className="font-bold">{decisionLabel}</span>. Podes continuar a la confirmacion.
+                                </p>
                             </div>
+                        )}
+
+                        {error && (
+                            <div className="mb-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <button
+                                type="button"
+                                onClick={() => decidir(false)}
+                                disabled={!!procesando}
+                                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 py-4 font-bold text-slate-600 transition-all hover:bg-slate-50 disabled:opacity-50"
+                            >
+                                <X size={16} />
+                                {procesando === "rechaza" ? "Continuando..." : "No me interesa"}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => decidir(true)}
+                                disabled={!!procesando}
+                                className="flex items-center justify-center gap-3 rounded-xl bg-[#4C1D95] py-4 font-bold text-white shadow-lg shadow-[#4C1D95]/20 transition-all hover:bg-[#3b1675] disabled:opacity-50"
+                            >
+                                {procesando === "acepta" ? (
+                                    <>
+                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                        Registrando...
+                                    </>
+                                ) : (
+                                    "Me interesa"
+                                )}
+                            </button>
                         </div>
                     </section>
+
+                    <OrderSidebar plan={plan} precio={precio} decision={decisionLabel} />
                 </div>
             </main>
         </div>
