@@ -19,7 +19,6 @@ import {
     MessageSquareText,
     TriangleAlert,
     Ban,
-    ShieldPlus,
 } from "lucide-react";
 import {
     obtenerMiSuscripcion,
@@ -32,15 +31,12 @@ import {
     crearTicket,
     cancelarMiSuscripcion,
     editarPerfil,
-    obtenerMiUpsellSeguro,
-    solicitarUpsellSeguro,
     ApiError,
     type Suscripcion,
     type MiPerfil,
     type Beneficiario,
     type TicketUsuario,
     type Plan,
-    type UpsellSeguro,
 } from "@/lib/api";
 import { clearSessionCookie } from "@/lib/session-cookie";
 import { useLocalStorageValue } from "@/lib/use-local-storage-value";
@@ -393,28 +389,28 @@ function SoporteCard({ token }: { token: string }) {
             <div className="mb-5 flex flex-col gap-4 rounded-3xl border border-slate-100 bg-gradient-to-br from-white via-slate-50 to-violet-50/70 p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-violet-500">Soporte</p>
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-violet-500">Gestion de Tickets</p>
                         <div className="flex items-center gap-2">
                             <MessageSquareText className="h-5 w-5 text-[#4C1D95]" />
-                            <h3 className="text-lg font-bold text-slate-900">Mensajes con el equipo</h3>
+                            <h3 className="text-lg font-bold text-slate-900">Centro de Asistencia</h3>
                         </div>
                         <p className="mt-1 text-sm leading-6 text-slate-500">
-                            Escribinos desde aca y seguimos todo desde este mismo panel.
+                            Canal de comunicacion oficial con el equipo de soporte. Todas tus interacciones quedan registradas para tu seguimiento.
                         </p>
                     </div>
                     <button
                         onClick={() => setModalNuevo(true)}
                         className="inline-flex items-center justify-center rounded-2xl bg-[#4C1D95] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#4C1D95]/15 transition-colors hover:bg-[#3b1675]"
                     >
-                        Abrir mensaje
+                        Abrir Ticket
                     </button>
                 </div>
             </div>
 
             <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
-                    <p className="text-sm font-semibold text-slate-900">Seguimiento</p>
-                    <p className="mt-0.5 text-xs text-slate-400">Tus ultimos mensajes y respuestas.</p>
+                    <p className="text-sm font-semibold text-slate-900">Gestion de Tickets</p>
+                    <p className="mt-0.5 text-xs text-slate-400">Todas tus interacciones quedan registradas para tu seguimiento.</p>
                 </div>
                 <span className="text-xs font-medium text-slate-400">{tickets.length} caso(s)</span>
             </div>
@@ -426,7 +422,7 @@ function SoporteCard({ token }: { token: string }) {
                 </div>
             ) : ultimos.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-5 text-sm text-slate-400">
-                    Todavia no tenes mensajes cargados. Cuando necesites ayuda podes abrir uno nuevo desde este panel.
+                    Historial vacio. No se registran tickets de soporte pendientes.
                 </div>
             ) : (
                 <ul className="space-y-2">
@@ -486,74 +482,6 @@ function SoporteCard({ token }: { token: string }) {
                     </div>
                 </form>
             </Modal>
-        </Card>
-    );
-}
-
-function UpsellSeguroCard({
-    token,
-    activo,
-    upsell,
-    onChange,
-}: {
-    token: string;
-    activo: boolean;
-    upsell: UpsellSeguro | null;
-    onChange: (value: UpsellSeguro) => void;
-}) {
-    const [loading, setLoading] = useState(false);
-    const precio = upsell?.precio_ofertado ?? 10000;
-
-    if (!activo) return null;
-
-    async function handleSolicitar() {
-        setLoading(true);
-        try {
-            const data = await solicitarUpsellSeguro(token);
-            onChange(data);
-        } catch (err) {
-            window.alert(err instanceof Error ? err.message : "No se pudo registrar tu interes");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    return (
-        <Card>
-            <div className="flex items-start justify-between gap-4 mb-4">
-                <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-500 mb-2">Adicional</p>
-                    <div className="flex items-center gap-2">
-                        <ShieldPlus className="h-5 w-5 text-[#4C1D95]" />
-                        <h3 className="text-lg font-bold text-slate-900">Seguro medico complementario</h3>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-slate-500">
-                        Si te interesa sumar este servicio, dejanos tu solicitud y el equipo comercial la gestiona desde el backoffice.
-                    </p>
-                </div>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
-                    ${precio.toLocaleString("es-AR")}
-                </span>
-            </div>
-
-            {upsell ? (
-                <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
-                    <p className="text-sm font-semibold text-slate-900">Estado actual</p>
-                    <p className="mt-1 text-sm text-slate-600 capitalize">{upsell.estado.replace(/_/g, " ")}</p>
-                    <p className="mt-2 text-xs text-slate-500">
-                        El equipo revisa esta solicitud desde el panel admin y te contacta con el siguiente paso.
-                    </p>
-                </div>
-            ) : (
-                <button
-                    type="button"
-                    onClick={handleSolicitar}
-                    disabled={loading}
-                    className="w-full rounded-xl bg-[#4C1D95] py-3 text-sm font-bold text-white shadow-lg shadow-[#4C1D95]/20 transition-all hover:bg-[#3b1675] disabled:opacity-60"
-                >
-                    {loading ? "Enviando solicitud..." : "Quiero que me contacten"}
-                </button>
-            )}
         </Card>
     );
 }
@@ -745,7 +673,6 @@ export default function DashboardPage() {
     const [suscripcion, setSuscripcion] = useState<Suscripcion | null | undefined>(undefined);
     const [perfil, setPerfil] = useState<MiPerfil | null>(null);
     const [planes, setPlanes] = useState<Plan[]>([]);
-    const [upsellSeguro, setUpsellSeguro] = useState<UpsellSeguro | null>(null);
     const [nombreFallback, setNombreFallback] = useLocalStorageValue("celdoctor_nombre", "");
     const [modalBaja, setModalBaja] = useState(false);
     const [cancelandoPlan, setCancelandoPlan] = useState(false);
@@ -764,13 +691,11 @@ export default function DashboardPage() {
             obtenerMiSuscripcion(token),
             getMiPerfil(token),
             obtenerPlanesUsuario(),
-            obtenerMiUpsellSeguro(token),
         ])
-            .then(([sus, prof, pl, upsell]) => {
+            .then(([sus, prof, pl]) => {
                 setSuscripcion(sus);
                 setPerfil(prof);
                 setPlanes(pl);
-                setUpsellSeguro(upsell);
             })
             .catch((err) => {
                 if (err instanceof ApiError && err.code === "UNAUTHORIZED") {
@@ -1016,15 +941,6 @@ export default function DashboardPage() {
                             )}
 
                             {estaActiva && <SoporteCard token={token} />}
-
-                            {estaActiva && (
-                                <UpsellSeguroCard
-                                    token={token}
-                                    activo={estaActiva}
-                                    upsell={upsellSeguro}
-                                    onChange={setUpsellSeguro}
-                                />
-                            )}
 
                             {/* Card 3 - Beneficiarios */}
                             {estaActiva && tieneBeneficiarios && (
