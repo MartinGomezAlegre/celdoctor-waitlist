@@ -204,7 +204,7 @@ export default function CheckoutPage() {
 
         try {
             await contratarPlan(plan.id, token);
-            router.push(`/checkout/${plan.id}/confirmacion`);
+            router.push(`/checkout/${plan.id}/upsell`);
         } catch (err) {
             if (err instanceof ApiError && err.code === "UNAUTHORIZED") {
                 router.replace("/login");

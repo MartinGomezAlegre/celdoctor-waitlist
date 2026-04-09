@@ -3,17 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Circle, Clock, ShieldPlus } from "lucide-react";
-import {
-    obtenerMiUpsellSeguro,
-    obtenerPlanes,
-    solicitarUpsellSeguro,
-    type Plan,
-    type UpsellSeguro,
-} from "@/lib/api";
+import { CheckCircle2, Circle, Clock } from "lucide-react";
+import { obtenerPlanes, type Plan } from "@/lib/api";
 
 const FALLBACK_PLANES: Plan[] = [
-    { id: 1, nombre: "Personal", descripcion: "Cobertura agil para vos.", precio_mensual: 4500, max_beneficiarios: 1 },
+    { id: 1, nombre: "Personal", descripcion: "Cobertura agil para vos.", precio_mensual: 5000, max_beneficiarios: 1 },
     { id: 2, nombre: "Familiar", descripcion: "Proteccion total para tu familia.", precio_mensual: 12500, max_beneficiarios: 4 },
     { id: 3, nombre: "Corporativo", descripcion: "Salud para tu equipo.", precio_mensual: 0, max_beneficiarios: null },
 ];
@@ -26,99 +20,11 @@ function formatFechaHoy(): string {
     });
 }
 
-function precioSeguro(plan: Plan | null, upsell: UpsellSeguro | null) {
-    if (upsell?.precio_ofertado) return upsell.precio_ofertado;
-    return (plan?.max_beneficiarios ?? 1) > 1 ? 15000 : 10000;
-}
-
-function UpsellSeguroPostPago({
-    token,
-    plan,
-    upsell,
-    onChange,
-}: {
-    token: string;
-    plan: Plan | null;
-    upsell: UpsellSeguro | null;
-    onChange: (value: UpsellSeguro) => void;
-}) {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const precio = precioSeguro(plan, upsell);
-
-    async function handleSolicitar() {
-        setError(null);
-        setLoading(true);
-        try {
-            const data = await solicitarUpsellSeguro(token);
-            onChange(data);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "No se pudo registrar el seguro medico");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    return (
-        <div className="mb-6 overflow-hidden rounded-2xl border border-violet-100 bg-white shadow-sm">
-            <div className="bg-linear-to-br from-[#4C1D95] to-[#2E1065] p-5 text-white">
-                <div className="flex items-start gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/15">
-                        <ShieldPlus className="h-5 w-5" />
-                    </div>
-                    <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">Oferta adicional</p>
-                        <h2 className="mt-1 text-xl font-black">Suma el seguro medico</h2>
-                        <p className="mt-2 text-sm leading-6 text-white/75">
-                            Agregalo ahora para que el equipo lo gestione junto con tu suscripcion a CelDoctor.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="space-y-4 p-5">
-                <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                    <span className="text-sm font-medium text-slate-600">Valor mensual</span>
-                    <span className="text-lg font-black text-slate-900">
-                        ${precio.toLocaleString("es-AR")}
-                    </span>
-                </div>
-
-                {upsell ? (
-                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4">
-                        <p className="text-sm font-bold text-emerald-800">Seguro solicitado</p>
-                        <p className="mt-1 text-sm text-emerald-700">
-                            Estado: <span className="capitalize">{upsell.estado.replace(/_/g, " ")}</span>. El equipo comercial lo revisa en el backoffice.
-                        </p>
-                    </div>
-                ) : (
-                    <button
-                        type="button"
-                        onClick={handleSolicitar}
-                        disabled={loading}
-                        className="w-full rounded-xl bg-[#4C1D95] py-3 text-sm font-bold text-white shadow-lg shadow-[#4C1D95]/20 transition-all hover:bg-[#3b1675] disabled:opacity-60"
-                    >
-                        {loading ? "Registrando seguro..." : "Agregar seguro medico"}
-                    </button>
-                )}
-
-                {error && (
-                    <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-                        {error}
-                    </p>
-                )}
-            </div>
-        </div>
-    );
-}
-
 export default function ConfirmacionPage() {
     const params = useParams();
     const router = useRouter();
     const [listo, setListo] = useState(false);
-    const [token, setToken] = useState<string | null>(null);
     const [plan, setPlan] = useState<Plan | null>(null);
-    const [upsellSeguro, setUpsellSeguro] = useState<UpsellSeguro | null>(null);
 
     useEffect(() => {
         const storedToken = localStorage.getItem("celdoctor_token");
@@ -128,18 +34,18 @@ export default function ConfirmacionPage() {
         }
 
         const planId = Number(params.plan_id);
-
-        Promise.all([
-            obtenerPlanes(),
-            obtenerMiUpsellSeguro(storedToken),
-        ]).then(([planes, upsell]) => {
-            const lista = planes.length > 0 ? planes : FALLBACK_PLANES;
-            const encontrado = lista.find((p) => p.id === planId) ?? lista[0];
-            setToken(storedToken);
-            setPlan(encontrado);
-            setUpsellSeguro(upsell);
-            setListo(true);
-        });
+        obtenerPlanes()
+            .then((planes) => {
+                const lista = planes.length > 0 ? planes : FALLBACK_PLANES;
+                const encontrado = lista.find((p) => p.id === planId) ?? lista[0];
+                setPlan(encontrado);
+                setListo(true);
+            })
+            .catch(() => {
+                const encontrado = FALLBACK_PLANES.find((p) => p.id === planId) ?? FALLBACK_PLANES[0];
+                setPlan(encontrado);
+                setListo(true);
+            });
     }, [router, params.plan_id]);
 
     if (!listo) {
@@ -152,6 +58,7 @@ export default function ConfirmacionPage() {
 
     const pasos = [
         { label: "Suscripcion registrada", done: true },
+        { label: "Decision de seguro registrada", done: true },
         { label: "Validacion de pago", done: false, active: true },
         { label: "Plan activo", done: false },
     ];
@@ -196,8 +103,8 @@ export default function ConfirmacionPage() {
                     </div>
 
                     <div className="mb-8 text-center">
-                        <h1 className="mb-2 text-3xl font-bold text-slate-900">Suscripcion registrada</h1>
-                        <p className="text-base text-slate-500">Tu solicitud fue recibida correctamente</p>
+                        <h1 className="mb-2 text-3xl font-bold text-slate-900">Solicitud registrada</h1>
+                        <p className="text-base text-slate-500">Tu plan y tu decision sobre el seguro fueron recibidos correctamente.</p>
                     </div>
 
                     <div className="mb-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
@@ -245,15 +152,6 @@ export default function ConfirmacionPage() {
                             ))}
                         </div>
                     </div>
-
-                    {token && (
-                        <UpsellSeguroPostPago
-                            token={token}
-                            plan={plan}
-                            upsell={upsellSeguro}
-                            onChange={setUpsellSeguro}
-                        />
-                    )}
 
                     <div className="flex flex-col gap-3 sm:flex-row">
                         <Link
