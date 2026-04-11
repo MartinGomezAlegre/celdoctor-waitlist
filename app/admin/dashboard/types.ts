@@ -1,4 +1,4 @@
-export type Section = "overview" | "personas" | "empresas" | "suscripciones" | "facturacion" | "catalogo" | "reportes" | "soporte" | "leads" | "upsells"
+export type Section = "overview" | "personas" | "empresas" | "suscripciones" | "facturacion" | "catalogo" | "comercial" | "reportes" | "soporte" | "leads" | "upsells"
 export type ToastType = "success" | "error" | "warning"
 
 export interface Toast { id: number; msg: string; type: ToastType }
@@ -101,6 +101,102 @@ export interface UpsellSeguroAdmin {
     usuario_email: string;
     created_at: string | null;
     updated_at: string | null;
+}
+
+export interface ResumenComercial {
+    total_brokers: number
+    brokers_activos: number
+    total_broker_sellers: number
+    broker_sellers_activos: number
+    total_direct_sellers: number
+    direct_sellers_activos: number
+    ventas_referidas: number
+    revenue_referido: number
+    comision_pendiente_brokers: number
+    comision_pendiente_directos: number
+}
+
+export interface BrokerAdmin {
+    id: number
+    nombre: string
+    contacto: string | null
+    comision_tipo: "porcentaje" | "fijo"
+    comision_valor: number
+    estado: "activo" | "inactivo"
+    fecha_alta: string | null
+    usuario_id: number | null
+    total_sellers: number
+    active_sellers: number
+    ventas_asociadas: number
+    revenue_generado: number
+    comision_acumulada: number
+    total_liquidado: number
+    comision_pendiente: number
+}
+
+export interface BrokerSellerAdmin {
+    id: number
+    broker_id: number
+    broker_nombre: string
+    nombre: string
+    email: string
+    referral_code: string
+    estado: "activo" | "inactivo"
+    fecha_alta: string | null
+    usuario_id: number | null
+    ventas_asociadas: number
+    revenue_generado: number
+}
+
+export interface DirectSellerAdmin {
+    id: number
+    nombre: string
+    email: string
+    referral_code: string
+    comision_tipo: "porcentaje" | "fijo"
+    comision_valor: number
+    estado: "activo" | "inactivo"
+    fecha_alta: string | null
+    usuario_id: number | null
+    ventas_asociadas: number
+    revenue_generado: number
+    comision_acumulada: number
+    total_liquidado: number
+    comision_pendiente: number
+}
+
+export interface VentaReferidaAdmin {
+    id: number
+    referral_code: string
+    estado: string
+    precio_pagado: number
+    created_at: string | null
+    cliente_nombre: string
+    cliente_email: string
+    plan_nombre: string
+    canal: "broker" | "directo"
+    direct_seller_id: number | null
+    direct_seller_nombre: string | null
+    broker_seller_id: number | null
+    broker_seller_nombre: string | null
+    broker_id: number | null
+    broker_nombre: string | null
+    comision_generada: number
+    es_comisionable: boolean
+}
+
+export interface LiquidacionComercial {
+    id: number
+    destinatario_tipo: "broker" | "direct_seller"
+    destinatario_id: number
+    destinatario_nombre: string | null
+    monto: number
+    periodo_desde: string | null
+    periodo_hasta: string | null
+    estado: string
+    notas: string | null
+    paid_at: string | null
+    created_at: string | null
 }
 export interface ResultadoBulk { cargados: number; fallidos: number; errores: string[] }
 

@@ -1,0 +1,234 @@
+"use client"
+
+import type { ChangeEvent } from "react"
+
+import type { BrokerAdmin, DirectSellerAdmin } from "../../types"
+import { Modal } from "../shared/Modal"
+import type {
+    BrokerFormValues,
+    BrokerSellerFormValues,
+    DirectSellerFormValues,
+    LiquidacionFormValues,
+} from "./utils"
+
+function Field({
+    label,
+    children,
+}: {
+    label: string
+    children: React.ReactNode
+}) {
+    return (
+        <label className="space-y-1.5">
+            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</span>
+            {children}
+        </label>
+    )
+}
+
+function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+    return <input {...props} className={`w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#4C1D95] focus:ring-2 focus:ring-[#4C1D95]/10 ${props.className ?? ""}`} />
+}
+
+function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+    return <select {...props} className={`w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#4C1D95] focus:ring-2 focus:ring-[#4C1D95]/10 ${props.className ?? ""}`} />
+}
+
+function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+    return <textarea {...props} className={`w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#4C1D95] focus:ring-2 focus:ring-[#4C1D95]/10 ${props.className ?? ""}`} />
+}
+
+export function BrokerModal({
+    open,
+    values,
+    onClose,
+    onChange,
+    onSubmit,
+    editing,
+    loading,
+}: {
+    open: boolean
+    values: BrokerFormValues
+    onClose: () => void
+    onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+    onSubmit: () => void
+    editing: boolean
+    loading: boolean
+}) {
+    return (
+        <Modal
+            open={open}
+            onClose={onClose}
+            title={editing ? "Editar broker" : "Nuevo broker"}
+            footer={(
+                <>
+                    <button onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
+                    <button onClick={onSubmit} disabled={loading} className="rounded-xl bg-[#4C1D95] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+                        {loading ? "Guardando..." : editing ? "Guardar cambios" : "Crear broker"}
+                    </button>
+                </>
+            )}
+        >
+            <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Nombre"><Input name="nombre" value={values.nombre} onChange={onChange} /></Field>
+                <Field label="Contacto"><Input name="contacto" value={values.contacto} onChange={onChange} /></Field>
+                <Field label="Comision"><Select name="comision_tipo" value={values.comision_tipo} onChange={onChange}><option value="porcentaje">Porcentaje</option><option value="fijo">Fijo</option></Select></Field>
+                <Field label="Valor"><Input name="comision_valor" type="number" min="0" step="0.01" value={values.comision_valor} onChange={onChange} /></Field>
+                <Field label="Estado"><Select name="estado" value={values.estado} onChange={onChange}><option value="activo">Activo</option><option value="inactivo">Inactivo</option></Select></Field>
+            </div>
+        </Modal>
+    )
+}
+
+export function BrokerSellerModal({
+    open,
+    values,
+    brokers,
+    onClose,
+    onChange,
+    onSubmit,
+    editing,
+    loading,
+}: {
+    open: boolean
+    values: BrokerSellerFormValues
+    brokers: BrokerAdmin[]
+    onClose: () => void
+    onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+    onSubmit: () => void
+    editing: boolean
+    loading: boolean
+}) {
+    return (
+        <Modal
+            open={open}
+            onClose={onClose}
+            title={editing ? "Editar vendedor de broker" : "Nuevo vendedor de broker"}
+            footer={(
+                <>
+                    <button onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
+                    <button onClick={onSubmit} disabled={loading} className="rounded-xl bg-[#4C1D95] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+                        {loading ? "Guardando..." : editing ? "Guardar cambios" : "Crear vendedor"}
+                    </button>
+                </>
+            )}
+        >
+            <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Broker">
+                    <Select name="broker_id" value={values.broker_id} onChange={onChange}>
+                        <option value="">Seleccionar broker</option>
+                        {brokers.map((broker) => (
+                            <option key={broker.id} value={broker.id}>{broker.nombre}</option>
+                        ))}
+                    </Select>
+                </Field>
+                <Field label="Estado"><Select name="estado" value={values.estado} onChange={onChange}><option value="activo">Activo</option><option value="inactivo">Inactivo</option></Select></Field>
+                <Field label="Nombre"><Input name="nombre" value={values.nombre} onChange={onChange} /></Field>
+                <Field label="Email"><Input name="email" type="email" value={values.email} onChange={onChange} /></Field>
+                <Field label="Referral code"><Input name="referral_code" value={values.referral_code} onChange={onChange} placeholder="Opcional: se genera automaticamente" className="sm:col-span-2" /></Field>
+            </div>
+        </Modal>
+    )
+}
+
+export function DirectSellerModal({
+    open,
+    values,
+    onClose,
+    onChange,
+    onSubmit,
+    editing,
+    loading,
+}: {
+    open: boolean
+    values: DirectSellerFormValues
+    onClose: () => void
+    onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+    onSubmit: () => void
+    editing: boolean
+    loading: boolean
+}) {
+    return (
+        <Modal
+            open={open}
+            onClose={onClose}
+            title={editing ? "Editar vendedor directo" : "Nuevo vendedor directo"}
+            footer={(
+                <>
+                    <button onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
+                    <button onClick={onSubmit} disabled={loading} className="rounded-xl bg-[#4C1D95] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+                        {loading ? "Guardando..." : editing ? "Guardar cambios" : "Crear vendedor"}
+                    </button>
+                </>
+            )}
+        >
+            <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Nombre"><Input name="nombre" value={values.nombre} onChange={onChange} /></Field>
+                <Field label="Email"><Input name="email" type="email" value={values.email} onChange={onChange} /></Field>
+                <Field label="Comision"><Select name="comision_tipo" value={values.comision_tipo} onChange={onChange}><option value="porcentaje">Porcentaje</option><option value="fijo">Fijo</option></Select></Field>
+                <Field label="Valor"><Input name="comision_valor" type="number" min="0" step="0.01" value={values.comision_valor} onChange={onChange} /></Field>
+                <Field label="Estado"><Select name="estado" value={values.estado} onChange={onChange}><option value="activo">Activo</option><option value="inactivo">Inactivo</option></Select></Field>
+                <Field label="Referral code"><Input name="referral_code" value={values.referral_code} onChange={onChange} placeholder="Opcional: se genera automaticamente" /></Field>
+            </div>
+        </Modal>
+    )
+}
+
+export function LiquidacionModal({
+    open,
+    values,
+    brokers,
+    directSellers,
+    onClose,
+    onChange,
+    onSubmit,
+    loading,
+}: {
+    open: boolean
+    values: LiquidacionFormValues
+    brokers: BrokerAdmin[]
+    directSellers: DirectSellerAdmin[]
+    onClose: () => void
+    onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void
+    onSubmit: () => void
+    loading: boolean
+}) {
+    const destinatarios = values.destinatario_tipo === "broker" ? brokers : directSellers
+
+    return (
+        <Modal
+            open={open}
+            onClose={onClose}
+            title="Registrar liquidacion"
+            footer={(
+                <>
+                    <button onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
+                    <button onClick={onSubmit} disabled={loading} className="rounded-xl bg-[#4C1D95] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+                        {loading ? "Guardando..." : "Registrar"}
+                    </button>
+                </>
+            )}
+        >
+            <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Tipo">
+                    <Select name="destinatario_tipo" value={values.destinatario_tipo} onChange={onChange}>
+                        <option value="broker">Broker</option>
+                        <option value="direct_seller">Vendedor directo</option>
+                    </Select>
+                </Field>
+                <Field label="Destinatario">
+                    <Select name="destinatario_id" value={values.destinatario_id} onChange={onChange}>
+                        <option value="">Seleccionar</option>
+                        {destinatarios.map((item) => (
+                            <option key={item.id} value={item.id}>{item.nombre}</option>
+                        ))}
+                    </Select>
+                </Field>
+                <Field label="Monto"><Input name="monto" type="number" min="0" step="0.01" value={values.monto} onChange={onChange} /></Field>
+                <Field label="Periodo desde"><Input name="periodo_desde" type="date" value={values.periodo_desde} onChange={onChange} /></Field>
+                <Field label="Periodo hasta"><Input name="periodo_hasta" type="date" value={values.periodo_hasta} onChange={onChange} /></Field>
+                <Field label="Notas"><Textarea name="notas" rows={4} value={values.notas} onChange={onChange} className="sm:col-span-2" /></Field>
+            </div>
+        </Modal>
+    )
+}

@@ -14,6 +14,7 @@ import {
     MessageSquare,
     Briefcase,
     ShieldPlus,
+    Network,
     Menu,
     X,
 } from "lucide-react";
@@ -32,6 +33,7 @@ import SectionReportes from "./components/SectionReportes";
 import SectionSoporte from "./components/SectionSoporte";
 import SectionLeads from "./components/SectionLeads";
 import SectionUpsells from "./components/SectionUpsells";
+import SectionComercial from "./components/SectionComercial";
 
 interface NavItem {
     id: Section;
@@ -224,6 +226,7 @@ export default function AdminDashboardPage() {
             label: "Comercial",
             items: [
                 { id: "leads", label: "Leads", Icon: Briefcase, badge: leadsNuevos > 0 ? leadsNuevos : undefined },
+                { id: "comercial", label: "Canal ventas", Icon: Network },
                 { id: "upsells", label: "Seguro medico", Icon: ShieldPlus, badge: upsellsNuevos > 0 ? upsellsNuevos : undefined },
                 { id: "soporte", label: "Soporte", Icon: MessageSquare, badge: ticketsAbiertos > 0 ? ticketsAbiertos : undefined },
             ],
@@ -285,6 +288,7 @@ export default function AdminDashboardPage() {
                         {section === "suscripciones" && <SectionSuscripciones token={token} addToast={addToast} />}
                         {section === "facturacion" && <SectionFacturacion token={token} addToast={addToast} />}
                         {section === "catalogo" && <SectionCatalogo token={token} addToast={addToast} />}
+                        {section === "comercial" && <SectionComercial token={token} addToast={addToast} />}
                         {section === "reportes" && <SectionReportes token={token} addToast={addToast} />}
                         {section === "soporte" && <SectionSoporte token={token} addToast={addToast} />}
                         {section === "leads" && <SectionLeads token={token} addToast={addToast} />}

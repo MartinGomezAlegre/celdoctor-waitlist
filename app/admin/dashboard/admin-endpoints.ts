@@ -44,6 +44,17 @@ export const adminEndpoints = {
     exportarMediquo:         "/admin/facturacion/exportar-mediquo",
     marcarExportados:        "/admin/facturacion/marcar-exportados",
 
+    // Comercial / referidos
+    comercialResumen:        "/admin/comercial/resumen",
+    brokers:                 "/admin/comercial/brokers",
+    broker: (id: number) =>          `/admin/comercial/brokers/${id}`,
+    brokerSellers:           "/admin/comercial/broker-sellers",
+    brokerSeller: (id: number) =>    `/admin/comercial/broker-sellers/${id}`,
+    directSellers:           "/admin/comercial/direct-sellers",
+    directSeller: (id: number) =>    `/admin/comercial/direct-sellers/${id}`,
+    ventasReferidas:         "/admin/comercial/ventas",
+    liquidacionesComercial:  "/admin/comercial/liquidaciones",
+
     // Soporte
     tickets:                 "/admin/soporte/tickets",
     ticket: (id: number) =>          `/admin/soporte/tickets/${id}`,
