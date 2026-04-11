@@ -3,9 +3,35 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { BadgeCheck, CircleX, LoaderCircle, ShieldCheck, TicketPercent } from "lucide-react";
+import { BadgeCheck, CircleX, LoaderCircle, QrCode } from "lucide-react";
 
 import { validarBeneficioPublico, type ValidacionBeneficio } from "@/lib/api";
+
+function StatusCard({
+    approved,
+    title,
+    description,
+}: {
+    approved: boolean;
+    title: string;
+    description: string;
+}) {
+    return (
+        <div className={`rounded-3xl border p-5 ${approved ? "border-emerald-100 bg-emerald-50" : "border-red-100 bg-red-50"}`}>
+            <div className="flex items-start gap-3">
+                {approved ? (
+                    <BadgeCheck className="mt-0.5 h-7 w-7 shrink-0 text-emerald-600" />
+                ) : (
+                    <CircleX className="mt-0.5 h-7 w-7 shrink-0 text-red-500" />
+                )}
+                <div>
+                    <p className="text-lg font-black text-slate-900">{title}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">{description}</p>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export default function ValidarBeneficioPage() {
     const params = useParams<{ token: string }>();
@@ -17,9 +43,7 @@ export default function ValidarBeneficioPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!token) {
-            return;
-        }
+        if (!token) return;
 
         let cancelled = false;
 
@@ -52,57 +76,47 @@ export default function ValidarBeneficioPage() {
         : null;
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-slate-950 via-[#1e0f3b] to-[#4C1D95] px-4 py-10 text-white">
-            <div className="mx-auto max-w-lg">
-                <div className="rounded-[28px] border border-white/10 bg-white/8 p-6 shadow-2xl shadow-black/30 backdrop-blur">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-200">CelDoctor</p>
-                    <h1 className="mt-3 text-3xl font-black">Validacion de beneficio</h1>
-                    <p className="mt-2 text-sm text-violet-100/80">
-                        Confirma si el afiliado tiene cobertura vigente para aplicar el descuento correspondiente.
-                    </p>
+        <div className="min-h-screen bg-linear-to-br from-slate-950 via-[#1e0f3b] to-[#4C1D95] px-4 py-8 text-white sm:py-12">
+            <div className="mx-auto max-w-xl">
+                <div className="rounded-[30px] border border-white/10 bg-white/8 p-5 shadow-2xl shadow-black/30 backdrop-blur sm:p-7">
+                    <div className="flex items-center gap-3">
+                        <div className="rounded-2xl bg-white/10 p-3 text-violet-100">
+                            <QrCode className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-200">CelDoctor</p>
+                            <h1 className="mt-1 text-2xl font-black">Validacion de credencial</h1>
+                        </div>
+                    </div>
 
-                    <div className="mt-8 rounded-3xl bg-white p-6 text-slate-900 shadow-lg shadow-black/10">
+                    <div className="mt-6 rounded-[28px] bg-white p-5 text-slate-900 shadow-xl shadow-black/10 sm:p-6">
                         {missingToken ? (
-                            <div className="space-y-5">
-                                <div className="flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 p-4">
-                                    <CircleX className="mt-0.5 h-6 w-6 shrink-0 text-red-500" />
-                                    <div>
-                                        <p className="font-bold text-slate-900">Token de validacion faltante</p>
-                                        <p className="mt-1 text-sm text-slate-600">
-                                            No encontramos un token valido para consultar la cobertura.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                            <StatusCard
+                                approved={false}
+                                title="No aprobado"
+                                description="No encontramos un token valido para verificar la cobertura."
+                            />
                         ) : loading ? (
                             <div className="flex min-h-64 flex-col items-center justify-center gap-4 text-center">
                                 <LoaderCircle className="h-10 w-10 animate-spin text-[#4C1D95]" />
                                 <div>
                                     <p className="font-semibold text-slate-900">Validando credencial</p>
-                                    <p className="text-sm text-slate-500">Estamos consultando el estado de la cobertura.</p>
+                                    <p className="mt-1 text-sm text-slate-500">Estamos consultando el estado del afiliado.</p>
                                 </div>
                             </div>
                         ) : error ? (
-                            <div className="space-y-5">
-                                <div className="flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 p-4">
-                                    <CircleX className="mt-0.5 h-6 w-6 shrink-0 text-red-500" />
-                                    <div>
-                                        <p className="font-bold text-slate-900">No pudimos validar la credencial</p>
-                                        <p className="mt-1 text-sm text-slate-600">{error}</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <StatusCard
+                                approved={false}
+                                title="No aprobado"
+                                description={error}
+                            />
                         ) : resultado?.valido ? (
                             <div className="space-y-5">
-                                <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-                                    <BadgeCheck className="mt-0.5 h-6 w-6 shrink-0 text-emerald-600" />
-                                    <div>
-                                        <p className="font-bold text-slate-900">Afiliado con cobertura vigente</p>
-                                        <p className="mt-1 text-sm text-slate-600">
-                                            La credencial es valida y el beneficio puede aplicarse.
-                                        </p>
-                                    </div>
-                                </div>
+                                <StatusCard
+                                    approved
+                                    title="Aprobado"
+                                    description="La credencial es valida y el afiliado tiene cobertura vigente."
+                                />
 
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
@@ -118,38 +132,17 @@ export default function ValidarBeneficioPage() {
                                         <p className="mt-1 text-base font-bold text-slate-900">{resultado.plan_nombre}</p>
                                     </div>
                                     <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Beneficio</p>
-                                        <div className="mt-1 flex items-center gap-2">
-                                            <ShieldCheck className="h-4 w-4 text-[#4C1D95]" />
-                                            <p className="text-base font-bold capitalize text-slate-900">{resultado.benefit_type}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="rounded-2xl bg-[#4C1D95] p-5 text-white">
-                                    <div className="flex items-center gap-3">
-                                        <div className="rounded-2xl bg-white/10 p-3">
-                                            <TicketPercent className="h-6 w-6" />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-semibold uppercase tracking-wide text-violet-200">Descuento aplicable</p>
-                                            <p className="text-2xl font-black">{resultado.discount_percentage}%</p>
-                                        </div>
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Descuento</p>
+                                        <p className="mt-1 text-base font-bold text-slate-900">{resultado.discount_percentage}%</p>
                                     </div>
                                 </div>
                             </div>
                         ) : (
-                            <div className="space-y-5">
-                                <div className="flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 p-4">
-                                    <CircleX className="mt-0.5 h-6 w-6 shrink-0 text-red-500" />
-                                    <div>
-                                        <p className="font-bold text-slate-900">Credencial rechazada</p>
-                                        <p className="mt-1 text-sm text-slate-600">
-                                            {resultado?.motivo ?? "No se pudo validar la cobertura del afiliado."}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                            <StatusCard
+                                approved={false}
+                                title="No aprobado"
+                                description={resultado?.motivo ?? "La credencial no tiene una cobertura vigente para aprobar el beneficio."}
+                            />
                         )}
 
                         {checkedAt && (
@@ -159,8 +152,8 @@ export default function ValidarBeneficioPage() {
                         )}
                     </div>
 
-                    <div className="mt-6 text-center text-sm text-violet-100/80">
-                        <p>Si el resultado no es valido, pedi al afiliado una credencial actualizada.</p>
+                    <div className="mt-5 text-center text-sm text-violet-100/80">
+                        <p>Si el resultado es no aprobado, pedi una credencial actualizada al afiliado.</p>
                         <Link href="/" className="mt-3 inline-flex font-semibold text-white underline decoration-white/40 underline-offset-4">
                             Volver al sitio
                         </Link>
