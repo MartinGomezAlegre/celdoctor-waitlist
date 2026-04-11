@@ -101,6 +101,8 @@ export function useCommercialAdmin({ token, addToast }: Params) {
                     comision_valor: Number(values.comision_valor),
                     estado: values.estado,
                     usuario_id: values.usuario_id ? Number(values.usuario_id) : null,
+                    access_email: values.access_email.trim() || null,
+                    access_password: values.access_password.trim() || null,
                 }),
             })
             if (!res.ok) throw new Error(await getApiErrorDetail(res, "No pudimos guardar el broker"))
@@ -156,6 +158,8 @@ export function useCommercialAdmin({ token, addToast }: Params) {
                     comision_valor: Number(values.comision_valor),
                     estado: values.estado,
                     usuario_id: values.usuario_id ? Number(values.usuario_id) : null,
+                    access_email: values.access_email.trim() || null,
+                    access_password: values.access_password.trim() || null,
                 }),
             })
             if (!res.ok) throw new Error(await getApiErrorDetail(res, "No pudimos guardar el vendedor directo"))

@@ -9,7 +9,7 @@ export default async function ComercialDashboardLayout({
     const cookieStore = await cookies();
 
     if (!cookieStore.get("celdoctor_token")?.value) {
-        redirect("/login");
+        redirect("/comercial");
     }
 
     return children;

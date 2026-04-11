@@ -26,24 +26,27 @@ export default function LoginPage() {
 
         try {
             const data = await login(email, contrasenia);
-            localStorage.setItem("celdoctor_nombre", data.usuario.nombre);
-            localStorage.setItem("celdoctor_email", data.usuario.email);
-            localStorage.setItem("celdoctor_rol", data.usuario.rol ?? "cliente");
+            const role = data.usuario.rol ?? "cliente";
 
-            if (data.usuario.rol === "admin") {
-                localStorage.removeItem("celdoctor_token");
-                setSessionCookie("celdoctor_token", "", 0);
-                localStorage.setItem("celdoctor_admin_token", data.access_token);
-                setSessionCookie("celdoctor_admin_token", data.access_token);
-                router.push(resolveAccountRoute(data.usuario.rol));
+            if (role === "admin") {
+                setError("Este acceso es solo para clientes. Si sos admin, ingresá desde /admin.");
                 return;
             }
+
+            if (role === "broker" || role === "direct_seller" || role === "broker_seller") {
+                setError("Este acceso es solo para clientes. Si sos parte del canal comercial, ingresá desde /comercial.");
+                return;
+            }
+
+            localStorage.setItem("celdoctor_nombre", data.usuario.nombre);
+            localStorage.setItem("celdoctor_email", data.usuario.email);
+            localStorage.setItem("celdoctor_rol", role);
 
             localStorage.removeItem("celdoctor_admin_token");
             setSessionCookie("celdoctor_admin_token", "", 0);
             localStorage.setItem("celdoctor_token", data.access_token);
             setSessionCookie("celdoctor_token", data.access_token);
-            router.push(resolveAccountRoute(data.usuario.rol));
+            router.push(resolveAccountRoute(role));
         } catch (err) {
             setError(err instanceof Error ? err.message : "Error de conexión");
         } finally {

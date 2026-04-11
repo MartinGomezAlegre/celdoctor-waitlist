@@ -11,6 +11,8 @@ export interface BrokerFormValues {
     comision_valor: string
     estado: EstadoComercial
     usuario_id: string
+    access_email: string
+    access_password: string
 }
 
 export interface BrokerSellerFormValues {
@@ -30,6 +32,8 @@ export interface DirectSellerFormValues {
     comision_valor: string
     estado: EstadoComercial
     usuario_id: string
+    access_email: string
+    access_password: string
 }
 
 export interface LiquidacionFormValues {
@@ -48,6 +52,8 @@ export const EMPTY_BROKER_FORM: BrokerFormValues = {
     comision_valor: "",
     estado: "activo",
     usuario_id: "",
+    access_email: "",
+    access_password: "",
 }
 
 export const EMPTY_BROKER_SELLER_FORM: BrokerSellerFormValues = {
@@ -67,6 +73,8 @@ export const EMPTY_DIRECT_SELLER_FORM: DirectSellerFormValues = {
     comision_valor: "",
     estado: "activo",
     usuario_id: "",
+    access_email: "",
+    access_password: "",
 }
 
 export const EMPTY_LIQUIDACION_FORM: LiquidacionFormValues = {
@@ -87,6 +95,8 @@ export function brokerToForm(broker?: BrokerAdmin | null): BrokerFormValues {
         comision_valor: String(broker.comision_valor),
         estado: broker.estado,
         usuario_id: broker.usuario_id ? String(broker.usuario_id) : "",
+        access_email: "",
+        access_password: "",
     }
 }
 
@@ -112,6 +122,8 @@ export function directSellerToForm(item?: DirectSellerAdmin | null): DirectSelle
         comision_valor: String(item.comision_valor),
         estado: item.estado,
         usuario_id: item.usuario_id ? String(item.usuario_id) : "",
+        access_email: "",
+        access_password: "",
     }
 }
 

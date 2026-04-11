@@ -5,7 +5,6 @@ import { AlertTriangle, RefreshCcw } from "lucide-react"
 
 import type {
     BrokerAdmin,
-    BrokerSellerAdmin,
     DirectSellerAdmin,
     ToastType,
 } from "../types"
@@ -17,20 +16,16 @@ import { SalesCard } from "./SectionComercial/SalesCard"
 import { LiquidationsCard } from "./SectionComercial/LiquidationsCard"
 import {
     BrokerModal,
-    BrokerSellerModal,
     DirectSellerModal,
     LiquidacionModal,
 } from "./SectionComercial/Modals"
 import {
-    brokerSellerToForm,
     brokerToForm,
     directSellerToForm,
     EMPTY_BROKER_FORM,
-    EMPTY_BROKER_SELLER_FORM,
     EMPTY_DIRECT_SELLER_FORM,
     EMPTY_LIQUIDACION_FORM,
     type BrokerFormValues,
-    type BrokerSellerFormValues,
     type DirectSellerFormValues,
     type LiquidacionFormValues,
 } from "./SectionComercial/utils"
@@ -56,22 +51,18 @@ export default function SectionComercial({ token, addToast }: Props) {
         schemaError,
         cargarTodo,
         guardarBroker,
-        guardarBrokerSeller,
         guardarDirectSeller,
         guardarLiquidacion,
     } = useCommercialAdmin({ token, addToast })
 
     const [brokerModalOpen, setBrokerModalOpen] = useState(false)
-    const [brokerSellerModalOpen, setBrokerSellerModalOpen] = useState(false)
     const [directSellerModalOpen, setDirectSellerModalOpen] = useState(false)
     const [liquidacionModalOpen, setLiquidacionModalOpen] = useState(false)
 
     const [selectedBroker, setSelectedBroker] = useState<BrokerAdmin | null>(null)
-    const [selectedBrokerSeller, setSelectedBrokerSeller] = useState<BrokerSellerAdmin | null>(null)
     const [selectedDirectSeller, setSelectedDirectSeller] = useState<DirectSellerAdmin | null>(null)
 
     const [brokerForm, setBrokerForm] = useState<BrokerFormValues>({ ...EMPTY_BROKER_FORM })
-    const [brokerSellerForm, setBrokerSellerForm] = useState<BrokerSellerFormValues>({ ...EMPTY_BROKER_SELLER_FORM })
     const [directSellerForm, setDirectSellerForm] = useState<DirectSellerFormValues>({ ...EMPTY_DIRECT_SELLER_FORM })
     const [liquidacionForm, setLiquidacionForm] = useState<LiquidacionFormValues>({ ...EMPTY_LIQUIDACION_FORM })
 
@@ -83,11 +74,6 @@ export default function SectionComercial({ token, addToast }: Props) {
     function handleBrokerChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
         const { name, value } = event.target
         setBrokerForm((prev) => ({ ...prev, [name]: value }))
-    }
-
-    function handleBrokerSellerChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-        const { name, value } = event.target
-        setBrokerSellerForm((prev) => ({ ...prev, [name]: value }))
     }
 
     function handleDirectSellerChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -110,12 +96,6 @@ export default function SectionComercial({ token, addToast }: Props) {
         setBrokerModalOpen(true)
     }
 
-    function openBrokerSellerModal(item?: BrokerSellerAdmin) {
-        setSelectedBrokerSeller(item ?? null)
-        setBrokerSellerForm(brokerSellerToForm(item))
-        setBrokerSellerModalOpen(true)
-    }
-
     function openDirectSellerModal(item?: DirectSellerAdmin) {
         setSelectedDirectSeller(item ?? null)
         setDirectSellerForm(directSellerToForm(item))
@@ -131,12 +111,6 @@ export default function SectionComercial({ token, addToast }: Props) {
         await guardarBroker(brokerForm, selectedBroker?.id)
         setBrokerModalOpen(false)
         setSelectedBroker(null)
-    }
-
-    async function handleSaveBrokerSeller() {
-        await guardarBrokerSeller(brokerSellerForm, selectedBrokerSeller?.id)
-        setBrokerSellerModalOpen(false)
-        setSelectedBrokerSeller(null)
     }
 
     async function handleSaveDirectSeller() {
@@ -227,7 +201,7 @@ export default function SectionComercial({ token, addToast }: Props) {
                     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                         <div className="space-y-6">
                             <BrokersCard brokers={brokers} onCreate={() => openBrokerModal()} onEdit={openBrokerModal} />
-                            <BrokerSellersCard items={brokerSellers} onCreate={() => openBrokerSellerModal()} onEdit={openBrokerSellerModal} onCopy={copyLink} />
+                            <BrokerSellersCard items={brokerSellers} onCopy={copyLink} />
                             <DirectSellersCard items={directSellers} onCreate={() => openDirectSellerModal()} onEdit={openDirectSellerModal} onCopy={copyLink} />
                         </div>
 
@@ -247,17 +221,6 @@ export default function SectionComercial({ token, addToast }: Props) {
                 onChange={handleBrokerChange}
                 onSubmit={() => void handleSaveBroker()}
                 editing={!!selectedBroker}
-                loading={guardando}
-            />
-            <BrokerSellerModal
-                open={brokerSellerModalOpen}
-                values={brokerSellerForm}
-                brokers={brokers}
-                usuarios={usuariosDisponibles}
-                onClose={() => setBrokerSellerModalOpen(false)}
-                onChange={handleBrokerSellerChange}
-                onSubmit={() => void handleSaveBrokerSeller()}
-                editing={!!selectedBrokerSeller}
                 loading={guardando}
             />
             <DirectSellerModal

@@ -88,7 +88,16 @@ export function BrokerModal({
                         ))}
                     </Select>
                 </Field>
+                <Field label="Email acceso">
+                    <Input name="access_email" type="email" value={values.access_email} onChange={onChange} placeholder="broker@celdoctor.com" />
+                </Field>
+                <Field label="Contrasena inicial">
+                    <Input name="access_password" type="password" value={values.access_password} onChange={onChange} placeholder="Minimo 8 caracteres" />
+                </Field>
             </div>
+            <p className="mt-3 text-xs text-slate-500">
+                Si completas email y contrasena, creamos un acceso comercial nuevo. Si elegis una cuenta existente, esos datos se ignoran.
+            </p>
         </Modal>
     )
 }
@@ -201,8 +210,17 @@ export function DirectSellerModal({
                         ))}
                     </Select>
                 </Field>
+                <Field label="Email acceso">
+                    <Input name="access_email" type="email" value={values.access_email} onChange={onChange} placeholder="ventas@celdoctor.com" />
+                </Field>
+                <Field label="Contrasena inicial">
+                    <Input name="access_password" type="password" value={values.access_password} onChange={onChange} placeholder="Minimo 8 caracteres" />
+                </Field>
                 <Field label="Referral code"><Input name="referral_code" value={values.referral_code} onChange={onChange} placeholder="Opcional: se genera automaticamente" /></Field>
             </div>
+            <p className="mt-3 text-xs text-slate-500">
+                Los vendedores directos ingresan por el acceso comercial. Podés vincular una cuenta existente o crear una nueva con email y contrasena.
+            </p>
         </Modal>
     )
 }

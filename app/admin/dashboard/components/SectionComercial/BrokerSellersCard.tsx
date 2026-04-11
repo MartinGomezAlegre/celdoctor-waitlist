@@ -6,8 +6,8 @@ import { buildReferralLink } from "./utils"
 
 interface Props {
     items: BrokerSellerAdmin[]
-    onCreate: () => void
-    onEdit: (item: BrokerSellerAdmin) => void
+    onCreate?: () => void
+    onEdit?: (item: BrokerSellerAdmin) => void
     onCopy: (link: string) => void
 }
 
@@ -17,15 +17,21 @@ export function BrokerSellersCard({ items, onCreate, onEdit, onCopy }: Props) {
             <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                     <h2 className="text-base font-semibold text-slate-900">Vendedores de broker</h2>
-                    <p className="text-sm text-slate-500">Cada vendedor trae ventas bajo el broker principal.</p>
+                    <p className="text-sm text-slate-500">Visibilidad del equipo del broker. El alta y la gesti&oacute;n la hace el propio broker.</p>
                 </div>
-                <button
-                    onClick={onCreate}
-                    className="inline-flex items-center gap-2 rounded-xl border border-[#4C1D95]/15 px-3 py-2 text-sm font-semibold text-[#4C1D95]"
-                >
-                    <Plus className="h-4 w-4" />
-                    Agregar
-                </button>
+                {onCreate ? (
+                    <button
+                        onClick={onCreate}
+                        className="inline-flex items-center gap-2 rounded-xl border border-[#4C1D95]/15 px-3 py-2 text-sm font-semibold text-[#4C1D95]"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Agregar
+                    </button>
+                ) : (
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Gestionado por broker
+                    </span>
+                )}
             </div>
 
             <div className="space-y-3">
@@ -59,12 +65,14 @@ export function BrokerSellersCard({ items, onCreate, onEdit, onCopy }: Props) {
                                     >
                                         <Copy className="h-4 w-4" />
                                     </button>
-                                    <button
-                                        onClick={() => onEdit(item)}
-                                        className="rounded-lg border border-slate-200 p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"
-                                    >
-                                        <Pencil className="h-4 w-4" />
-                                    </button>
+                                    {onEdit && (
+                                        <button
+                                            onClick={() => onEdit(item)}
+                                            className="rounded-lg border border-slate-200 p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 

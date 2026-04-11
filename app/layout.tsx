@@ -81,6 +81,7 @@ export default async function RootLayout({
 
     const hideChrome =
         pathname.startsWith("/admin") ||
+        pathname.startsWith("/comercial") ||
         pathname.startsWith("/dashboard") ||
         pathname.startsWith("/checkout") ||
         pathname.startsWith("/validar");

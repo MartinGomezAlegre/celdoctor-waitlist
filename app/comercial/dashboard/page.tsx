@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BadgeDollarSign, Copy, Link2, ShieldCheck, TrendingUp, UserRound, Users } from "lucide-react";
+import { BadgeDollarSign, Copy, Link2, Pencil, Plus, ShieldCheck, TrendingUp, UserRound, Users } from "lucide-react";
 
-import { ApiError, getCommercialDashboard, type CommercialDashboardData } from "@/lib/api";
+import { ApiError, createBrokerTeamMember, getCommercialDashboard, updateBrokerTeamMember, type CommercialDashboardData } from "@/lib/api";
 import { clearSessionCookie } from "@/lib/session-cookie";
 import { useLocalStorageValue } from "@/lib/use-local-storage-value";
+import { BrokerTeamModal, type BrokerTeamFormValues } from "./components/BrokerTeamModal";
 
 function currency(value: number) {
     return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(value);
@@ -28,6 +29,14 @@ function roleLabel(role: CommercialDashboardData["rol"]) {
     if (role === "direct_seller") return "Vendedor directo";
     return "Vendedor de broker";
 }
+
+const EMPTY_TEAM_FORM: BrokerTeamFormValues = {
+    nombre: "",
+    email: "",
+    contrasenia: "",
+    referral_code: "",
+    estado: "activo",
+};
 
 function MetricCard({
     label,
@@ -64,14 +73,19 @@ export default function ComercialDashboardPage() {
     const [data, setData] = useState<CommercialDashboardData | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [teamModalOpen, setTeamModalOpen] = useState(false);
+    const [teamForm, setTeamForm] = useState<BrokerTeamFormValues>({ ...EMPTY_TEAM_FORM });
+    const [selectedTeamMemberId, setSelectedTeamMemberId] = useState<number | null>(null);
+    const [teamSaving, setTeamSaving] = useState(false);
 
     useEffect(() => {
         if (!tokenHydrated) return;
         if (!token) {
-            router.replace("/login");
+            router.replace("/comercial");
             return;
         }
 
+        setError(null);
         getCommercialDashboard(token)
             .then((result) => {
                 setData(result);
@@ -137,6 +151,29 @@ export default function ComercialDashboardPage() {
         return items;
     }, [data]);
 
+    function openCreateTeamMember() {
+        setSelectedTeamMemberId(null);
+        setTeamForm({ ...EMPTY_TEAM_FORM });
+        setTeamModalOpen(true);
+    }
+
+    function openEditTeamMember(member: CommercialDashboardData["equipo"][number]) {
+        setSelectedTeamMemberId(member.id);
+        setTeamForm({
+            nombre: member.nombre,
+            email: member.email,
+            contrasenia: "",
+            referral_code: member.referral_code,
+            estado: member.estado,
+        });
+        setTeamModalOpen(true);
+    }
+
+    function handleTeamFormChange(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+        const { name, value } = event.target;
+        setTeamForm((prev) => ({ ...prev, [name]: value }));
+    }
+
     async function handleCopy() {
         if (!referralLink) return;
         try {
@@ -145,6 +182,54 @@ export default function ComercialDashboardPage() {
             window.setTimeout(() => setCopied(false), 2500);
         } catch {
             setCopied(false);
+        }
+    }
+
+    async function handleSaveTeamMember() {
+        if (!token || data?.rol !== "broker") return;
+
+        setError(null);
+        setTeamSaving(true);
+        try {
+            const saved = selectedTeamMemberId
+                ? await updateBrokerTeamMember(token, selectedTeamMemberId, {
+                    nombre: teamForm.nombre.trim(),
+                    email: teamForm.email.trim(),
+                    nueva_contrasenia: teamForm.contrasenia.trim() || null,
+                    referral_code: teamForm.referral_code.trim() || null,
+                    estado: teamForm.estado,
+                })
+                : await createBrokerTeamMember(token, {
+                    nombre: teamForm.nombre.trim(),
+                    email: teamForm.email.trim(),
+                    contrasenia: teamForm.contrasenia.trim(),
+                    referral_code: teamForm.referral_code.trim() || null,
+                    estado: teamForm.estado,
+                });
+
+            setData((current) => {
+                if (!current) return current;
+                const equipo = selectedTeamMemberId
+                    ? current.equipo.map((item) => (item.id === saved.id ? saved : item))
+                    : [saved, ...current.equipo];
+                const activeSellers = equipo.filter((item) => item.estado === "activo").length;
+                return {
+                    ...current,
+                    equipo,
+                    metricas: {
+                        ...current.metricas,
+                        total_sellers: equipo.length,
+                        active_sellers: activeSellers,
+                    },
+                };
+            });
+            setTeamModalOpen(false);
+            setSelectedTeamMemberId(null);
+            setTeamForm({ ...EMPTY_TEAM_FORM });
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "No pudimos guardar el vendedor");
+        } finally {
+            setTeamSaving(false);
         }
     }
 
@@ -188,6 +273,12 @@ export default function ComercialDashboardPage() {
                         <MetricCard key={item.label} label={item.label} value={item.value} sub={item.sub} icon={item.icon} />
                     ))}
                 </div>
+
+                {error && (
+                    <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm text-red-700">
+                        {error}
+                    </div>
+                )}
 
                 <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
                     <section className="space-y-6">
@@ -255,18 +346,71 @@ export default function ComercialDashboardPage() {
                                         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Equipo</p>
                                         <h2 className="mt-2 text-xl font-bold text-slate-900">Vendedores asociados</h2>
                                     </div>
-                                    <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
-                                        {data.equipo.length}
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
+                                            {data.equipo.length}
+                                        </span>
+                                        {data.rol === "broker" && (
+                                            <button
+                                                type="button"
+                                                onClick={openCreateTeamMember}
+                                                className="inline-flex items-center gap-2 rounded-xl bg-[#4C1D95] px-3 py-2 text-sm font-semibold text-white"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                                Nuevo vendedor
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                                     {data.equipo.map((item) => (
                                         <div key={item.id} className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-                                            <p className="font-semibold text-slate-900">{item.nombre}</p>
-                                            <p className="mt-1 text-sm text-slate-500">{item.email}</p>
-                                            <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{item.referral_code}</p>
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <p className="font-semibold text-slate-900">{item.nombre}</p>
+                                                    <p className="mt-1 text-sm text-slate-500">{item.email}</p>
+                                                </div>
+                                                {data.rol === "broker" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openEditTeamMember(item)}
+                                                        className="rounded-lg border border-slate-200 p-2 text-slate-500 transition-colors hover:bg-white hover:text-slate-900"
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                                                <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                                    {item.estado}
+                                                </span>
+                                                <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                                    {item.referral_code}
+                                                </span>
+                                            </div>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+                        )}
+                        {data.rol === "broker" && data.equipo.length === 0 && (
+                            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div>
+                                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Equipo</p>
+                                        <h2 className="mt-2 text-xl font-bold text-slate-900">Todavía no tenés vendedores cargados</h2>
+                                        <p className="mt-2 text-sm text-slate-500">
+                                            Desde este panel podés dar de alta a tu equipo y entregarles acceso directo al canal comercial.
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={openCreateTeamMember}
+                                        className="inline-flex items-center gap-2 rounded-xl bg-[#4C1D95] px-4 py-2.5 text-sm font-semibold text-white"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        Crear primer vendedor
+                                    </button>
                                 </div>
                             </div>
                         )}
@@ -322,15 +466,28 @@ export default function ComercialDashboardPage() {
                                 Si necesitás actualizar tus datos o revisar una liquidación, escribinos desde soporte administrativo.
                             </p>
                             <Link
-                                href="/login"
+                                href="/comercial"
                                 className="mt-4 inline-flex items-center rounded-xl border border-[#4C1D95]/15 px-4 py-2.5 text-sm font-semibold text-[#4C1D95]"
                             >
-                                Volver al acceso principal
+                                Acceso comercial
                             </Link>
                         </div>
                     </section>
                 </div>
             </main>
+            <BrokerTeamModal
+                open={teamModalOpen}
+                editing={selectedTeamMemberId !== null}
+                values={teamForm}
+                onClose={() => {
+                    setTeamModalOpen(false);
+                    setSelectedTeamMemberId(null);
+                    setTeamForm({ ...EMPTY_TEAM_FORM });
+                }}
+                onChange={handleTeamFormChange}
+                onSubmit={() => void handleSaveTeamMember()}
+                loading={teamSaving}
+            />
         </div>
     );
 }

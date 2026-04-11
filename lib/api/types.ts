@@ -126,6 +126,7 @@ export interface CommercialTeamMember {
     referral_code: string;
     estado: string;
     fecha_alta: string | null;
+    usuario_id?: number | null;
     link_referido: string;
 }
 
