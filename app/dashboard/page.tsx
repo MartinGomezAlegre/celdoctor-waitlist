@@ -206,11 +206,7 @@ export default function DashboardPage() {
                     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_360px]">
                         <div className="space-y-6">
                             {suscripcion ? (
-                                <CredencialCard
-                                    token={token}
-                                    suscripcion={suscripcion}
-                                    diasRestantes={diasRestantes}
-                                />
+                                <CredencialCard token={token} />
                             ) : (
                                 <Card className="p-8">
                                     <h2 className="mb-2 text-lg font-bold text-slate-900">Sin suscripcion activa</h2>
