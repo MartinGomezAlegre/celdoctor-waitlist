@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Ban, FileText, Pill, ShoppingCart, Stethoscope, TriangleAlert, Video } from "lucide-react";
+
 import {
     ApiError,
     cancelarMiSuscripcion,
@@ -20,9 +21,10 @@ import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 import { BeneficiariosCard } from "./components/BeneficiariosCard";
 import { CredencialCard } from "./components/CredencialCard";
 import { DatosCuentaCard } from "./components/DatosCuentaCard";
+import { GestionCuentaCard } from "./components/GestionCuentaCard";
 import { SoporteCard } from "./components/SoporteCard";
-import { Card, ConfirmModal, EstadoBadge, SkeletonBlock } from "./components/ui";
-import { diasHasta, formatFecha, formatPrecio, saludo } from "./utils";
+import { Card, ConfirmModal, SkeletonBlock } from "./components/ui";
+import { diasHasta, saludo } from "./utils";
 
 const BENEFICIOS_ACTIVOS = [
     { icon: Video, titulo: "Videoconsultas 24/7", desc: "Atencion medica inmediata" },
@@ -81,8 +83,8 @@ export default function DashboardPage() {
     const nombrePlan = suscripcion?.nombre_plan ?? (suscripcion ? `Plan #${suscripcion.plan_id}` : "");
     const perfilCompleto = perfilFacturacionCompleto(perfil);
     const diasRestantes = suscripcion?.fecha_vencimiento ? diasHasta(suscripcion.fecha_vencimiento) : null;
-    const proxAVencer = diasRestantes !== null && diasRestantes > 0 && diasRestantes <= 7;
     const vencida = diasRestantes !== null && diasRestantes <= 0;
+    const proxAVencer = diasRestantes !== null && diasRestantes > 0 && diasRestantes <= 7;
     const estadoSuscripcion = suscripcion?.estado.toLowerCase();
     const estaActiva = !!estadoSuscripcion && ["activa", "cancelacion_programada"].includes(estadoSuscripcion) && !vencida;
     const totalIntegrantes = suscripcion?.tipo_plan?.toLowerCase() === "familiar"
@@ -130,7 +132,7 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+            <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
                 <div className="mb-8">
                     {cargando ? (
                         <div className="space-y-2">
@@ -190,72 +192,25 @@ export default function DashboardPage() {
                 )}
 
                 {cargando ? (
-                    <div className="grid gap-6 lg:grid-cols-3">
-                        <div className="space-y-6 lg:col-span-2">
-                            <Card><SkeletonBlock className="h-40" /></Card>
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_360px]">
+                        <div className="space-y-6">
+                            <Card><SkeletonBlock className="h-80" /></Card>
                             <Card><SkeletonBlock className="h-32" /></Card>
                         </div>
                         <div className="space-y-6">
-                            <Card><SkeletonBlock className="h-40" /></Card>
-                            <Card><SkeletonBlock className="h-24" /></Card>
+                            <Card><SkeletonBlock className="h-64" /></Card>
+                            <Card><SkeletonBlock className="h-56" /></Card>
                         </div>
                     </div>
                 ) : (
-                    <div className="grid gap-6 lg:grid-cols-3">
-                        <div className="space-y-6 lg:col-span-2">
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_360px]">
+                        <div className="space-y-6">
                             {suscripcion ? (
-                                <Card>
-                                    <div className="rounded-xl border border-[#4C1D95]/10 bg-linear-to-br from-[#4C1D95]/5 to-[#4C1D95]/10 p-5">
-                                        <div className="mb-3 flex items-start justify-between gap-3">
-                                            <p className="text-2xl font-bold text-slate-900">{nombrePlan}</p>
-                                            <EstadoBadge estado={vencida ? "vencida" : suscripcion.estado} />
-                                        </div>
-                                        {suscripcion.descripcion_plan && (
-                                            <p className="mb-3 text-sm text-slate-500">{suscripcion.descripcion_plan}</p>
-                                        )}
-                                        <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-500">
-                                            <span>{formatPrecio(suscripcion.precio_pagado)}</span>
-                                            <span>Desde {formatFecha(suscripcion.fecha_inicio)}</span>
-                                            {suscripcion.fecha_vencimiento && (
-                                                <span>
-                                                    Vence {formatFecha(suscripcion.fecha_vencimiento)}
-                                                    {diasRestantes !== null && diasRestantes > 0 && (
-                                                        <span className={`ml-1 font-semibold ${diasRestantes <= 7 ? "text-amber-600" : "text-slate-700"}`}>
-                                                            ({diasRestantes}d)
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {suscripcion.estado.toLowerCase() === "pendiente_pago" && (
-                                        <p className="mt-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                                            Tu pago esta siendo verificado. Te notificaremos cuando se acredite.
-                                        </p>
-                                    )}
-
-                                    {suscripcion.estado.toLowerCase() === "cancelacion_programada" && (
-                                        <p className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-                                            Tu baja esta programada. Mantenes el servicio hasta el ultimo dia de la suscripcion.
-                                        </p>
-                                    )}
-
-                                    <div className="mt-4 flex flex-wrap items-center gap-3">
-                                        {estaActiva && (
-                                            <Link href="/planes" className="inline-flex items-center rounded-lg border border-[#4C1D95]/20 px-4 py-2 text-sm font-semibold text-[#4C1D95] transition-colors hover:bg-[#4C1D95]/5">
-                                                Queres mejorar tu plan?
-                                            </Link>
-                                        )}
-                                        <button
-                                            type="button"
-                                            onClick={() => setModalBaja(true)}
-                                            className="inline-flex items-center text-xs font-medium text-slate-400 transition-colors hover:text-slate-600 hover:underline"
-                                        >
-                                            Gestionar plan
-                                        </button>
-                                    </div>
-                                </Card>
+                                <CredencialCard
+                                    token={token}
+                                    suscripcion={suscripcion}
+                                    diasRestantes={diasRestantes}
+                                />
                             ) : (
                                 <Card className="p-8">
                                     <h2 className="mb-2 text-lg font-bold text-slate-900">Sin suscripcion activa</h2>
@@ -306,20 +261,14 @@ export default function DashboardPage() {
                         </div>
 
                         <div className="space-y-6">
-                            {estaActiva && <CredencialCard token={token} />}
+                            <GestionCuentaCard
+                                suscripcion={suscripcion ?? null}
+                                diasRestantes={diasRestantes}
+                                puedeMejorarPlan={estaActiva && !esElMasCaro && planes.length > 0}
+                                onManagePlan={() => setModalBaja(true)}
+                            />
                             {perfil && <DatosCuentaCard perfil={perfil} token={token} onActualizar={setPerfil} />}
                         </div>
-                    </div>
-                )}
-
-                {estaActiva && !esElMasCaro && planes.length > 0 && (
-                    <div className="mt-8 flex items-center justify-between gap-4 rounded-2xl border border-[#4C1D95]/15 bg-[#4C1D95]/5 p-5">
-                        <p className="text-sm text-slate-700">
-                            Queres agregar mas cobertura? <span className="font-semibold">Conoce el Plan Familiar</span>
-                        </p>
-                        <Link href="/planes" className="shrink-0 whitespace-nowrap text-sm font-bold text-[#4C1D95] hover:underline">
-                            Ver planes
-                        </Link>
                     </div>
                 )}
 

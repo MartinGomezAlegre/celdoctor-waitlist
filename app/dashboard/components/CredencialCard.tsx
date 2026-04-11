@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { CircleAlert, QrCode, RefreshCcw, ShieldCheck } from "lucide-react";
 
-import { ApiError, obtenerMiCredencial, type CredencialVirtual } from "@/lib/api";
+import { ApiError, obtenerMiCredencial, type CredencialVirtual, type Suscripcion } from "@/lib/api";
+import { formatFecha, formatPrecio } from "../utils";
 import { Card, SkeletonBlock } from "./ui";
 
 function formatCountdown(totalSeconds: number | null): string {
@@ -16,7 +17,13 @@ function formatCountdown(totalSeconds: number | null): string {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
-export function CredencialCard({ token }: { token: string }) {
+interface Props {
+    token: string;
+    suscripcion: Suscripcion;
+    diasRestantes: number | null;
+}
+
+export function CredencialCard({ token, suscripcion, diasRestantes }: Props) {
     const [credencial, setCredencial] = useState<CredencialVirtual | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -80,7 +87,6 @@ export function CredencialCard({ token }: { token: string }) {
 
         updateCountdown();
         const timerId = window.setInterval(updateCountdown, 1_000);
-
         return () => window.clearInterval(timerId);
     }, [credencial?.qr_expires_at]);
 
@@ -97,8 +103,8 @@ export function CredencialCard({ token }: { token: string }) {
         return (
             <Card>
                 <div className="space-y-4">
-                    <SkeletonBlock className="h-6 w-44" />
-                    <SkeletonBlock className="h-56 w-full" />
+                    <SkeletonBlock className="h-7 w-52" />
+                    <SkeletonBlock className="h-80 w-full" />
                 </div>
             </Card>
         );
@@ -123,76 +129,125 @@ export function CredencialCard({ token }: { token: string }) {
     }
 
     return (
-        <Card className="overflow-hidden border-[#4C1D95]/10 bg-linear-to-br from-white via-white to-[#4C1D95]/5">
-            <div className="mb-5 flex items-start justify-between gap-3">
-                <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#4C1D95]">Credencial digital</p>
-                    <h3 className="mt-2 text-lg font-bold text-slate-900">{credencial.plan_nombre}</h3>
-                    <p className="mt-1 text-sm text-slate-500">
-                        QR dinamico para validar tu beneficio en farmacia.
-                    </p>
-                </div>
-                <div className="rounded-2xl bg-[#4C1D95]/10 p-3 text-[#4C1D95]">
-                    <QrCode className="h-6 w-6" />
+        <Card className="overflow-hidden border-slate-800 bg-linear-to-br from-slate-950 via-[#10182c] to-[#241657] p-0 text-white shadow-2xl shadow-slate-950/20">
+            <div className="border-b border-white/10 px-6 py-5 sm:px-8">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-200/90">Credencial corporativa</p>
+                        <h3 className="mt-3 text-2xl font-black tracking-tight text-white">{credencial.plan_nombre}</h3>
+                        <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
+                            Identificacion digital segura para validar beneficios en farmacia con QR dinamico y renovacion automatica.
+                        </p>
+                    </div>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-4 py-2 text-xs font-semibold text-emerald-200">
+                        <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                        Cobertura vigente
+                    </div>
                 </div>
             </div>
 
-            <div className="rounded-2xl border border-[#4C1D95]/10 bg-white p-4 shadow-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                        {credencial.discount_percentage}% de descuento
-                    </span>
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold capitalize text-slate-600">
-                        {credencial.benefit_type}
-                    </span>
+            <div className="grid gap-0 lg:grid-cols-[1.6fr_0.9fr]">
+                <div className="space-y-6 px-6 py-6 sm:px-8">
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Titular</p>
+                            <p className="mt-2 text-base font-semibold text-white">{credencial.nombre_completo}</p>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Numero de socio</p>
+                            <p className="mt-2 text-base font-semibold text-white">{credencial.numero_socio}</p>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Documento</p>
+                            <p className="mt-2 text-base font-semibold text-white">{credencial.dni ?? "No informado"}</p>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Beneficio</p>
+                            <p className="mt-2 text-base font-semibold capitalize text-white">{credencial.benefit_type}</p>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-3">
+                        <div className="rounded-2xl border border-violet-400/20 bg-violet-400/10 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-violet-200/80">Plan actual</p>
+                            <p className="mt-2 text-lg font-bold text-white">{suscripcion.nombre_plan ?? `Plan #${suscripcion.plan_id}`}</p>
+                            <p className="mt-1 text-sm text-violet-100/70">{formatPrecio(suscripcion.precio_pagado)}</p>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Inicio de cobertura</p>
+                            <p className="mt-2 text-base font-semibold text-white">{formatFecha(suscripcion.fecha_inicio)}</p>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Proximo vencimiento</p>
+                            <p className="mt-2 text-base font-semibold text-white">
+                                {suscripcion.fecha_vencimiento ? formatFecha(suscripcion.fecha_vencimiento) : "Sin fecha"}
+                            </p>
+                            {diasRestantes !== null && diasRestantes > 0 && (
+                                <p className="mt-1 text-xs font-semibold text-amber-200">{diasRestantes} dias restantes</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                        <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-200">
+                            {credencial.discount_percentage}% de descuento
+                        </span>
+                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-300">
+                            Validacion renovable cada 60 segundos
+                        </span>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-black/15 px-4 py-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 text-sm text-slate-300">
+                                <RefreshCcw className="h-4 w-4 text-violet-300" />
+                                <span>QR dinamico protegido contra capturas y reutilizacion.</span>
+                            </div>
+                            <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-900 shadow-sm">
+                                <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                                <span>{formatCountdown(remainingSeconds)}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_140px]">
-                    <div className="space-y-3">
+                <div className="border-t border-white/10 bg-white/5 px-6 py-6 sm:px-8 lg:border-l lg:border-t-0">
+                    <div className="flex h-full flex-col justify-between gap-6">
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Titular</p>
-                            <p className="text-sm font-semibold text-slate-900">{credencial.nombre_completo}</p>
-                        </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <div>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Numero de socio</p>
-                                <p className="text-sm font-semibold text-slate-900">{credencial.numero_socio}</p>
+                            <div className="mb-4 flex items-center justify-between">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Codigo seguro</p>
+                                <div className="rounded-2xl bg-white/10 p-3 text-violet-200">
+                                    <QrCode className="h-6 w-6" />
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">DNI</p>
-                                <p className="text-sm font-semibold text-slate-900">{credencial.dni ?? "No informado"}</p>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div className="flex justify-center">
-                        <Image
-                            src={credencial.qr_image_data_url}
-                            alt="QR dinamico de validacion de beneficios"
-                            width={144}
-                            height={144}
-                            unoptimized
-                            className="h-36 w-36 rounded-2xl border border-slate-100 bg-white p-2 shadow-sm"
-                        />
+                            <div className="flex justify-center rounded-[28px] border border-white/10 bg-white p-4 shadow-2xl shadow-black/20">
+                                <Image
+                                    src={credencial.qr_image_data_url}
+                                    alt="QR dinamico de validacion de beneficios"
+                                    width={192}
+                                    height={192}
+                                    unoptimized
+                                    className="h-48 w-48"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-white/10 bg-black/15 p-4 text-sm leading-6 text-slate-300">
+                            Presenta esta credencial desde tu celular para validar descuentos y cobertura en puntos adheridos.
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                        <RefreshCcw className="h-4 w-4 text-[#4C1D95]" />
-                        <span>Se renueva automaticamente cada 60 segundos</span>
-                    </div>
-                    <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
-                        <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                        <span>{formatCountdown(remainingSeconds)}</span>
-                    </div>
+            <div className="border-t border-white/10 px-6 py-4 sm:px-8">
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+                    <span className="inline-flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                        Credencial activa y monitoreada en tiempo real
+                    </span>
+                    {checkedAtLabel && <span>Ultima version disponible hasta las {checkedAtLabel}</span>}
                 </div>
-
-                {checkedAtLabel && (
-                    <p className="mt-3 text-xs text-slate-400">
-                        Ultima version disponible hasta las {checkedAtLabel}.
-                    </p>
-                )}
             </div>
         </Card>
     );
