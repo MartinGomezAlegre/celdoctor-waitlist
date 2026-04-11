@@ -15,6 +15,25 @@ function formatCountdown(totalSeconds: number | null): string {
     return `Se restablece en ${totalSeconds}s`;
 }
 
+function CredentialField({
+    label,
+    value,
+}: {
+    label: string;
+    value: string;
+}) {
+    return (
+        <div className="space-y-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/65 sm:text-[11px]">
+                {label}
+            </p>
+            <p className="break-words text-[18px] font-semibold leading-tight text-white sm:text-[20px] lg:text-[22px]">
+                {value}
+            </p>
+        </div>
+    );
+}
+
 function CredentialSurface({
     credencial,
     countdownLabel,
@@ -27,59 +46,41 @@ function CredentialSurface({
     return (
         <div
             className={[
-                "overflow-hidden rounded-[28px] border border-[#4C1D95]/20 bg-linear-to-br from-[#5a24bb] via-[#431b98] to-[#2d106e] shadow-2xl shadow-[#4C1D95]/25 transition-transform duration-200",
-                expanded ? "w-full max-w-[430px]" : "w-full max-w-[358px]",
+                "relative isolate overflow-hidden rounded-[30px] border border-[#4C1D95]/20 bg-linear-to-br from-[#6427cb] via-[#47209f] to-[#2c116d] shadow-[0_24px_64px_rgba(76,29,149,0.22)]",
+                expanded ? "w-full max-w-[640px]" : "w-full max-w-[620px]",
             ].join(" ")}
         >
-            <div className={expanded ? "grid gap-8 px-8 py-8 text-white" : "grid gap-6 px-6 py-6 text-white"}>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.14),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.14),transparent_38%)]" />
+            <div className="absolute -left-14 top-10 h-28 w-28 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -right-12 bottom-0 h-28 w-28 rounded-full bg-black/15 blur-3xl" />
+
+            <div className="relative z-10 flex h-full flex-col gap-6 px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
                 <div className="flex items-start justify-between gap-4">
-                    <div className={expanded ? "text-[34px] font-black leading-none tracking-tight sm:text-[44px]" : "text-[28px] font-black leading-none tracking-tight sm:text-[34px]"}>
+                    <div className="pt-1 text-[30px] font-black leading-none tracking-tight text-white sm:text-[34px] lg:text-[38px]">
                         <span className="font-black">CEL</span>
                         <span className="font-light">DOCTOR</span>
                     </div>
-                    <div className="shrink-0 rounded-[22px] bg-white p-2.5 shadow-xl shadow-black/20 sm:p-3">
+
+                    <div className="shrink-0 rounded-[24px] bg-white/96 p-2.5 shadow-xl shadow-black/20 sm:p-3">
                         <Image
                             src={credencial.qr_image_data_url}
                             alt="QR dinamico de validacion de beneficios"
-                            width={expanded ? 176 : 132}
-                            height={expanded ? 176 : 132}
+                            width={expanded ? 164 : 118}
+                            height={expanded ? 164 : 118}
                             unoptimized
-                            className={expanded ? "h-44 w-44" : "h-[132px] w-[132px] sm:h-[146px] sm:w-[146px]"}
+                            className={expanded ? "h-40 w-40 sm:h-44 sm:w-44" : "h-[108px] w-[108px] sm:h-[124px] sm:w-[124px]"}
                         />
-                        <p className="mt-2 text-center text-[10px] font-medium tracking-wide text-slate-500">
+                        <p className="mt-2 text-center text-[10px] font-medium tracking-wide text-slate-500 sm:text-[11px]">
                             {countdownLabel}
                         </p>
                     </div>
                 </div>
 
-                <div className={expanded ? "grid gap-6 sm:grid-cols-2" : "grid gap-5"}>
-                    <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">Titular</p>
-                        <p className={expanded ? "text-[30px] font-bold text-white leading-tight" : "text-[22px] font-bold text-white leading-tight"}>
-                            {credencial.nombre_completo}
-                        </p>
-                    </div>
-
-                    <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">Numero de socio</p>
-                        <p className={expanded ? "text-[28px] font-semibold text-white" : "text-[18px] font-semibold text-white"}>
-                            {credencial.numero_socio}
-                        </p>
-                    </div>
-
-                    <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">Documento</p>
-                        <p className={expanded ? "text-[28px] font-semibold text-white" : "text-[18px] font-semibold text-white"}>
-                            {credencial.dni ?? "No informado"}
-                        </p>
-                    </div>
-
-                    <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">Plan</p>
-                        <p className={expanded ? "text-[28px] font-semibold text-white" : "text-[18px] font-semibold text-white"}>
-                            {credencial.plan_nombre}
-                        </p>
-                    </div>
+                <div className="mt-auto grid grid-cols-2 gap-x-5 gap-y-5 sm:gap-x-7 sm:gap-y-6">
+                    <CredentialField label="Titular" value={credencial.nombre_completo} />
+                    <CredentialField label="Numero de socio" value={credencial.numero_socio} />
+                    <CredentialField label="Documento" value={credencial.dni ?? "No informado"} />
+                    <CredentialField label="Plan" value={credencial.plan_nombre} />
                 </div>
             </div>
         </div>
@@ -169,8 +170,8 @@ export function CredencialCard({ token }: { token: string }) {
         return (
             <Card>
                 <div className="space-y-4">
-                    <SkeletonBlock className="h-5 w-40" />
-                    <SkeletonBlock className="mx-auto h-[420px] max-w-[358px]" />
+                    <SkeletonBlock className="h-5 w-44" />
+                    <SkeletonBlock className="h-[248px] w-full max-w-[620px] rounded-[30px]" />
                 </div>
             </Card>
         );
@@ -198,13 +199,17 @@ export function CredencialCard({ token }: { token: string }) {
 
     return (
         <>
-            <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Credencial digital</p>
+            <div className="max-w-[620px] space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                    <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                            Credencial digital
+                        </p>
+                    </div>
                     <button
                         type="button"
                         onClick={() => setExpanded(true)}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#4C1D95] transition-colors hover:text-[#3b1675]"
+                        className="inline-flex items-center gap-2 rounded-full border border-[#4C1D95]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#4C1D95] shadow-sm transition-colors hover:bg-[#4C1D95]/5"
                     >
                         <Expand className="h-3.5 w-3.5" />
                         Ampliar
@@ -217,18 +222,16 @@ export function CredencialCard({ token }: { token: string }) {
                     className="block w-full text-left focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:ring-offset-4"
                     aria-label="Abrir credencial digital en vista ampliada"
                 >
-                    <div className="mx-auto w-full max-w-[358px] sm:max-w-[390px] lg:max-w-none">
-                        <CredentialSurface
-                            credencial={credencial}
-                            countdownLabel={countdownLabel}
-                            expanded={false}
-                        />
-                    </div>
+                    <CredentialSurface
+                        credencial={credencial}
+                        countdownLabel={countdownLabel}
+                        expanded={false}
+                    />
                 </button>
             </div>
 
             {expanded && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/90 p-4">
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/92 p-4 sm:p-6">
                     <button
                         type="button"
                         onClick={() => setExpanded(false)}
@@ -238,13 +241,11 @@ export function CredencialCard({ token }: { token: string }) {
                         <X className="h-5 w-5" />
                     </button>
 
-                    <div className="flex w-full justify-center">
-                        <CredentialSurface
-                            credencial={credencial}
-                            countdownLabel={countdownLabel}
-                            expanded
-                        />
-                    </div>
+                    <CredentialSurface
+                        credencial={credencial}
+                        countdownLabel={countdownLabel}
+                        expanded
+                    />
                 </div>
             )}
         </>

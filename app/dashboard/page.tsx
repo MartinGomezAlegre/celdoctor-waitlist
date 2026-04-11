@@ -132,8 +132,8 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-                <div className="mb-8">
+            <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+                <div className="mb-8 space-y-4">
                     {cargando ? (
                         <div className="space-y-2">
                             <SkeletonBlock className="h-8 w-64" />
@@ -141,7 +141,7 @@ export default function DashboardPage() {
                         </div>
                     ) : (
                         <>
-                            <div className="mb-2 flex flex-wrap items-center gap-3">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                                 <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
                                     {nombre ? saludo(nombre) : "Mi cuenta"}
                                 </h1>
@@ -192,8 +192,8 @@ export default function DashboardPage() {
                 )}
 
                 {cargando ? (
-                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_360px]">
-                        <div className="space-y-6">
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-8">
+                        <div className="space-y-6 lg:min-w-0">
                             <Card><SkeletonBlock className="h-80" /></Card>
                             <Card><SkeletonBlock className="h-32" /></Card>
                         </div>
@@ -203,8 +203,8 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_360px]">
-                        <div className="space-y-6">
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-8">
+                        <div className="space-y-6 lg:min-w-0">
                             {suscripcion ? (
                                 <CredencialCard token={token} />
                             ) : (
@@ -256,7 +256,7 @@ export default function DashboardPage() {
                             )}
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-6 lg:pt-12">
                             <GestionCuentaCard
                                 suscripcion={suscripcion ?? null}
                                 diasRestantes={diasRestantes}
