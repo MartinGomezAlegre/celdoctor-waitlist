@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { login } from "@/lib/api";
+import { resolveAccountRoute } from "@/lib/account-route";
 import { setSessionCookie } from "@/lib/session-cookie";
 
 export default function LoginPage() {
@@ -25,11 +26,24 @@ export default function LoginPage() {
 
         try {
             const data = await login(email, contrasenia);
-            localStorage.setItem("celdoctor_token", data.access_token);
             localStorage.setItem("celdoctor_nombre", data.usuario.nombre);
             localStorage.setItem("celdoctor_email", data.usuario.email);
+            localStorage.setItem("celdoctor_rol", data.usuario.rol ?? "cliente");
+
+            if (data.usuario.rol === "admin") {
+                localStorage.removeItem("celdoctor_token");
+                setSessionCookie("celdoctor_token", "", 0);
+                localStorage.setItem("celdoctor_admin_token", data.access_token);
+                setSessionCookie("celdoctor_admin_token", data.access_token);
+                router.push(resolveAccountRoute(data.usuario.rol));
+                return;
+            }
+
+            localStorage.removeItem("celdoctor_admin_token");
+            setSessionCookie("celdoctor_admin_token", "", 0);
+            localStorage.setItem("celdoctor_token", data.access_token);
             setSessionCookie("celdoctor_token", data.access_token);
-            router.push("/dashboard");
+            router.push(resolveAccountRoute(data.usuario.rol));
         } catch (err) {
             setError(err instanceof Error ? err.message : "Error de conexión");
         } finally {

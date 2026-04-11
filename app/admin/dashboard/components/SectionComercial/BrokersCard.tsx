@@ -43,6 +43,11 @@ export function BrokersCard({ brokers, onCreate, onEdit }: Props) {
                                         </span>
                                     </div>
                                     <p className="mt-1 text-sm text-slate-500">{broker.contacto || "Sin contacto cargado"}</p>
+                                    <p className="text-xs text-slate-400">
+                                        {broker.usuario_email
+                                            ? `Cuenta vinculada: ${broker.usuario_nombre ?? broker.usuario_email} · ${broker.usuario_email}`
+                                            : "Cuenta de acceso pendiente de vincular"}
+                                    </p>
                                 </div>
                                 <button
                                     onClick={() => onEdit(broker)}

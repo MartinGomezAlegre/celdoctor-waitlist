@@ -8,3 +8,4 @@ export * from "./api/support";
 export * from "./api/beneficiaries";
 export * from "./api/upsells";
 export * from "./api/credentials";
+export * from "./api/commercial";

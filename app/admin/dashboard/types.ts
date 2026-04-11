@@ -125,6 +125,8 @@ export interface BrokerAdmin {
     estado: "activo" | "inactivo"
     fecha_alta: string | null
     usuario_id: number | null
+    usuario_nombre: string | null
+    usuario_email: string | null
     total_sellers: number
     active_sellers: number
     ventas_asociadas: number
@@ -144,6 +146,8 @@ export interface BrokerSellerAdmin {
     estado: "activo" | "inactivo"
     fecha_alta: string | null
     usuario_id: number | null
+    usuario_nombre: string | null
+    usuario_email: string | null
     ventas_asociadas: number
     revenue_generado: number
 }
@@ -158,11 +162,22 @@ export interface DirectSellerAdmin {
     estado: "activo" | "inactivo"
     fecha_alta: string | null
     usuario_id: number | null
+    usuario_nombre: string | null
+    usuario_email: string | null
     ventas_asociadas: number
     revenue_generado: number
     comision_acumulada: number
     total_liquidado: number
     comision_pendiente: number
+}
+
+export interface UsuarioComercialDisponible {
+    id: number
+    nombre: string
+    apellido: string
+    email: string
+    rol: string | null
+    activo: boolean
 }
 
 export interface VentaReferidaAdmin {

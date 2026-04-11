@@ -22,6 +22,9 @@ export default function AdminLoginPage() {
                 setError("Sin permisos de administrador.");
                 return;
             }
+            localStorage.setItem("celdoctor_rol", "admin");
+            localStorage.removeItem("celdoctor_token");
+            setSessionCookie("celdoctor_token", "", 0);
             localStorage.setItem("celdoctor_admin_token", res.access_token);
             setSessionCookie("celdoctor_admin_token", res.access_token);
             router.push("/admin/dashboard");

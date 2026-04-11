@@ -46,6 +46,7 @@ export const adminEndpoints = {
 
     // Comercial / referidos
     comercialResumen:        "/admin/comercial/resumen",
+    comercialUsuarios:       "/admin/comercial/usuarios",
     brokers:                 "/admin/comercial/brokers",
     broker: (id: number) =>          `/admin/comercial/brokers/${id}`,
     brokerSellers:           "/admin/comercial/broker-sellers",

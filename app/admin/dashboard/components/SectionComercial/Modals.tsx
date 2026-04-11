@@ -2,7 +2,7 @@
 
 import type { ChangeEvent } from "react"
 
-import type { BrokerAdmin, DirectSellerAdmin } from "../../types"
+import type { BrokerAdmin, DirectSellerAdmin, UsuarioComercialDisponible } from "../../types"
 import { Modal } from "../shared/Modal"
 import type {
     BrokerFormValues,
@@ -10,16 +10,19 @@ import type {
     DirectSellerFormValues,
     LiquidacionFormValues,
 } from "./utils"
+import { formatCommercialUserLabel } from "./utils"
 
 function Field({
     label,
     children,
+    className = "",
 }: {
     label: string
     children: React.ReactNode
+    className?: string
 }) {
     return (
-        <label className="space-y-1.5">
+        <label className={`space-y-1.5 ${className}`}>
             <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</span>
             {children}
         </label>
@@ -41,6 +44,7 @@ function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 export function BrokerModal({
     open,
     values,
+    usuarios,
     onClose,
     onChange,
     onSubmit,
@@ -49,6 +53,7 @@ export function BrokerModal({
 }: {
     open: boolean
     values: BrokerFormValues
+    usuarios: UsuarioComercialDisponible[]
     onClose: () => void
     onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onSubmit: () => void
@@ -75,6 +80,14 @@ export function BrokerModal({
                 <Field label="Comision"><Select name="comision_tipo" value={values.comision_tipo} onChange={onChange}><option value="porcentaje">Porcentaje</option><option value="fijo">Fijo</option></Select></Field>
                 <Field label="Valor"><Input name="comision_valor" type="number" min="0" step="0.01" value={values.comision_valor} onChange={onChange} /></Field>
                 <Field label="Estado"><Select name="estado" value={values.estado} onChange={onChange}><option value="activo">Activo</option><option value="inactivo">Inactivo</option></Select></Field>
+                <Field label="Cuenta de acceso" className="sm:col-span-2">
+                    <Select name="usuario_id" value={values.usuario_id} onChange={onChange}>
+                        <option value="">Sin vincular por ahora</option>
+                        {usuarios.map((user) => (
+                            <option key={user.id} value={user.id}>{formatCommercialUserLabel(user)}</option>
+                        ))}
+                    </Select>
+                </Field>
             </div>
         </Modal>
     )
@@ -84,6 +97,7 @@ export function BrokerSellerModal({
     open,
     values,
     brokers,
+    usuarios,
     onClose,
     onChange,
     onSubmit,
@@ -93,6 +107,7 @@ export function BrokerSellerModal({
     open: boolean
     values: BrokerSellerFormValues
     brokers: BrokerAdmin[]
+    usuarios: UsuarioComercialDisponible[]
     onClose: () => void
     onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onSubmit: () => void
@@ -125,7 +140,15 @@ export function BrokerSellerModal({
                 <Field label="Estado"><Select name="estado" value={values.estado} onChange={onChange}><option value="activo">Activo</option><option value="inactivo">Inactivo</option></Select></Field>
                 <Field label="Nombre"><Input name="nombre" value={values.nombre} onChange={onChange} /></Field>
                 <Field label="Email"><Input name="email" type="email" value={values.email} onChange={onChange} /></Field>
-                <Field label="Referral code"><Input name="referral_code" value={values.referral_code} onChange={onChange} placeholder="Opcional: se genera automaticamente" className="sm:col-span-2" /></Field>
+                <Field label="Cuenta de acceso">
+                    <Select name="usuario_id" value={values.usuario_id} onChange={onChange}>
+                        <option value="">Sin vincular por ahora</option>
+                        {usuarios.map((user) => (
+                            <option key={user.id} value={user.id}>{formatCommercialUserLabel(user)}</option>
+                        ))}
+                    </Select>
+                </Field>
+                <Field label="Referral code" className="sm:col-span-2"><Input name="referral_code" value={values.referral_code} onChange={onChange} placeholder="Opcional: se genera automaticamente" /></Field>
             </div>
         </Modal>
     )
@@ -134,6 +157,7 @@ export function BrokerSellerModal({
 export function DirectSellerModal({
     open,
     values,
+    usuarios,
     onClose,
     onChange,
     onSubmit,
@@ -142,6 +166,7 @@ export function DirectSellerModal({
 }: {
     open: boolean
     values: DirectSellerFormValues
+    usuarios: UsuarioComercialDisponible[]
     onClose: () => void
     onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onSubmit: () => void
@@ -168,6 +193,14 @@ export function DirectSellerModal({
                 <Field label="Comision"><Select name="comision_tipo" value={values.comision_tipo} onChange={onChange}><option value="porcentaje">Porcentaje</option><option value="fijo">Fijo</option></Select></Field>
                 <Field label="Valor"><Input name="comision_valor" type="number" min="0" step="0.01" value={values.comision_valor} onChange={onChange} /></Field>
                 <Field label="Estado"><Select name="estado" value={values.estado} onChange={onChange}><option value="activo">Activo</option><option value="inactivo">Inactivo</option></Select></Field>
+                <Field label="Cuenta de acceso">
+                    <Select name="usuario_id" value={values.usuario_id} onChange={onChange}>
+                        <option value="">Sin vincular por ahora</option>
+                        {usuarios.map((user) => (
+                            <option key={user.id} value={user.id}>{formatCommercialUserLabel(user)}</option>
+                        ))}
+                    </Select>
+                </Field>
                 <Field label="Referral code"><Input name="referral_code" value={values.referral_code} onChange={onChange} placeholder="Opcional: se genera automaticamente" /></Field>
             </div>
         </Modal>
@@ -227,7 +260,7 @@ export function LiquidacionModal({
                 <Field label="Monto"><Input name="monto" type="number" min="0" step="0.01" value={values.monto} onChange={onChange} /></Field>
                 <Field label="Periodo desde"><Input name="periodo_desde" type="date" value={values.periodo_desde} onChange={onChange} /></Field>
                 <Field label="Periodo hasta"><Input name="periodo_hasta" type="date" value={values.periodo_hasta} onChange={onChange} /></Field>
-                <Field label="Notas"><Textarea name="notas" rows={4} value={values.notas} onChange={onChange} className="sm:col-span-2" /></Field>
+                <Field label="Notas" className="sm:col-span-2"><Textarea name="notas" rows={4} value={values.notas} onChange={onChange} /></Field>
             </div>
         </Modal>
     )

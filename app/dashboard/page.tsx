@@ -15,6 +15,7 @@ import {
     type Plan,
     type Suscripcion,
 } from "@/lib/api";
+import { isCommercialRole, resolveAccountRoute } from "@/lib/account-route";
 import { clearSessionCookie } from "@/lib/session-cookie";
 import { perfilFacturacionCompleto } from "@/lib/profile-completion";
 import { useLocalStorageValue } from "@/lib/use-local-storage-value";
@@ -41,6 +42,7 @@ export default function DashboardPage() {
     const [perfil, setPerfil] = useState<MiPerfil | null>(null);
     const [planes, setPlanes] = useState<Plan[]>([]);
     const [nombreFallback, setNombreFallback] = useLocalStorageValue("celdoctor_nombre", "");
+    const [, setRol] = useLocalStorageValue("celdoctor_rol", "");
     const [modalBaja, setModalBaja] = useState(false);
     const [cancelandoPlan, setCancelandoPlan] = useState(false);
 
@@ -67,16 +69,24 @@ export default function DashboardPage() {
                     localStorage.removeItem("celdoctor_token");
                     localStorage.removeItem("celdoctor_nombre");
                     localStorage.removeItem("celdoctor_email");
+                    localStorage.removeItem("celdoctor_rol");
                     clearSessionCookie("celdoctor_token");
                     setToken(null);
                     setNombreFallback("");
+                    setRol("");
                     router.replace("/login?expired=1");
                     return;
                 }
 
                 setSuscripcion(null);
             });
-    }, [router, setNombreFallback, setToken, token, tokenHydrated]);
+    }, [router, setNombreFallback, setRol, setToken, token, tokenHydrated]);
+
+    useEffect(() => {
+        if (perfil?.rol && isCommercialRole(perfil.rol)) {
+            router.replace(resolveAccountRoute(perfil.rol));
+        }
+    }, [perfil?.rol, router]);
 
     const cargando = !tokenHydrated || suscripcion === undefined;
     const nombre = perfil?.nombre ?? nombreFallback ?? "";

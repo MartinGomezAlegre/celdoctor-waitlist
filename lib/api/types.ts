@@ -94,6 +94,72 @@ export interface LoginResponse {
     usuario: Usuario;
 }
 
+export interface CommercialSale {
+    id: number;
+    referral_code: string;
+    estado: string;
+    precio_pagado: number;
+    created_at: string | null;
+    cliente_nombre: string;
+    cliente_email: string;
+    plan_nombre: string;
+    canal: string;
+    broker_seller_nombre?: string | null;
+    comision_generada?: number;
+}
+
+export interface CommercialLiquidation {
+    id: number;
+    monto: number;
+    periodo_desde: string | null;
+    periodo_hasta: string | null;
+    estado: string;
+    notas: string | null;
+    paid_at: string | null;
+    created_at: string | null;
+}
+
+export interface CommercialTeamMember {
+    id: number;
+    nombre: string;
+    email: string;
+    referral_code: string;
+    estado: string;
+    fecha_alta: string | null;
+    link_referido: string;
+}
+
+export interface CommercialDashboardData {
+    rol: "broker" | "direct_seller" | "broker_seller";
+    usuario: Usuario;
+    perfil: {
+        id: number;
+        nombre: string;
+        email?: string | null;
+        contacto?: string | null;
+        estado: string;
+        fecha_alta: string | null;
+        referral_code?: string | null;
+        link_referido?: string | null;
+        broker_id?: number | null;
+        broker_nombre?: string | null;
+    };
+    metricas: {
+        ventas_asociadas: number;
+        revenue_generado: number;
+        comision_acumulada?: number;
+        total_liquidado?: number;
+        comision_pendiente?: number;
+        total_sellers?: number;
+        active_sellers?: number;
+        comision_tipo?: string;
+        comision_valor?: number;
+    };
+    equipo: CommercialTeamMember[];
+    ventas: CommercialSale[];
+    liquidaciones: CommercialLiquidation[];
+}
+
 export interface TicketUsuario {
     id: number;
     asunto: string;

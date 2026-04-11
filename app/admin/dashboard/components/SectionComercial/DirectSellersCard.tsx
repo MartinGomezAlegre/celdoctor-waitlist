@@ -45,6 +45,11 @@ export function DirectSellersCard({ items, onCreate, onEdit, onCopy }: Props) {
                                         </span>
                                     </div>
                                     <p className="mt-1 text-sm text-slate-500">{item.email}</p>
+                                    <p className="text-xs text-slate-400">
+                                        {item.usuario_email
+                                            ? `Cuenta vinculada: ${item.usuario_nombre ?? item.usuario_email} · ${item.usuario_email}`
+                                            : "Cuenta de acceso pendiente de vincular"}
+                                    </p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button

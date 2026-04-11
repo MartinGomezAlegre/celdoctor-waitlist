@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, LogOut, Menu, Play, X } from "lucide-react"
 import InteractiveDemo from "./InteractiveDemo"
+import { resolveAccountRoute } from "@/lib/account-route"
 import { clearSessionCookie } from "@/lib/session-cookie"
 import { useLocalStorageValue } from "@/lib/use-local-storage-value"
 
@@ -188,6 +189,7 @@ export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [token, setToken] = useLocalStorageValue("celdoctor_token")
     const [nombre, setNombre] = useLocalStorageValue("celdoctor_nombre")
+    const [rol, setRol] = useLocalStorageValue("celdoctor_rol")
     const router = useRouter()
 
     const closeMenu = useCallback(() => {
@@ -198,12 +200,16 @@ export default function Navbar() {
         localStorage.removeItem("celdoctor_token")
         localStorage.removeItem("celdoctor_nombre")
         localStorage.removeItem("celdoctor_email")
+        localStorage.removeItem("celdoctor_rol")
         clearSessionCookie("celdoctor_token")
         setToken(null)
         setNombre(null)
+        setRol(null)
         closeMenu()
         router.push("/login")
     }
+
+    const accountRoute = resolveAccountRoute(rol)
 
     return (
         <nav className="sticky top-0 z-50 h-20 w-full border-b border-slate-100 bg-white/95 backdrop-blur-xl transition-all">
@@ -233,7 +239,7 @@ export default function Navbar() {
                                 </span>
                             )}
                             <Link
-                                href="/dashboard"
+                                href={accountRoute}
                                 className="hidden items-center whitespace-nowrap rounded-lg border border-[#4C1D95] px-4 py-2.5 text-xs font-bold text-[#4C1D95] transition-all hover:bg-[#4C1D95]/5 sm:inline-flex"
                             >
                                 Mi cuenta
@@ -296,7 +302,7 @@ export default function Navbar() {
                                             </p>
                                         )}
                                         <Link
-                                            href="/dashboard"
+                                            href={accountRoute}
                                             onClick={closeMenu}
                                             className="block w-full rounded-xl border border-[#4C1D95] py-3.5 text-center text-sm font-bold text-[#4C1D95] transition-all hover:bg-[#4C1D95]/5"
                                         >
