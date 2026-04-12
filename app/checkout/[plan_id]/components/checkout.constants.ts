@@ -44,10 +44,12 @@ export function getPlanBenefits(nombre: string) {
 }
 
 export const UPSELL_BENEFITS = [
-    "Queda asociado a la misma suscripcion.",
-    "El equipo comercial lo gestiona desde el backoffice.",
-    "Podes avanzar aunque no quieras contratarlo ahora.",
+    "Respaldo de Instituto de Seguros S.A., con mas de cuatro decadas de trayectoria en el mercado local.",
+    "Atencion y asesoramiento comercial para evaluar la cobertura adecuada para tu contratacion.",
+    "Canal de contacto operativo de lunes a viernes, de 9:30 a 17:00 hs.",
 ]
+
+export const UPSELL_PROVIDER_URL = "https://www.institutoasegurador.com.ar/"
 
 export const FALLBACK_PLANES: Plan[] = [
     { id: 1, nombre: "Personal", descripcion: "Cobertura agil para vos.", precio_mensual: 5000, max_beneficiarios: 1 },

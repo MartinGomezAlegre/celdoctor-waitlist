@@ -1,4 +1,4 @@
-import { BadgeDollarSign, Link2, Store, Users } from "lucide-react"
+import { Link2, Store, UserRound, Users } from "lucide-react"
 
 import type { ResumenComercial } from "../../types"
 import { fmtCurrency } from "../../lib"
@@ -21,10 +21,18 @@ export function SummaryCards({ resumen, loading }: Props) {
                 loading={loading}
             />
             <KpiCard
-                label="Vendedores directos"
-                value={resumen ? `${resumen.direct_sellers_activos}/${resumen.total_direct_sellers}` : null}
+                label="Vendedores broker"
+                value={resumen ? `${resumen.broker_sellers_activos}/${resumen.total_broker_sellers}` : null}
                 Icon={Users}
                 color="text-blue-600"
+                sub="Equipo broker operativo"
+                loading={loading}
+            />
+            <KpiCard
+                label="Vendedores directos"
+                value={resumen ? `${resumen.direct_sellers_activos}/${resumen.total_direct_sellers}` : null}
+                Icon={UserRound}
+                color="text-cyan-600"
                 sub="Equipo propio activo"
                 loading={loading}
             />
@@ -33,15 +41,7 @@ export function SummaryCards({ resumen, loading }: Props) {
                 value={resumen ? String(resumen.ventas_referidas) : null}
                 Icon={Link2}
                 color="text-violet-600"
-                sub={resumen ? fmtCurrency(resumen.revenue_referido) : undefined}
-                loading={loading}
-            />
-            <KpiCard
-                label="Comisiones pendientes"
-                value={resumen ? fmtCurrency(resumen.comision_pendiente_brokers + resumen.comision_pendiente_directos) : null}
-                Icon={BadgeDollarSign}
-                color="text-emerald-600"
-                sub={resumen ? `Broker ${fmtCurrency(resumen.comision_pendiente_brokers)} · Directo ${fmtCurrency(resumen.comision_pendiente_directos)}` : undefined}
+                sub={resumen ? fmtCurrency(resumen.revenue_referido) : "Actividad comercial atribuida"}
                 loading={loading}
             />
         </div>

@@ -66,11 +66,10 @@ export function BrokersCard({ brokers, onCreate, onEdit, onManage }: Props) {
                                 </div>
                             </div>
 
-                            <div className="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+                            <div className="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
                                 <Metric label="Comision" value={broker.comision_tipo === "porcentaje" ? `${broker.comision_valor}%` : fmtCurrency(broker.comision_valor)} />
                                 <Metric label="Vendedores" value={`${broker.active_sellers}/${broker.total_sellers}`} />
-                                <Metric label="Ventas" value={String(broker.ventas_asociadas)} />
-                                <Metric label="Pendiente" value={fmtCurrency(broker.comision_pendiente)} />
+                                <Metric label="Ventas aprobadas" value={String(broker.ventas_asociadas)} />
                             </div>
                         </div>
                     ))

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BadgeDollarSign, Copy, Link2, Pencil, Plus, ShieldCheck, TrendingUp, UserRound, Users } from "lucide-react";
+import { CheckCircle2, Copy, Link2, Pencil, Plus, TrendingUp, UserRound, Users } from "lucide-react";
 
 import { ApiError, createBrokerTeamMember, getCommercialDashboard, updateBrokerTeamMember, type CommercialDashboardData } from "@/lib/api";
 import {
@@ -16,7 +16,11 @@ import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 import { BrokerTeamModal, type BrokerTeamFormValues } from "./components/BrokerTeamModal";
 
 function currency(value: number) {
-    return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(value);
+    return new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: "ARS",
+        maximumFractionDigits: 0,
+    }).format(value);
 }
 
 function dateLabel(value?: string | null) {
@@ -116,18 +120,13 @@ export default function ComercialDashboardPage() {
 
     const metrics = useMemo(() => {
         if (!data) return [];
+
         const items = [
             {
-                label: "Ventas",
+                label: "Ventas aprobadas",
                 value: String(data.metricas.ventas_asociadas),
-                sub: "Operaciones atribuidas a tu canal",
+                sub: "Operaciones confirmadas en tu canal",
                 icon: TrendingUp,
-            },
-            {
-                label: "Revenue",
-                value: currency(data.metricas.revenue_generado),
-                sub: "Monto total generado",
-                icon: BadgeDollarSign,
             },
         ];
 
@@ -140,12 +139,14 @@ export default function ComercialDashboardPage() {
             });
         }
 
-        if (data.rol !== "broker_seller") {
+        if (data.rol === "direct_seller" && data.metricas.comision_tipo && data.metricas.comision_valor) {
             items.push({
-                label: "Pendiente",
-                value: currency(data.metricas.comision_pendiente ?? 0),
-                sub: "Saldo por liquidar",
-                icon: ShieldCheck,
+                label: "Comision pactada",
+                value: data.metricas.comision_tipo === "porcentaje"
+                    ? `${data.metricas.comision_valor}%`
+                    : currency(data.metricas.comision_valor),
+                sub: "Esquema comercial vigente",
+                icon: UserRound,
             });
         }
 
@@ -269,7 +270,7 @@ export default function ComercialDashboardPage() {
                     </span>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div className={`grid gap-4 ${metrics.length > 1 ? "md:grid-cols-2 xl:grid-cols-3" : "md:grid-cols-1 xl:grid-cols-2"}`}>
                     {metrics.map((item) => (
                         <MetricCard key={item.label} label={item.label} value={item.value} sub={item.sub} icon={item.icon} />
                     ))}
@@ -300,7 +301,7 @@ export default function ComercialDashboardPage() {
                                 <div className="flex items-start justify-between gap-3">
                                     <div>
                                         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Link de referido</p>
-                                        <p className="mt-3 text-sm font-medium text-slate-900 break-all">{referralLink}</p>
+                                        <p className="mt-3 break-all text-sm font-medium text-slate-900">{referralLink}</p>
                                     </div>
                                     <div className="rounded-xl bg-[#4C1D95]/8 p-3 text-[#4C1D95]">
                                         <Link2 className="h-5 w-5" />
@@ -314,27 +315,6 @@ export default function ComercialDashboardPage() {
                                     <Copy className="h-4 w-4" />
                                     {copied ? "Link copiado" : "Copiar link"}
                                 </button>
-                            </div>
-                        )}
-
-                        {data.liquidaciones.length > 0 && (
-                            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Liquidaciones</p>
-                                <div className="mt-4 space-y-3">
-                                    {data.liquidaciones.slice(0, 6).map((item) => (
-                                        <div key={item.id} className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <p className="font-semibold text-slate-900">{currency(item.monto)}</p>
-                                                <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">{item.estado}</span>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-500">
-                                                {item.periodo_desde && item.periodo_hasta
-                                                    ? `Periodo ${dateLabel(item.periodo_desde)} al ${dateLabel(item.periodo_hasta)}`
-                                                    : `Registrada ${dateLabel(item.paid_at ?? item.created_at)}`}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
                             </div>
                         )}
                     </section>
@@ -394,14 +374,15 @@ export default function ComercialDashboardPage() {
                                 </div>
                             </div>
                         )}
+
                         {data.rol === "broker" && data.equipo.length === 0 && (
                             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                     <div>
                                         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Equipo</p>
-                                        <h2 className="mt-2 text-xl font-bold text-slate-900">Todavía no tenés vendedores cargados</h2>
+                                        <h2 className="mt-2 text-xl font-bold text-slate-900">Todavia no tenes vendedores cargados</h2>
                                         <p className="mt-2 text-sm text-slate-500">
-                                            Desde este panel podés dar de alta a tu equipo y entregarles acceso directo al canal comercial.
+                                            Desde este panel podes dar de alta a tu equipo y entregarles acceso directo al canal comercial.
                                         </p>
                                     </div>
                                     <button
@@ -429,7 +410,7 @@ export default function ComercialDashboardPage() {
 
                             {data.ventas.length === 0 ? (
                                 <div className="mt-4 rounded-xl border border-dashed border-slate-200 px-4 py-8 text-sm text-slate-500">
-                                    Todavía no hay ventas registradas en este canal.
+                                    Todavia no hay ventas aprobadas registradas en este canal.
                                 </div>
                             ) : (
                                 <div className="mt-4 space-y-3">
@@ -445,12 +426,10 @@ export default function ComercialDashboardPage() {
                                                     </p>
                                                 </div>
                                                 <div className="text-left sm:text-right">
-                                                    <p className="font-semibold text-slate-900">{currency(item.precio_pagado)}</p>
-                                                    {data.rol !== "broker_seller" && (
-                                                        <p className="mt-1 text-sm text-emerald-700">
-                                                            Comisión {currency(item.comision_generada ?? 0)}
-                                                        </p>
-                                                    )}
+                                                    <p className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                                        <CheckCircle2 className="h-3.5 w-3.5" />
+                                                        Venta aprobada
+                                                    </p>
                                                     <p className="mt-1 text-xs text-slate-400">{relativeLabel(item.created_at)}</p>
                                                 </div>
                                             </div>
@@ -462,9 +441,9 @@ export default function ComercialDashboardPage() {
 
                         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Soporte operativo</p>
-                            <h2 className="mt-2 text-xl font-bold text-slate-900">Necesitás ayuda con tu canal</h2>
+                            <h2 className="mt-2 text-xl font-bold text-slate-900">Necesitas ayuda con tu canal</h2>
                             <p className="mt-3 text-sm text-slate-500">
-                                Si necesitás actualizar tus datos o revisar una liquidación, escribinos desde soporte administrativo.
+                                Si necesitas actualizar tus datos o revisar una venta, escribinos y te ayudamos desde el equipo CelDoctor.
                             </p>
                             <Link
                                 href="/comercial"

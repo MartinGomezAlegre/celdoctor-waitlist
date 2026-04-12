@@ -202,7 +202,7 @@ export default function DashboardPage() {
                 )}
 
                 {cargando ? (
-                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-8">
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.12fr)_360px] xl:grid-cols-[minmax(0,1.18fr)_380px] xl:gap-8">
                         <div className="space-y-6 lg:min-w-0">
                             <Card><SkeletonBlock className="h-80" /></Card>
                             <Card><SkeletonBlock className="h-32" /></Card>
@@ -213,7 +213,7 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-8">
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.12fr)_360px] xl:grid-cols-[minmax(0,1.18fr)_380px] xl:gap-8">
                         <div className="space-y-6 lg:min-w-0">
                             {suscripcion ? (
                                 <CredencialCard token={token} />
@@ -255,8 +255,6 @@ export default function DashboardPage() {
                                 </Card>
                             )}
 
-                            {estaActiva && <SoporteCard token={token} />}
-
                             {estaActiva && tieneBeneficiarios && (
                                 <BeneficiariosCard
                                     token={token}
@@ -264,6 +262,8 @@ export default function DashboardPage() {
                                     totalIntegrantes={totalIntegrantes}
                                 />
                             )}
+
+                            {estaActiva && <SoporteCard token={token} />}
                         </div>
 
                         <div className="space-y-6 lg:pt-12">

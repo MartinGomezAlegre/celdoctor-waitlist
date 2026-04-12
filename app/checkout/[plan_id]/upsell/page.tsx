@@ -14,7 +14,7 @@ import {
 } from "@/lib/api";
 import { CheckoutStepIndicator } from "../components/CheckoutStepIndicator";
 import { CheckoutSummarySidebar } from "../components/CheckoutSummarySidebar";
-import { FALLBACK_PLANES, UPSELL_BENEFITS, UPSELL_STEPS } from "../components/checkout.constants";
+import { FALLBACK_PLANES, UPSELL_BENEFITS, UPSELL_PROVIDER_URL, UPSELL_STEPS } from "../components/checkout.constants";
 
 function precioSeguro(plan: Plan | null, upsell: UpsellSeguro | null) {
     if (upsell?.precio_ofertado) return upsell.precio_ofertado;
@@ -127,7 +127,7 @@ export default function UpsellSeguroPage() {
                                         {familiar ? "Seguro familiar" : "Seguro individual"}
                                     </p>
                                     <p className="mt-0.5 text-sm text-slate-500">
-                                        Oferta adicional para el plan {plan?.nombre ?? "seleccionado"}.
+                                        Cobertura complementaria para sumar a tu plan {plan?.nombre ?? "seleccionado"}.
                                     </p>
                                 </div>
                                 <div className="shrink-0 text-right">
@@ -144,6 +144,21 @@ export default function UpsellSeguroPage() {
                                     </li>
                                 ))}
                             </ul>
+
+                            <div className="mt-5 rounded-2xl border border-slate-200 bg-white/75 p-4">
+                                <p className="text-sm font-semibold text-slate-900">Queres revisar mas informacion antes de decidir?</p>
+                                <p className="mt-1 text-sm leading-6 text-slate-500">
+                                    Podes consultar el sitio del Instituto Asegurador para conocer mas sobre la entidad y avanzar con mayor contexto.
+                                </p>
+                                <a
+                                    href={UPSELL_PROVIDER_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-3 inline-flex text-sm font-semibold text-[#4C1D95] underline decoration-[#4C1D95]/30 underline-offset-4"
+                                >
+                                    Ver sitio oficial del Instituto Asegurador
+                                </a>
+                            </div>
                         </div>
 
                         {decisionLabel && (
@@ -198,7 +213,7 @@ export default function UpsellSeguroPage() {
                                     <p className="text-sm font-bold text-slate-900">Seguro medico</p>
                                 </div>
                                 <p className="text-xs leading-5 text-slate-500">
-                                    Decision opcional antes de finalizar la contratacion.
+                                    Decision opcional antes de finalizar la contratacion, con acceso al sitio oficial para ampliar la informacion.
                                 </p>
                             </div>
                         }

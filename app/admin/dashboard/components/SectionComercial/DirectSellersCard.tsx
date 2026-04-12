@@ -67,11 +67,10 @@ export function DirectSellersCard({ items, onCreate, onEdit, onCopy }: Props) {
                                 </div>
                             </div>
 
-                            <div className="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+                            <div className="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
                                 <Metric label="Codigo" value={item.referral_code} />
                                 <Metric label="Comision" value={item.comision_tipo === "porcentaje" ? `${item.comision_valor}%` : fmtCurrency(item.comision_valor)} />
-                                <Metric label="Ventas" value={String(item.ventas_asociadas)} />
-                                <Metric label="Pendiente" value={fmtCurrency(item.comision_pendiente)} />
+                                <Metric label="Ventas aprobadas" value={String(item.ventas_asociadas)} />
                             </div>
                         </div>
                     ))

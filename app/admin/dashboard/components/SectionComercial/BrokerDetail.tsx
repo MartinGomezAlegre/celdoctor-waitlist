@@ -1,17 +1,16 @@
 import * as React from "react"
-import { ArrowLeft, BadgeDollarSign, Pencil } from "lucide-react"
+import { ArrowLeft, Pencil } from "lucide-react"
 
 import type {
     BrokerAdmin,
     BrokerSellerAdmin,
-    LiquidacionComercial,
     VentaReferidaAdmin,
 } from "../../types"
 import { ESTADO_BADGE, fmtCurrency, fmtDate } from "../../lib"
 import { BrokerSellersCard } from "./BrokerSellersCard"
 import { SalesCard } from "./SalesCard"
 
-type BrokerDetailTab = "info" | "vendedores" | "ventas" | "liquidaciones"
+type BrokerDetailTab = "info" | "vendedores" | "ventas"
 
 function InfoRow({ label, value }: { label: string; value: string | null | undefined }) {
     if (!value) return null
@@ -37,28 +36,23 @@ interface Props {
     broker: BrokerAdmin
     brokerSellers: BrokerSellerAdmin[]
     ventas: VentaReferidaAdmin[]
-    liquidaciones: LiquidacionComercial[]
     onVolver: () => void
     onEditar: (broker: BrokerAdmin) => void
     onCopiarLink: (link: string) => void
-    onRegistrarLiquidacion: (broker: BrokerAdmin) => void
 }
 
 export function BrokerDetail({
     broker,
     brokerSellers,
     ventas,
-    liquidaciones,
     onVolver,
     onEditar,
     onCopiarLink,
-    onRegistrarLiquidacion,
 }: Props) {
     const tabs: { id: BrokerDetailTab; label: string }[] = [
         { id: "info", label: "Informacion" },
         { id: "vendedores", label: "Vendedores" },
         { id: "ventas", label: "Ventas" },
-        { id: "liquidaciones", label: "Liquidaciones" },
     ]
     const [tab, setTab] = React.useState<BrokerDetailTab>("info")
 
@@ -67,9 +61,6 @@ export function BrokerDetail({
     }, [broker.id])
 
     const ventasBroker = ventas.filter((item) => item.broker_id === broker.id)
-    const liquidacionesBroker = liquidaciones.filter(
-        (item) => item.destinatario_tipo === "broker" && item.destinatario_id === broker.id,
-    )
     const vendedoresBroker = brokerSellers.filter((item) => item.broker_id === broker.id)
 
     return (
@@ -95,12 +86,6 @@ export function BrokerDetail({
                     </div>
                     <div className="flex gap-2">
                         <button
-                            onClick={() => onRegistrarLiquidacion(broker)}
-                            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
-                        >
-                            Registrar pago
-                        </button>
-                        <button
                             onClick={() => onEditar(broker)}
                             className="inline-flex items-center gap-2 rounded-xl bg-[#4C1D95] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#3b1675]"
                         >
@@ -115,7 +100,7 @@ export function BrokerDetail({
                 <MetricCard label="Comision" value={broker.comision_tipo === "porcentaje" ? `${broker.comision_valor}%` : fmtCurrency(broker.comision_valor)} />
                 <MetricCard label="Vendedores activos" value={`${broker.active_sellers}/${broker.total_sellers}`} />
                 <MetricCard label="Ventas aprobadas" value={String(broker.ventas_asociadas)} />
-                <MetricCard label="Pendiente a liquidar" value={fmtCurrency(broker.comision_pendiente)} sub={`Liquidado ${fmtCurrency(broker.total_liquidado)}`} />
+                <MetricCard label="Estado" value={broker.estado === "activo" ? "Operativo" : "Inactivo"} sub="Seguimiento comercial del broker" />
             </div>
 
             <div className="flex gap-1 border-b border-slate-200">
@@ -150,11 +135,10 @@ export function BrokerDetail({
                         )}
                     </div>
                     <div className="space-y-3 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-                        <h3 className="text-sm font-semibold text-slate-800">Resultado comercial</h3>
-                        <InfoRow label="Revenue aprobado" value={fmtCurrency(broker.revenue_generado)} />
-                        <InfoRow label="Comision acumulada" value={fmtCurrency(broker.comision_acumulada)} />
-                        <InfoRow label="Total liquidado" value={fmtCurrency(broker.total_liquidado)} />
-                        <InfoRow label="Pendiente" value={fmtCurrency(broker.comision_pendiente)} />
+                        <h3 className="text-sm font-semibold text-slate-800">Operacion del canal</h3>
+                        <InfoRow label="Comision pactada" value={broker.comision_tipo === "porcentaje" ? `${broker.comision_valor}%` : fmtCurrency(broker.comision_valor)} />
+                        <InfoRow label="Vendedores activos" value={`${broker.active_sellers} de ${broker.total_sellers}`} />
+                        <InfoRow label="Ventas aprobadas" value={String(broker.ventas_asociadas)} />
                     </div>
                 </div>
             )}
@@ -170,56 +154,6 @@ export function BrokerDetail({
                     description="Ventas aprobadas y atribuidas al equipo de este broker."
                     emptyMessage="Este broker todavia no tiene ventas aprobadas registradas."
                 />
-            )}
-
-            {tab === "liquidaciones" && (
-                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="mb-4 flex items-center justify-between gap-3">
-                        <div>
-                            <h2 className="text-base font-semibold text-slate-900">Liquidaciones del broker</h2>
-                            <p className="text-sm text-slate-500">Pagos registrados sobre este broker en particular.</p>
-                        </div>
-                        <button
-                            onClick={() => onRegistrarLiquidacion(broker)}
-                            className="inline-flex items-center gap-2 rounded-xl bg-[#4C1D95] px-3 py-2 text-sm font-semibold text-white"
-                        >
-                            <BadgeDollarSign className="h-4 w-4" />
-                            Registrar pago
-                        </button>
-                    </div>
-
-                    {liquidacionesBroker.length === 0 ? (
-                        <p className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
-                            Este broker todavia no tiene liquidaciones registradas.
-                        </p>
-                    ) : (
-                        <div className="space-y-3">
-                            {liquidacionesBroker.map((item) => (
-                                <div key={item.id} className="rounded-xl border border-slate-200 p-4">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div>
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <p className="font-semibold text-slate-900">{fmtCurrency(item.monto)}</p>
-                                                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${ESTADO_BADGE[item.estado] ?? "bg-slate-100 text-slate-600"}`}>
-                                                    {item.estado}
-                                                </span>
-                                            </div>
-                                            <p className="mt-1 text-sm text-slate-500">
-                                                {item.paid_at ? `Pagado ${fmtDate(item.paid_at)}` : "Sin fecha de pago"}
-                                            </p>
-                                        </div>
-                                        {item.periodo_desde && item.periodo_hasta && (
-                                            <p className="text-sm text-slate-500">
-                                                {fmtDate(item.periodo_desde)} al {fmtDate(item.periodo_hasta)}
-                                            </p>
-                                        )}
-                                    </div>
-                                    {item.notas && <p className="mt-3 text-sm text-slate-500">{item.notas}</p>}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </section>
             )}
         </div>
     )

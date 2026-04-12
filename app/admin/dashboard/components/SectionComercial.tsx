@@ -13,21 +13,17 @@ import { SummaryCards } from "./SectionComercial/SummaryCards"
 import { BrokersCard } from "./SectionComercial/BrokersCard"
 import { DirectSellersCard } from "./SectionComercial/DirectSellersCard"
 import { SalesCard } from "./SectionComercial/SalesCard"
-import { LiquidationsCard } from "./SectionComercial/LiquidationsCard"
 import {
     BrokerModal,
     DirectSellerModal,
-    LiquidacionModal,
 } from "./SectionComercial/Modals"
 import {
     brokerToForm,
     directSellerToForm,
     EMPTY_BROKER_FORM,
     EMPTY_DIRECT_SELLER_FORM,
-    EMPTY_LIQUIDACION_FORM,
     type BrokerFormValues,
     type DirectSellerFormValues,
-    type LiquidacionFormValues,
 } from "./SectionComercial/utils"
 import { useCommercialAdmin } from "./SectionComercial/useCommercialAdmin"
 import { Skeleton } from "./shared/Skeleton"
@@ -46,19 +42,16 @@ export default function SectionComercial({ token, addToast }: Props) {
         brokerSellers,
         directSellers,
         ventas,
-        liquidaciones,
         loading,
         guardando,
         schemaError,
         cargarTodo,
         guardarBroker,
         guardarDirectSeller,
-        guardarLiquidacion,
     } = useCommercialAdmin({ token, addToast })
 
     const [brokerModalOpen, setBrokerModalOpen] = useState(false)
     const [directSellerModalOpen, setDirectSellerModalOpen] = useState(false)
-    const [liquidacionModalOpen, setLiquidacionModalOpen] = useState(false)
 
     const [selectedBroker, setSelectedBroker] = useState<BrokerAdmin | null>(null)
     const [managedBrokerId, setManagedBrokerId] = useState<number | null>(null)
@@ -67,7 +60,6 @@ export default function SectionComercial({ token, addToast }: Props) {
 
     const [brokerForm, setBrokerForm] = useState<BrokerFormValues>({ ...EMPTY_BROKER_FORM })
     const [directSellerForm, setDirectSellerForm] = useState<DirectSellerFormValues>({ ...EMPTY_DIRECT_SELLER_FORM })
-    const [liquidacionForm, setLiquidacionForm] = useState<LiquidacionFormValues>({ ...EMPTY_LIQUIDACION_FORM })
 
     const canalesActivos = useMemo(
         () => brokers.filter((item) => item.estado === "activo").length + directSellers.filter((item) => item.estado === "activo").length,
@@ -88,15 +80,6 @@ export default function SectionComercial({ token, addToast }: Props) {
         setDirectSellerForm((prev) => ({ ...prev, [name]: value }))
     }
 
-    function handleLiquidacionChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
-        const { name, value } = event.target
-        setLiquidacionForm((prev) => ({
-            ...prev,
-            [name]: value,
-            ...(name === "destinatario_tipo" ? { destinatario_id: "" } : {}),
-        }))
-    }
-
     function openBrokerModal(item?: BrokerAdmin) {
         setSelectedBroker(item ?? null)
         setBrokerForm(brokerToForm(item))
@@ -114,20 +97,6 @@ export default function SectionComercial({ token, addToast }: Props) {
         setDirectSellerModalOpen(true)
     }
 
-    function openLiquidacionModal() {
-        setLiquidacionForm({ ...EMPTY_LIQUIDACION_FORM })
-        setLiquidacionModalOpen(true)
-    }
-
-    function openLiquidacionForBroker(broker: BrokerAdmin) {
-        setLiquidacionForm({
-            ...EMPTY_LIQUIDACION_FORM,
-            destinatario_tipo: "broker",
-            destinatario_id: String(broker.id),
-        })
-        setLiquidacionModalOpen(true)
-    }
-
     async function handleSaveBroker() {
         await guardarBroker(brokerForm, selectedBroker?.id)
         setBrokerModalOpen(false)
@@ -138,11 +107,6 @@ export default function SectionComercial({ token, addToast }: Props) {
         await guardarDirectSeller(directSellerForm, selectedDirectSeller?.id)
         setDirectSellerModalOpen(false)
         setSelectedDirectSeller(null)
-    }
-
-    async function handleSaveLiquidacion() {
-        await guardarLiquidacion(liquidacionForm)
-        setLiquidacionModalOpen(false)
     }
 
     async function copyLink(link: string) {
@@ -194,7 +158,7 @@ export default function SectionComercial({ token, addToast }: Props) {
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900">Canal de ventas</h1>
                     <p className="mt-1 text-sm text-slate-500">
-                        Gestion centralizada de brokers, vendedores directos, ventas referidas y liquidaciones.
+                        Gestion centralizada de brokers, vendedores directos y ventas referidas.
                     </p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
@@ -248,11 +212,9 @@ export default function SectionComercial({ token, addToast }: Props) {
                                 broker={managedBroker}
                                 brokerSellers={brokerSellers}
                                 ventas={ventas}
-                                liquidaciones={liquidaciones}
                                 onVolver={() => setManagedBrokerId(null)}
                                 onEditar={openBrokerModal}
                                 onCopiarLink={copyLink}
-                                onRegistrarLiquidacion={openLiquidacionForBroker}
                             />
                         ) : (
                             <BrokersCard
@@ -276,10 +238,7 @@ export default function SectionComercial({ token, addToast }: Props) {
                     {activeTab === "metricas" && (
                         <div className="space-y-6">
                             <SummaryCards resumen={resumen} loading={loading} />
-                            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                                <SalesCard items={ventas} />
-                                <LiquidationsCard items={liquidaciones} brokers={brokers} directSellers={directSellers} onCreate={openLiquidacionModal} />
-                            </div>
+                            <SalesCard items={ventas} />
                         </div>
                     )}
                 </>
@@ -301,16 +260,6 @@ export default function SectionComercial({ token, addToast }: Props) {
                 onChange={handleDirectSellerChange}
                 onSubmit={() => void handleSaveDirectSeller()}
                 editing={!!selectedDirectSeller}
-                loading={guardando}
-            />
-            <LiquidacionModal
-                open={liquidacionModalOpen}
-                values={liquidacionForm}
-                brokers={brokers}
-                directSellers={directSellers}
-                onClose={() => setLiquidacionModalOpen(false)}
-                onChange={handleLiquidacionChange}
-                onSubmit={() => void handleSaveLiquidacion()}
                 loading={guardando}
             />
         </div>

@@ -47,14 +47,14 @@ function CredentialSurface({
         <div
             className={[
                 "relative isolate overflow-hidden rounded-[30px] border border-[#4C1D95]/20 bg-linear-to-br from-[#6427cb] via-[#47209f] to-[#2c116d] shadow-[0_24px_64px_rgba(76,29,149,0.22)]",
-                expanded ? "w-full max-w-[640px]" : "w-full max-w-[620px]",
+                expanded ? "w-full max-w-[720px]" : "w-full",
             ].join(" ")}
         >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.14),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.14),transparent_38%)]" />
             <div className="absolute -left-14 top-10 h-28 w-28 rounded-full bg-white/10 blur-3xl" />
             <div className="absolute -right-12 bottom-0 h-28 w-28 rounded-full bg-black/15 blur-3xl" />
 
-            <div className="relative z-10 flex h-full flex-col gap-6 px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
+            <div className="relative z-10 flex min-h-[330px] flex-col gap-6 px-5 py-5 sm:min-h-[350px] sm:px-6 sm:py-6 lg:min-h-[372px] lg:px-7 lg:py-7">
                 <div className="flex items-start justify-between gap-4">
                     <div className="pt-1 text-[30px] font-black leading-none tracking-tight text-white sm:text-[34px] lg:text-[38px]">
                         <span className="font-black">CEL</span>
@@ -65,10 +65,10 @@ function CredentialSurface({
                         <Image
                             src={credencial.qr_image_data_url}
                             alt="QR dinamico de validacion de beneficios"
-                            width={expanded ? 164 : 118}
-                            height={expanded ? 164 : 118}
+                            width={expanded ? 176 : 138}
+                            height={expanded ? 176 : 138}
                             unoptimized
-                            className={expanded ? "h-40 w-40 sm:h-44 sm:w-44" : "h-[108px] w-[108px] sm:h-[124px] sm:w-[124px]"}
+                            className={expanded ? "h-40 w-40 sm:h-44 sm:w-44" : "h-[108px] w-[108px] sm:h-[128px] sm:w-[128px] lg:h-[144px] lg:w-[144px]"}
                         />
                         <p className="mt-2 text-center text-[10px] font-medium tracking-wide text-slate-500 sm:text-[11px]">
                             {countdownLabel}
@@ -171,7 +171,7 @@ export function CredencialCard({ token }: { token: string }) {
             <Card>
                 <div className="space-y-4">
                     <SkeletonBlock className="h-5 w-44" />
-                    <SkeletonBlock className="h-[248px] w-full max-w-[620px] rounded-[30px]" />
+                    <SkeletonBlock className="h-[320px] w-full max-w-[860px] rounded-[30px]" />
                 </div>
             </Card>
         );
@@ -199,7 +199,7 @@ export function CredencialCard({ token }: { token: string }) {
 
     return (
         <>
-            <div className="max-w-[620px] space-y-4">
+            <div className="w-full max-w-[860px] space-y-4">
                 <div className="flex items-center justify-between gap-4">
                     <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">

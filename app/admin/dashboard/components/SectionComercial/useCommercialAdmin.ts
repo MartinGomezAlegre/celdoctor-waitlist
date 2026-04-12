@@ -6,7 +6,6 @@ import type {
     BrokerAdmin,
     BrokerSellerAdmin,
     DirectSellerAdmin,
-    LiquidacionComercial,
     ResumenComercial,
     ToastType,
     VentaReferidaAdmin,
@@ -17,7 +16,6 @@ import type {
     BrokerFormValues,
     BrokerSellerFormValues,
     DirectSellerFormValues,
-    LiquidacionFormValues,
 } from "./utils"
 
 interface Params {
@@ -39,7 +37,6 @@ export function useCommercialAdmin({ token, addToast }: Params) {
     const [brokerSellers, setBrokerSellers] = useState<BrokerSellerAdmin[]>([])
     const [directSellers, setDirectSellers] = useState<DirectSellerAdmin[]>([])
     const [ventas, setVentas] = useState<VentaReferidaAdmin[]>([])
-    const [liquidaciones, setLiquidaciones] = useState<LiquidacionComercial[]>([])
     const [loading, setLoading] = useState(true)
     const [guardando, setGuardando] = useState(false)
     const [schemaError, setSchemaError] = useState<string | null>(null)
@@ -54,14 +51,12 @@ export function useCommercialAdmin({ token, addToast }: Params) {
                 brokerSellersData,
                 directSellersData,
                 ventasData,
-                liquidacionesData,
             ] = await Promise.all([
                 fetchJson<ResumenComercial>(`${API}${adminEndpoints.comercialResumen}`, token, "No pudimos cargar el resumen comercial"),
                 fetchJson<BrokerAdmin[]>(`${API}${adminEndpoints.brokers}`, token, "No pudimos cargar brokers"),
                 fetchJson<BrokerSellerAdmin[]>(`${API}${adminEndpoints.brokerSellers}`, token, "No pudimos cargar vendedores de broker"),
                 fetchJson<DirectSellerAdmin[]>(`${API}${adminEndpoints.directSellers}`, token, "No pudimos cargar vendedores directos"),
                 fetchJson<VentaReferidaAdmin[]>(`${API}${adminEndpoints.ventasReferidas}`, token, "No pudimos cargar ventas referidas"),
-                fetchJson<LiquidacionComercial[]>(`${API}${adminEndpoints.liquidacionesComercial}`, token, "No pudimos cargar liquidaciones"),
             ])
 
             setResumen(resumenData)
@@ -69,7 +64,6 @@ export function useCommercialAdmin({ token, addToast }: Params) {
             setBrokerSellers(Array.isArray(brokerSellersData) ? brokerSellersData : [])
             setDirectSellers(Array.isArray(directSellersData) ? directSellersData : [])
             setVentas(Array.isArray(ventasData) ? ventasData : [])
-            setLiquidaciones(Array.isArray(liquidacionesData) ? liquidacionesData : [])
         } catch (error) {
             const detail = error instanceof Error ? error.message : "No pudimos cargar el modulo comercial"
             setSchemaError(detail)
@@ -171,39 +165,12 @@ export function useCommercialAdmin({ token, addToast }: Params) {
         }
     }
 
-    async function guardarLiquidacion(values: LiquidacionFormValues) {
-        setGuardando(true)
-        try {
-            const res = await fetch(`${API}${adminEndpoints.liquidacionesComercial}`, {
-                method: "POST",
-                headers: { ...authHeaders(token), "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    destinatario_tipo: values.destinatario_tipo,
-                    destinatario_id: Number(values.destinatario_id),
-                    monto: Number(values.monto),
-                    periodo_desde: values.periodo_desde || null,
-                    periodo_hasta: values.periodo_hasta || null,
-                    notas: values.notas.trim() || null,
-                }),
-            })
-            if (!res.ok) throw new Error(await getApiErrorDetail(res, "No pudimos registrar la liquidacion"))
-            addToast("Liquidacion registrada", "success")
-            await cargarTodo()
-        } catch (error) {
-            addToast(error instanceof Error ? error.message : "Error al registrar liquidacion", "error")
-            throw error
-        } finally {
-            setGuardando(false)
-        }
-    }
-
     return {
         resumen,
         brokers,
         brokerSellers,
         directSellers,
         ventas,
-        liquidaciones,
         loading,
         guardando,
         schemaError,
@@ -211,6 +178,5 @@ export function useCommercialAdmin({ token, addToast }: Params) {
         guardarBroker,
         guardarBrokerSeller,
         guardarDirectSeller,
-        guardarLiquidacion,
     }
 }
