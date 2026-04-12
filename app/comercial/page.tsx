@@ -5,9 +5,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { login } from "@/lib/api";
-import { setSessionCookie } from "@/lib/session-cookie";
-
-const COMMERCIAL_ROLES = new Set(["broker", "direct_seller", "broker_seller"]);
+import {
+    clearCommercialSession,
+    COMMERCIAL_ROLE_KEY,
+    COMMERCIAL_TOKEN_KEY,
+    hasCommercialRole,
+    setCommercialSession,
+} from "@/lib/commercial-session";
 
 export default function ComercialLoginPage() {
     const router = useRouter();
@@ -21,9 +25,9 @@ export default function ComercialLoginPage() {
 
     useEffect(() => {
         if (typeof window === "undefined") return;
-        const token = localStorage.getItem("celdoctor_token");
-        const role = localStorage.getItem("celdoctor_rol");
-        if (token && role && COMMERCIAL_ROLES.has(role)) {
+        const token = localStorage.getItem(COMMERCIAL_TOKEN_KEY);
+        const role = localStorage.getItem(COMMERCIAL_ROLE_KEY);
+        if (token && hasCommercialRole(role)) {
             router.replace("/comercial/dashboard");
         }
     }, [router]);
@@ -35,18 +39,13 @@ export default function ComercialLoginPage() {
 
         try {
             const res = await login(email, contrasenia);
-            if (!COMMERCIAL_ROLES.has(res.usuario.rol ?? "")) {
+            if (!hasCommercialRole(res.usuario.rol ?? "")) {
                 setError("Este acceso es exclusivo para brokers y vendedores autorizados.");
                 return;
             }
 
-            localStorage.setItem("celdoctor_nombre", res.usuario.nombre);
-            localStorage.setItem("celdoctor_email", res.usuario.email);
-            localStorage.setItem("celdoctor_rol", res.usuario.rol ?? "broker_seller");
-            localStorage.removeItem("celdoctor_admin_token");
-            setSessionCookie("celdoctor_admin_token", "", 0);
-            localStorage.setItem("celdoctor_token", res.access_token);
-            setSessionCookie("celdoctor_token", res.access_token);
+            clearCommercialSession();
+            setCommercialSession(res.access_token, res.usuario);
 
             router.push("/comercial/dashboard");
         } catch (err) {
@@ -126,8 +125,8 @@ export default function ComercialLoginPage() {
                 </div>
 
                 <div className="mt-4 text-center text-sm text-slate-500">
-                    <Link href="/admin" className="font-semibold text-[#4C1D95] hover:underline">
-                        Acceso administrador
+                    <Link href="/login" className="font-semibold text-[#4C1D95] hover:underline">
+                        Acceso clientes
                     </Link>
                 </div>
             </div>

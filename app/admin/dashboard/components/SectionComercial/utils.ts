@@ -10,7 +10,6 @@ export interface BrokerFormValues {
     comision_tipo: TipoComision
     comision_valor: string
     estado: EstadoComercial
-    usuario_id: string
     access_email: string
     access_password: string
 }
@@ -21,7 +20,6 @@ export interface BrokerSellerFormValues {
     email: string
     referral_code: string
     estado: EstadoComercial
-    usuario_id: string
 }
 
 export interface DirectSellerFormValues {
@@ -31,7 +29,6 @@ export interface DirectSellerFormValues {
     comision_tipo: TipoComision
     comision_valor: string
     estado: EstadoComercial
-    usuario_id: string
     access_email: string
     access_password: string
 }
@@ -51,7 +48,6 @@ export const EMPTY_BROKER_FORM: BrokerFormValues = {
     comision_tipo: "porcentaje",
     comision_valor: "",
     estado: "activo",
-    usuario_id: "",
     access_email: "",
     access_password: "",
 }
@@ -62,7 +58,6 @@ export const EMPTY_BROKER_SELLER_FORM: BrokerSellerFormValues = {
     email: "",
     referral_code: "",
     estado: "activo",
-    usuario_id: "",
 }
 
 export const EMPTY_DIRECT_SELLER_FORM: DirectSellerFormValues = {
@@ -72,7 +67,6 @@ export const EMPTY_DIRECT_SELLER_FORM: DirectSellerFormValues = {
     comision_tipo: "porcentaje",
     comision_valor: "",
     estado: "activo",
-    usuario_id: "",
     access_email: "",
     access_password: "",
 }
@@ -94,8 +88,7 @@ export function brokerToForm(broker?: BrokerAdmin | null): BrokerFormValues {
         comision_tipo: broker.comision_tipo,
         comision_valor: String(broker.comision_valor),
         estado: broker.estado,
-        usuario_id: broker.usuario_id ? String(broker.usuario_id) : "",
-        access_email: "",
+        access_email: broker.usuario_email ?? "",
         access_password: "",
     }
 }
@@ -108,7 +101,6 @@ export function brokerSellerToForm(item?: BrokerSellerAdmin | null): BrokerSelle
         email: item.email,
         referral_code: item.referral_code,
         estado: item.estado,
-        usuario_id: item.usuario_id ? String(item.usuario_id) : "",
     }
 }
 
@@ -121,8 +113,7 @@ export function directSellerToForm(item?: DirectSellerAdmin | null): DirectSelle
         comision_tipo: item.comision_tipo,
         comision_valor: String(item.comision_valor),
         estado: item.estado,
-        usuario_id: item.usuario_id ? String(item.usuario_id) : "",
-        access_email: "",
+        access_email: item.usuario_email ?? "",
         access_password: "",
     }
 }
@@ -142,15 +133,4 @@ export function liquidacionToForm(item?: LiquidacionComercial | null): Liquidaci
 export function buildReferralLink(referralCode: string): string {
     const origin = typeof window !== "undefined" ? window.location.origin : "https://celdoctor.com"
     return `${origin}/?ref=${encodeURIComponent(referralCode)}`
-}
-
-export function formatCommercialUserLabel(user: {
-    nombre: string
-    apellido: string
-    email: string
-    rol: string | null
-}) {
-    const fullName = [user.nombre, user.apellido].filter(Boolean).join(" ").trim()
-    const role = user.rol && user.rol !== "cliente" ? ` · ${user.rol}` : ""
-    return `${fullName || user.email} · ${user.email}${role}`
 }

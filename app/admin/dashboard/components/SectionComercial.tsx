@@ -45,7 +45,6 @@ export default function SectionComercial({ token, addToast }: Props) {
         directSellers,
         ventas,
         liquidaciones,
-        usuariosDisponibles,
         loading,
         guardando,
         schemaError,
@@ -216,7 +215,6 @@ export default function SectionComercial({ token, addToast }: Props) {
             <BrokerModal
                 open={brokerModalOpen}
                 values={brokerForm}
-                usuarios={usuariosDisponibles}
                 onClose={() => setBrokerModalOpen(false)}
                 onChange={handleBrokerChange}
                 onSubmit={() => void handleSaveBroker()}
@@ -226,7 +224,6 @@ export default function SectionComercial({ token, addToast }: Props) {
             <DirectSellerModal
                 open={directSellerModalOpen}
                 values={directSellerForm}
-                usuarios={usuariosDisponibles}
                 onClose={() => setDirectSellerModalOpen(false)}
                 onChange={handleDirectSellerChange}
                 onSubmit={() => void handleSaveDirectSeller()}

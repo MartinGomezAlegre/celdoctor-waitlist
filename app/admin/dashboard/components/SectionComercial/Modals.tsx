@@ -2,7 +2,7 @@
 
 import type { ChangeEvent } from "react"
 
-import type { BrokerAdmin, DirectSellerAdmin, UsuarioComercialDisponible } from "../../types"
+import type { BrokerAdmin, DirectSellerAdmin } from "../../types"
 import { Modal } from "../shared/Modal"
 import type {
     BrokerFormValues,
@@ -10,7 +10,6 @@ import type {
     DirectSellerFormValues,
     LiquidacionFormValues,
 } from "./utils"
-import { formatCommercialUserLabel } from "./utils"
 
 function Field({
     label,
@@ -44,7 +43,6 @@ function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 export function BrokerModal({
     open,
     values,
-    usuarios,
     onClose,
     onChange,
     onSubmit,
@@ -53,7 +51,6 @@ export function BrokerModal({
 }: {
     open: boolean
     values: BrokerFormValues
-    usuarios: UsuarioComercialDisponible[]
     onClose: () => void
     onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onSubmit: () => void
@@ -80,23 +77,15 @@ export function BrokerModal({
                 <Field label="Comision"><Select name="comision_tipo" value={values.comision_tipo} onChange={onChange}><option value="porcentaje">Porcentaje</option><option value="fijo">Fijo</option></Select></Field>
                 <Field label="Valor"><Input name="comision_valor" type="number" min="0" step="0.01" value={values.comision_valor} onChange={onChange} /></Field>
                 <Field label="Estado"><Select name="estado" value={values.estado} onChange={onChange}><option value="activo">Activo</option><option value="inactivo">Inactivo</option></Select></Field>
-                <Field label="Cuenta de acceso" className="sm:col-span-2">
-                    <Select name="usuario_id" value={values.usuario_id} onChange={onChange}>
-                        <option value="">Sin vincular por ahora</option>
-                        {usuarios.map((user) => (
-                            <option key={user.id} value={user.id}>{formatCommercialUserLabel(user)}</option>
-                        ))}
-                    </Select>
-                </Field>
                 <Field label="Email acceso">
                     <Input name="access_email" type="email" value={values.access_email} onChange={onChange} placeholder="broker@celdoctor.com" />
                 </Field>
-                <Field label="Contrasena inicial">
-                    <Input name="access_password" type="password" value={values.access_password} onChange={onChange} placeholder="Minimo 8 caracteres" />
+                <Field label={editing ? "Nueva contrasena" : "Contrasena inicial"}>
+                    <Input name="access_password" type="password" value={values.access_password} onChange={onChange} placeholder={editing ? "Solo si queres resetearla" : "Minimo 8 caracteres"} />
                 </Field>
             </div>
             <p className="mt-3 text-xs text-slate-500">
-                Si completas email y contrasena, creamos un acceso comercial nuevo. Si elegis una cuenta existente, esos datos se ignoran.
+                El broker ingresa desde <span className="font-semibold text-slate-700">/comercial</span>. En edicion podes dejar la contrasena vacia para conservar la actual.
             </p>
         </Modal>
     )
@@ -106,7 +95,6 @@ export function BrokerSellerModal({
     open,
     values,
     brokers,
-    usuarios,
     onClose,
     onChange,
     onSubmit,
@@ -116,7 +104,6 @@ export function BrokerSellerModal({
     open: boolean
     values: BrokerSellerFormValues
     brokers: BrokerAdmin[]
-    usuarios: UsuarioComercialDisponible[]
     onClose: () => void
     onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onSubmit: () => void
@@ -149,14 +136,6 @@ export function BrokerSellerModal({
                 <Field label="Estado"><Select name="estado" value={values.estado} onChange={onChange}><option value="activo">Activo</option><option value="inactivo">Inactivo</option></Select></Field>
                 <Field label="Nombre"><Input name="nombre" value={values.nombre} onChange={onChange} /></Field>
                 <Field label="Email"><Input name="email" type="email" value={values.email} onChange={onChange} /></Field>
-                <Field label="Cuenta de acceso">
-                    <Select name="usuario_id" value={values.usuario_id} onChange={onChange}>
-                        <option value="">Sin vincular por ahora</option>
-                        {usuarios.map((user) => (
-                            <option key={user.id} value={user.id}>{formatCommercialUserLabel(user)}</option>
-                        ))}
-                    </Select>
-                </Field>
                 <Field label="Referral code" className="sm:col-span-2"><Input name="referral_code" value={values.referral_code} onChange={onChange} placeholder="Opcional: se genera automaticamente" /></Field>
             </div>
         </Modal>
@@ -166,7 +145,6 @@ export function BrokerSellerModal({
 export function DirectSellerModal({
     open,
     values,
-    usuarios,
     onClose,
     onChange,
     onSubmit,
@@ -175,7 +153,6 @@ export function DirectSellerModal({
 }: {
     open: boolean
     values: DirectSellerFormValues
-    usuarios: UsuarioComercialDisponible[]
     onClose: () => void
     onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onSubmit: () => void
@@ -202,24 +179,16 @@ export function DirectSellerModal({
                 <Field label="Comision"><Select name="comision_tipo" value={values.comision_tipo} onChange={onChange}><option value="porcentaje">Porcentaje</option><option value="fijo">Fijo</option></Select></Field>
                 <Field label="Valor"><Input name="comision_valor" type="number" min="0" step="0.01" value={values.comision_valor} onChange={onChange} /></Field>
                 <Field label="Estado"><Select name="estado" value={values.estado} onChange={onChange}><option value="activo">Activo</option><option value="inactivo">Inactivo</option></Select></Field>
-                <Field label="Cuenta de acceso">
-                    <Select name="usuario_id" value={values.usuario_id} onChange={onChange}>
-                        <option value="">Sin vincular por ahora</option>
-                        {usuarios.map((user) => (
-                            <option key={user.id} value={user.id}>{formatCommercialUserLabel(user)}</option>
-                        ))}
-                    </Select>
-                </Field>
                 <Field label="Email acceso">
                     <Input name="access_email" type="email" value={values.access_email} onChange={onChange} placeholder="ventas@celdoctor.com" />
                 </Field>
-                <Field label="Contrasena inicial">
-                    <Input name="access_password" type="password" value={values.access_password} onChange={onChange} placeholder="Minimo 8 caracteres" />
+                <Field label={editing ? "Nueva contrasena" : "Contrasena inicial"}>
+                    <Input name="access_password" type="password" value={values.access_password} onChange={onChange} placeholder={editing ? "Solo si queres resetearla" : "Minimo 8 caracteres"} />
                 </Field>
                 <Field label="Referral code"><Input name="referral_code" value={values.referral_code} onChange={onChange} placeholder="Opcional: se genera automaticamente" /></Field>
             </div>
             <p className="mt-3 text-xs text-slate-500">
-                Los vendedores directos ingresan por el acceso comercial. Podés vincular una cuenta existente o crear una nueva con email y contrasena.
+                El vendedor directo ingresa por <span className="font-semibold text-slate-700">/comercial</span>. En edicion podes dejar la contrasena vacia para conservar la actual.
             </p>
         </Modal>
     )

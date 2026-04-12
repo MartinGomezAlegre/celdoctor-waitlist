@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { COMMERCIAL_TOKEN_KEY } from "@/lib/commercial-session";
+
 export default async function ComercialDashboardLayout({
     children,
 }: {
@@ -8,7 +10,7 @@ export default async function ComercialDashboardLayout({
 }) {
     const cookieStore = await cookies();
 
-    if (!cookieStore.get("celdoctor_token")?.value) {
+    if (!cookieStore.get(COMMERCIAL_TOKEN_KEY)?.value) {
         redirect("/comercial");
     }
 

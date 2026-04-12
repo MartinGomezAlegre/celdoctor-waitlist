@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { BadgeDollarSign, Copy, Link2, Pencil, Plus, ShieldCheck, TrendingUp, UserRound, Users } from "lucide-react";
 
 import { ApiError, createBrokerTeamMember, getCommercialDashboard, updateBrokerTeamMember, type CommercialDashboardData } from "@/lib/api";
-import { clearSessionCookie } from "@/lib/session-cookie";
+import {
+    clearCommercialSession,
+    COMMERCIAL_NAME_KEY,
+    COMMERCIAL_ROLE_KEY,
+    COMMERCIAL_TOKEN_KEY,
+} from "@/lib/commercial-session";
 import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 import { BrokerTeamModal, type BrokerTeamFormValues } from "./components/BrokerTeamModal";
 
@@ -67,9 +72,9 @@ function MetricCard({
 
 export default function ComercialDashboardPage() {
     const router = useRouter();
-    const [token, setToken, tokenHydrated] = useLocalStorageValue("celdoctor_token");
-    const [nombre, setNombre] = useLocalStorageValue("celdoctor_nombre", "");
-    const [, setRol] = useLocalStorageValue("celdoctor_rol", "");
+    const [token, setToken, tokenHydrated] = useLocalStorageValue(COMMERCIAL_TOKEN_KEY);
+    const [nombre, setNombre] = useLocalStorageValue(COMMERCIAL_NAME_KEY, "");
+    const [, setRol] = useLocalStorageValue(COMMERCIAL_ROLE_KEY, "");
     const [data, setData] = useState<CommercialDashboardData | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
@@ -93,15 +98,11 @@ export default function ComercialDashboardPage() {
             })
             .catch((err) => {
                 if (err instanceof ApiError && err.code === "UNAUTHORIZED") {
-                    localStorage.removeItem("celdoctor_token");
-                    localStorage.removeItem("celdoctor_nombre");
-                    localStorage.removeItem("celdoctor_email");
-                    localStorage.removeItem("celdoctor_rol");
-                    clearSessionCookie("celdoctor_token");
+                    clearCommercialSession();
                     setToken(null);
                     setNombre("");
                     setRol("");
-                    router.replace("/login?expired=1");
+                    router.replace("/comercial?expired=1");
                     return;
                 }
                 setError(err instanceof Error ? err.message : "No pudimos cargar el panel comercial");
