@@ -8,9 +8,9 @@ import type {
     DirectSellerAdmin,
     ToastType,
 } from "../types"
+import { BrokerDetail } from "./SectionComercial/BrokerDetail"
 import { SummaryCards } from "./SectionComercial/SummaryCards"
 import { BrokersCard } from "./SectionComercial/BrokersCard"
-import { BrokerSellersCard } from "./SectionComercial/BrokerSellersCard"
 import { DirectSellersCard } from "./SectionComercial/DirectSellersCard"
 import { SalesCard } from "./SectionComercial/SalesCard"
 import { LiquidationsCard } from "./SectionComercial/LiquidationsCard"
@@ -37,6 +37,8 @@ interface Props {
     addToast: (msg: string, type: ToastType) => void
 }
 
+type ComercialTab = "brokers" | "directos" | "metricas"
+
 export default function SectionComercial({ token, addToast }: Props) {
     const {
         resumen,
@@ -59,7 +61,9 @@ export default function SectionComercial({ token, addToast }: Props) {
     const [liquidacionModalOpen, setLiquidacionModalOpen] = useState(false)
 
     const [selectedBroker, setSelectedBroker] = useState<BrokerAdmin | null>(null)
+    const [managedBrokerId, setManagedBrokerId] = useState<number | null>(null)
     const [selectedDirectSeller, setSelectedDirectSeller] = useState<DirectSellerAdmin | null>(null)
+    const [activeTab, setActiveTab] = useState<ComercialTab>("brokers")
 
     const [brokerForm, setBrokerForm] = useState<BrokerFormValues>({ ...EMPTY_BROKER_FORM })
     const [directSellerForm, setDirectSellerForm] = useState<DirectSellerFormValues>({ ...EMPTY_DIRECT_SELLER_FORM })
@@ -68,6 +72,10 @@ export default function SectionComercial({ token, addToast }: Props) {
     const canalesActivos = useMemo(
         () => brokers.filter((item) => item.estado === "activo").length + directSellers.filter((item) => item.estado === "activo").length,
         [brokers, directSellers],
+    )
+    const managedBroker = useMemo(
+        () => brokers.find((item) => item.id === managedBrokerId) ?? null,
+        [brokers, managedBrokerId],
     )
 
     function handleBrokerChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -95,6 +103,11 @@ export default function SectionComercial({ token, addToast }: Props) {
         setBrokerModalOpen(true)
     }
 
+    function openBrokerDetail(item: BrokerAdmin) {
+        setManagedBrokerId(item.id)
+        setActiveTab("brokers")
+    }
+
     function openDirectSellerModal(item?: DirectSellerAdmin) {
         setSelectedDirectSeller(item ?? null)
         setDirectSellerForm(directSellerToForm(item))
@@ -103,6 +116,15 @@ export default function SectionComercial({ token, addToast }: Props) {
 
     function openLiquidacionModal() {
         setLiquidacionForm({ ...EMPTY_LIQUIDACION_FORM })
+        setLiquidacionModalOpen(true)
+    }
+
+    function openLiquidacionForBroker(broker: BrokerAdmin) {
+        setLiquidacionForm({
+            ...EMPTY_LIQUIDACION_FORM,
+            destinatario_tipo: "broker",
+            destinatario_id: String(broker.id),
+        })
         setLiquidacionModalOpen(true)
     }
 
@@ -160,6 +182,12 @@ export default function SectionComercial({ token, addToast }: Props) {
         )
     }
 
+    const tabs: { id: ComercialTab; label: string }[] = [
+        { id: "brokers", label: "Brokers" },
+        { id: "directos", label: "Vendedores directos" },
+        { id: "metricas", label: "Metricas" },
+    ]
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
@@ -195,20 +223,65 @@ export default function SectionComercial({ token, addToast }: Props) {
                 </div>
             ) : (
                 <>
-                    <SummaryCards resumen={resumen} loading={loading} />
-
-                    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                        <div className="space-y-6">
-                            <BrokersCard brokers={brokers} onCreate={() => openBrokerModal()} onEdit={openBrokerModal} />
-                            <BrokerSellersCard items={brokerSellers} onCopy={copyLink} />
-                            <DirectSellersCard items={directSellers} onCreate={() => openDirectSellerModal()} onEdit={openDirectSellerModal} onCopy={copyLink} />
-                        </div>
-
-                        <div className="space-y-6">
-                            <SalesCard items={ventas} />
-                            <LiquidationsCard items={liquidaciones} brokers={brokers} directSellers={directSellers} onCreate={openLiquidacionModal} />
-                        </div>
+                    <div className="flex gap-1 border-b border-slate-200">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => {
+                                    setActiveTab(tab.id)
+                                    if (tab.id !== "brokers") setManagedBrokerId(null)
+                                }}
+                                className={`-mb-px border-b-2 px-5 py-2.5 text-sm font-medium transition-colors ${
+                                    activeTab === tab.id
+                                        ? "border-[#4C1D95] text-[#4C1D95]"
+                                        : "border-transparent text-slate-500 hover:text-slate-800"
+                                }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
+
+                    {activeTab === "brokers" && (
+                        managedBroker ? (
+                            <BrokerDetail
+                                broker={managedBroker}
+                                brokerSellers={brokerSellers}
+                                ventas={ventas}
+                                liquidaciones={liquidaciones}
+                                onVolver={() => setManagedBrokerId(null)}
+                                onEditar={openBrokerModal}
+                                onCopiarLink={copyLink}
+                                onRegistrarLiquidacion={openLiquidacionForBroker}
+                            />
+                        ) : (
+                            <BrokersCard
+                                brokers={brokers}
+                                onCreate={() => openBrokerModal()}
+                                onEdit={openBrokerModal}
+                                onManage={openBrokerDetail}
+                            />
+                        )
+                    )}
+
+                    {activeTab === "directos" && (
+                        <DirectSellersCard
+                            items={directSellers}
+                            onCreate={() => openDirectSellerModal()}
+                            onEdit={openDirectSellerModal}
+                            onCopy={copyLink}
+                        />
+                    )}
+
+                    {activeTab === "metricas" && (
+                        <div className="space-y-6">
+                            <SummaryCards resumen={resumen} loading={loading} />
+                            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                                <SalesCard items={ventas} />
+                                <LiquidationsCard items={liquidaciones} brokers={brokers} directSellers={directSellers} onCreate={openLiquidacionModal} />
+                            </div>
+                        </div>
+                    )}
                 </>
             )}
 

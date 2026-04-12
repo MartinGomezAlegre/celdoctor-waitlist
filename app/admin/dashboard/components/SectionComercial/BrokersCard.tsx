@@ -7,9 +7,10 @@ interface Props {
     brokers: BrokerAdmin[]
     onCreate: () => void
     onEdit: (item: BrokerAdmin) => void
+    onManage: (item: BrokerAdmin) => void
 }
 
-export function BrokersCard({ brokers, onCreate, onEdit }: Props) {
+export function BrokersCard({ brokers, onCreate, onEdit, onManage }: Props) {
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between gap-3">
@@ -49,12 +50,20 @@ export function BrokersCard({ brokers, onCreate, onEdit }: Props) {
                                             : "Cuenta de acceso pendiente de vincular"}
                                     </p>
                                 </div>
-                                <button
-                                    onClick={() => onEdit(broker)}
-                                    className="rounded-lg border border-slate-200 p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"
-                                >
-                                    <Pencil className="h-4 w-4" />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => onManage(broker)}
+                                        className="rounded-lg border border-[#4C1D95]/15 px-3 py-2 text-sm font-semibold text-[#4C1D95] transition-colors hover:bg-[#4C1D95]/5"
+                                    >
+                                        Gestionar
+                                    </button>
+                                    <button
+                                        onClick={() => onEdit(broker)}
+                                        className="rounded-lg border border-slate-200 p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                                    >
+                                        <Pencil className="h-4 w-4" />
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">

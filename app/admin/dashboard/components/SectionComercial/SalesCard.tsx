@@ -3,20 +3,28 @@ import { ESTADO_BADGE, fmtCurrency, tiempoRelativo } from "../../lib"
 
 interface Props {
     items: VentaReferidaAdmin[]
+    title?: string
+    description?: string
+    emptyMessage?: string
 }
 
-export function SalesCard({ items }: Props) {
+export function SalesCard({
+    items,
+    title = "Ventas referidas",
+    description = "Atribucion comercial desde links individuales.",
+    emptyMessage = "Aun no hay ventas referidas registradas.",
+}: Props) {
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4">
-                <h2 className="text-base font-semibold text-slate-900">Ventas referidas</h2>
-                <p className="text-sm text-slate-500">Atribucion comercial desde links individuales.</p>
+                <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+                <p className="text-sm text-slate-500">{description}</p>
             </div>
 
             <div className="space-y-3">
                 {items.length === 0 ? (
                     <p className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
-                        Aun no hay ventas referidas registradas.
+                        {emptyMessage}
                     </p>
                 ) : (
                     items.slice(0, 12).map((item) => (
