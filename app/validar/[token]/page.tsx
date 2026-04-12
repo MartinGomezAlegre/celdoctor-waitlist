@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { BadgeCheck, CircleX, LoaderCircle, QrCode } from "lucide-react";
+import { BadgeCheck, CircleX, LoaderCircle, QrCode, ShieldCheck } from "lucide-react";
 
 import { validarBeneficioPublico, type ValidacionBeneficio } from "@/lib/api";
 
@@ -17,18 +17,33 @@ function StatusCard({
     description: string;
 }) {
     return (
-        <div className={`rounded-3xl border p-5 ${approved ? "border-emerald-100 bg-emerald-50" : "border-red-100 bg-red-50"}`}>
+        <div
+            className={`rounded-3xl border px-5 py-4 ${
+                approved ? "border-emerald-100 bg-emerald-50" : "border-red-100 bg-red-50"
+            }`}
+        >
             <div className="flex items-start gap-3">
                 {approved ? (
-                    <BadgeCheck className="mt-0.5 h-7 w-7 shrink-0 text-emerald-600" />
+                    <BadgeCheck className="mt-0.5 h-6 w-6 shrink-0 text-emerald-600" />
                 ) : (
-                    <CircleX className="mt-0.5 h-7 w-7 shrink-0 text-red-500" />
+                    <CircleX className="mt-0.5 h-6 w-6 shrink-0 text-red-500" />
                 )}
                 <div>
                     <p className="text-lg font-black text-slate-900">{title}</p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">{description}</p>
                 </div>
             </div>
+        </div>
+    );
+}
+
+function DetailCard({ label, value }: { label: string; value: string | number | null | undefined }) {
+    if (value === null || value === undefined || value === "") return null;
+
+    return (
+        <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
+            <p className="mt-2 text-base font-bold text-slate-900">{value}</p>
         </div>
     );
 }
@@ -76,20 +91,39 @@ export default function ValidarBeneficioPage() {
         : null;
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-slate-950 via-[#1e0f3b] to-[#4C1D95] px-4 py-8 text-white sm:py-12">
-            <div className="mx-auto max-w-xl">
-                <div className="rounded-[30px] border border-white/10 bg-white/8 p-5 shadow-2xl shadow-black/30 backdrop-blur sm:p-7">
-                    <div className="flex items-center gap-3">
-                        <div className="rounded-2xl bg-white/10 p-3 text-violet-100">
-                            <QrCode className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-200">CelDoctor</p>
-                            <h1 className="mt-1 text-2xl font-black">Validacion de credencial</h1>
-                        </div>
+        <div className="min-h-screen bg-slate-50 text-slate-900">
+            <header className="border-b border-slate-100 bg-white/95 backdrop-blur">
+                <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
+                    <div className="text-[28px] font-black leading-none tracking-tight text-slate-950">
+                        <span className="font-black">CEL</span>
+                        <span className="font-light">DOCTOR</span>
                     </div>
+                    <span className="hidden rounded-full border border-[#4C1D95]/15 bg-[#4C1D95]/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4C1D95] sm:inline-flex">
+                        Validacion de credencial
+                    </span>
+                </div>
+            </header>
 
-                    <div className="mt-6 rounded-[28px] bg-white p-5 text-slate-900 shadow-xl shadow-black/10 sm:p-6">
+            <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,0.92fr)_minmax(340px,0.58fr)] lg:items-start">
+                    <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                        <div className="mb-8 flex items-start justify-between gap-4">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#4C1D95]/65">
+                                    Credencial digital
+                                </p>
+                                <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950">
+                                    Verificacion de cobertura
+                                </h1>
+                                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
+                                    Esta pantalla confirma si la credencial presentada tiene cobertura vigente para beneficios en farmacia.
+                                </p>
+                            </div>
+                            <div className="hidden rounded-2xl bg-[#4C1D95]/6 p-3 text-[#4C1D95] sm:flex">
+                                <QrCode className="h-6 w-6" />
+                            </div>
+                        </div>
+
                         {missingToken ? (
                             <StatusCard
                                 approved={false}
@@ -97,11 +131,11 @@ export default function ValidarBeneficioPage() {
                                 description="No encontramos un token valido para verificar la cobertura."
                             />
                         ) : loading ? (
-                            <div className="flex min-h-64 flex-col items-center justify-center gap-4 text-center">
+                            <div className="flex min-h-[260px] flex-col items-center justify-center gap-4 rounded-3xl border border-slate-100 bg-slate-50 text-center">
                                 <LoaderCircle className="h-10 w-10 animate-spin text-[#4C1D95]" />
                                 <div>
                                     <p className="font-semibold text-slate-900">Validando credencial</p>
-                                    <p className="mt-1 text-sm text-slate-500">Estamos consultando el estado del afiliado.</p>
+                                    <p className="mt-1 text-sm text-slate-500">Estamos consultando el estado actual del afiliado.</p>
                                 </div>
                             </div>
                         ) : error ? (
@@ -115,26 +149,14 @@ export default function ValidarBeneficioPage() {
                                 <StatusCard
                                     approved
                                     title="Aprobado"
-                                    description="La credencial es valida y el afiliado tiene cobertura vigente."
+                                    description="La credencial es valida y el afiliado tiene cobertura vigente para utilizar beneficios en farmacia."
                                 />
 
                                 <div className="grid gap-4 sm:grid-cols-2">
-                                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Afiliado</p>
-                                        <p className="mt-1 text-base font-bold text-slate-900">{resultado.nombre_completo}</p>
-                                    </div>
-                                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Numero de socio</p>
-                                        <p className="mt-1 text-base font-bold text-slate-900">{resultado.numero_socio}</p>
-                                    </div>
-                                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Plan</p>
-                                        <p className="mt-1 text-base font-bold text-slate-900">{resultado.plan_nombre}</p>
-                                    </div>
-                                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Descuento</p>
-                                        <p className="mt-1 text-base font-bold text-slate-900">{resultado.discount_percentage}%</p>
-                                    </div>
+                                    <DetailCard label="Afiliado" value={resultado.nombre_completo} />
+                                    <DetailCard label="Numero de socio" value={resultado.numero_socio} />
+                                    <DetailCard label="Plan" value={resultado.plan_nombre} />
+                                    <DetailCard label="Beneficio farmacia" value={`Hasta ${resultado.discount_percentage}%`} />
                                 </div>
                             </div>
                         ) : (
@@ -146,20 +168,46 @@ export default function ValidarBeneficioPage() {
                         )}
 
                         {checkedAt && (
-                            <p className="mt-5 text-xs text-slate-400">
-                                Validacion realizada: {checkedAt}
+                            <p className="mt-6 text-xs text-slate-400">
+                                Verificacion realizada: {checkedAt}
                             </p>
                         )}
-                    </div>
+                    </section>
 
-                    <div className="mt-5 text-center text-sm text-violet-100/80">
-                        <p>Si el resultado es no aprobado, pedi una credencial actualizada al afiliado.</p>
-                        <Link href="/" className="mt-3 inline-flex font-semibold text-white underline decoration-white/40 underline-offset-4">
-                            Volver al sitio
-                        </Link>
-                    </div>
+                    <aside className="space-y-6">
+                        <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="rounded-2xl bg-[#4C1D95]/8 p-3 text-[#4C1D95]">
+                                    <ShieldCheck className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Estado actual</p>
+                                    <p className="mt-1 text-lg font-bold text-slate-900">
+                                        {loading ? "Validando..." : resultado?.valido ? "Cobertura aprobada" : "Cobertura no aprobada"}
+                                    </p>
+                                </div>
+                            </div>
+                            <p className="mt-4 text-sm leading-7 text-slate-500">
+                                Si la credencial figura como no aprobada, pedi al afiliado una credencial actualizada desde su cuenta CelDoctor.
+                            </p>
+                        </div>
+
+                        <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Siguiente paso</p>
+                            <h2 className="mt-2 text-xl font-bold text-slate-900">Necesitas volver al sitio?</h2>
+                            <p className="mt-3 text-sm leading-7 text-slate-500">
+                                Podes regresar a la pagina principal para consultar planes, beneficios y acceso a la plataforma.
+                            </p>
+                            <Link
+                                href="/"
+                                className="mt-5 inline-flex items-center rounded-xl bg-[#4C1D95] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#4C1D95]/15 transition-colors hover:bg-[#3b1675]"
+                            >
+                                Volver al sitio
+                            </Link>
+                        </div>
+                    </aside>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

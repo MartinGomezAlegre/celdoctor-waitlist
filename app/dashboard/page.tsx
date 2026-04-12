@@ -32,7 +32,7 @@ const BENEFICIOS_ACTIVOS = [
     { icon: Pill, titulo: "Recetas digitales", desc: "Validas en cualquier farmacia" },
     { icon: Stethoscope, titulo: "Especialistas", desc: "Sin derivaciones previas" },
     { icon: FileText, titulo: "Historia clinica digital", desc: "Accede desde la app" },
-    { icon: ShoppingCart, titulo: "Descuentos en farmacias", desc: "Hasta 70% de descuento" },
+    { icon: ShoppingCart, titulo: "Descuentos en farmacias", desc: "Hasta 40% de descuento" },
 ];
 
 export default function DashboardPage() {
