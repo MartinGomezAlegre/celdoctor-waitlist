@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Copy, Link2, Pencil, Plus, TrendingUp, UserRound, Users } from "lucide-react";
+import { CheckCircle2, Copy, Link2, LogOut, Pencil, Plus, TrendingUp, UserRound, Users } from "lucide-react";
 
 import { ApiError, createBrokerTeamMember, getCommercialDashboard, updateBrokerTeamMember, type CommercialDashboardData } from "@/lib/api";
 import {
@@ -14,6 +13,7 @@ import {
 } from "@/lib/commercial-session";
 import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 import { BrokerTeamModal, type BrokerTeamFormValues } from "./components/BrokerTeamModal";
+import { CommercialSupportCard } from "./components/CommercialSupportCard";
 
 function currency(value: number) {
     return new Intl.NumberFormat("es-AR", {
@@ -153,6 +153,22 @@ export default function ComercialDashboardPage() {
         return items;
     }, [data]);
 
+    function handleLogout() {
+        clearCommercialSession();
+        setToken(null);
+        setNombre("");
+        setRol("");
+        router.push("/comercial");
+    }
+
+    function handleSessionExpired() {
+        clearCommercialSession();
+        setToken(null);
+        setNombre("");
+        setRol("");
+        router.replace("/comercial?expired=1");
+    }
+
     function openCreateTeamMember() {
         setSelectedTeamMemberId(null);
         setTeamForm({ ...EMPTY_TEAM_FORM });
@@ -264,10 +280,20 @@ export default function ComercialDashboardPage() {
                         <p className="text-sm font-medium text-slate-500">Hola, {data.usuario.nombre || nombre || "equipo comercial"}</p>
                         <h1 className="mt-1 text-3xl font-bold text-slate-900">Panel comercial</h1>
                     </div>
-                    <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#4C1D95]/15 bg-white px-4 py-2 text-sm font-semibold text-[#4C1D95] shadow-sm">
-                        <UserRound className="h-4 w-4" />
-                        {roleLabel(data.rol)}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#4C1D95]/15 bg-white px-4 py-2 text-sm font-semibold text-[#4C1D95] shadow-sm">
+                            <UserRound className="h-4 w-4" />
+                            {roleLabel(data.rol)}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="inline-flex items-center gap-2 rounded-xl bg-[#4C1D95] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#4C1D95]/15 transition-colors hover:bg-[#3b1675]"
+                        >
+                            <LogOut className="h-4 w-4" />
+                            Cerrar sesion
+                        </button>
+                    </div>
                 </div>
 
                 <div className={`grid gap-4 ${metrics.length > 1 ? "md:grid-cols-2 xl:grid-cols-3" : "md:grid-cols-1 xl:grid-cols-2"}`}>
@@ -439,19 +465,7 @@ export default function ComercialDashboardPage() {
                             )}
                         </div>
 
-                        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Soporte operativo</p>
-                            <h2 className="mt-2 text-xl font-bold text-slate-900">Necesitas ayuda con tu canal</h2>
-                            <p className="mt-3 text-sm text-slate-500">
-                                Si necesitas actualizar tus datos o revisar una venta, escribinos y te ayudamos desde el equipo CelDoctor.
-                            </p>
-                            <Link
-                                href="/comercial"
-                                className="mt-4 inline-flex items-center rounded-xl border border-[#4C1D95]/15 px-4 py-2.5 text-sm font-semibold text-[#4C1D95]"
-                            >
-                                Acceso comercial
-                            </Link>
-                        </div>
+                        <CommercialSupportCard token={token ?? ""} onSessionExpired={handleSessionExpired} />
                     </section>
                 </div>
             </main>

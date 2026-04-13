@@ -1,12 +1,10 @@
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
-import { headers } from "next/headers";
 
 import "./globals.css";
+import AppShell from "@/components/AppShell";
 import CookieConsent from "@/components/CookieConsent";
-import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
-import Navbar from "@/components/Navbar";
 import ReferralCapture from "@/components/ReferralCapture";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://celdoctor.com";
@@ -76,33 +74,19 @@ export default async function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const headersList = await headers();
-    const pathname = headersList.get("x-pathname") || "";
-
-    const hideChrome =
-        pathname.startsWith("/admin") ||
-        pathname.startsWith("/comercial") ||
-        pathname.startsWith("/dashboard") ||
-        pathname.startsWith("/checkout") ||
-        pathname.startsWith("/validar");
-
     return (
         <html lang="es" className="scroll-smooth scroll-pt-24 antialiased">
             <body>
-                <div className="flex min-h-screen flex-col bg-white font-sans text-slate-900 selection:bg-[#4C1D95]/30">
-                    <Suspense fallback={null}>
-                        <ReferralCapture />
-                    </Suspense>
-                    <a
-                        href="#main"
-                        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-[#4C1D95] focus:px-6 focus:py-3 focus:font-bold focus:text-white focus:shadow-lg"
-                    >
-                        Saltar al contenido
-                    </a>
-                    {!hideChrome && <Navbar />}
-                    <main id="main" className="flex-1">{children}</main>
-                    {!hideChrome && <Footer />}
-                </div>
+                <Suspense fallback={null}>
+                    <ReferralCapture />
+                </Suspense>
+                <a
+                    href="#main"
+                    className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-[#4C1D95] focus:px-6 focus:py-3 focus:font-bold focus:text-white focus:shadow-lg"
+                >
+                    Saltar al contenido
+                </a>
+                <AppShell>{children}</AppShell>
                 <JsonLd />
                 <CookieConsent />
             </body>
