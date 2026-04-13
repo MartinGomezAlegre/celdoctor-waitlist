@@ -8,7 +8,6 @@ import Navbar from "@/components/Navbar";
 const HIDDEN_CHROME_PREFIXES = [
     "/admin",
     "/comercial",
-    "/dashboard",
     "/checkout",
     "/validar",
 ];
