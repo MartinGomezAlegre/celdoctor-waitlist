@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 
 import type { Ticket, ToastType } from "../../types"
-import { API, authHeaders } from "../../lib"
+import { API, authHeaders, getApiErrorDetail } from "../../lib"
 import { adminEndpoints } from "../../admin-endpoints"
 import type { FiltroEstado } from "./utils"
 
@@ -32,14 +32,17 @@ export function useSupportTickets({ token, filtro, addToast }: Params) {
 
         try {
             const res = await fetch(url, { headers: authHeaders(token) })
+            if (!res.ok) {
+                throw new Error(await getApiErrorDetail(res, "No se pudieron cargar los tickets"))
+            }
             const data: unknown = await res.json()
             const lista = Array.isArray(data) ? (data as Ticket[]) : []
             setTickets(lista)
             if (filtro === "todos" || filtro === "abierto") {
                 setCantidadAbiertos(lista.filter((ticket) => ticket.estado === "abierto").length)
             }
-        } catch {
-            addToast("Error al cargar tickets", "error")
+        } catch (error) {
+            addToast(error instanceof Error ? error.message : "Error al cargar tickets", "error")
         } finally {
             setLoading(false)
         }
@@ -70,12 +73,14 @@ export function useSupportTickets({ token, filtro, addToast }: Params) {
                 headers: { ...authHeaders(token), "Content-Type": "application/json" },
                 body: JSON.stringify({ respuesta, prioridad }),
             })
-            if (!res.ok) throw new Error()
+            if (!res.ok) {
+                throw new Error(await getApiErrorDetail(res, "No se pudo enviar la respuesta"))
+            }
             addToast("Respuesta enviada", "success")
             cerrarDetalle()
             await cargarTickets()
-        } catch {
-            addToast("Error al enviar la respuesta", "error")
+        } catch (error) {
+            addToast(error instanceof Error ? error.message : "Error al enviar la respuesta", "error")
         } finally {
             setRespondiendo(false)
         }
@@ -90,12 +95,14 @@ export function useSupportTickets({ token, filtro, addToast }: Params) {
                 headers: { ...authHeaders(token), "Content-Type": "application/json" },
                 body: JSON.stringify({ estado: "cerrado" }),
             })
-            if (!res.ok) throw new Error()
+            if (!res.ok) {
+                throw new Error(await getApiErrorDetail(res, "No se pudo cerrar el ticket"))
+            }
             addToast("Ticket cerrado", "success")
             cerrarDetalle()
             await cargarTickets()
-        } catch {
-            addToast("Error al cerrar el ticket", "error")
+        } catch (error) {
+            addToast(error instanceof Error ? error.message : "Error al cerrar el ticket", "error")
         } finally {
             setCerrando(false)
         }
