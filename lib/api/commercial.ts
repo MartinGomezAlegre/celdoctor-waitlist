@@ -1,11 +1,11 @@
-import { ApiError, getApiUrl } from "./core";
+import { ApiError, authHeaders, getApiUrl } from "./core";
 import type { CommercialDashboardData, CommercialTeamMember } from "./types";
 
-export async function getCommercialDashboard(token: string): Promise<CommercialDashboardData> {
+export async function getCommercialDashboard(token?: string | null): Promise<CommercialDashboardData> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/comercial/dashboard"), {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: authHeaders(token),
         });
     } catch {
         throw new Error("Error de conexión");
@@ -33,11 +33,11 @@ export async function getCommercialDashboard(token: string): Promise<CommercialD
 }
 
 export async function createBrokerTeamMember(
-    token: string,
+    token: string | null | undefined,
     payload: {
         nombre: string;
         email: string;
-        contrasenia: string;
+        contrasenia?: string | null;
         referral_code?: string | null;
         estado: string;
     },
@@ -47,8 +47,8 @@ export async function createBrokerTeamMember(
         res = await fetch(getApiUrl("/comercial/broker-sellers"), {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
+                ...authHeaders(token),
             },
             body: JSON.stringify(payload),
         });
@@ -65,7 +65,7 @@ export async function createBrokerTeamMember(
 }
 
 export async function updateBrokerTeamMember(
-    token: string,
+    token: string | null | undefined,
     sellerId: number,
     payload: {
         nombre?: string;
@@ -80,8 +80,8 @@ export async function updateBrokerTeamMember(
         res = await fetch(getApiUrl(`/comercial/broker-sellers/${sellerId}`), {
             method: "PUT",
             headers: {
-                Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
+                ...authHeaders(token),
             },
             body: JSON.stringify(payload),
         });

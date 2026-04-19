@@ -1,11 +1,11 @@
-import { ApiError, getApiUrl, getErrorDetail } from "./core";
+import { ApiError, authHeaders, getApiUrl, getErrorDetail } from "./core";
 import type { CredencialVirtual, ValidacionBeneficio } from "./types";
 
-export async function obtenerMiCredencial(token: string): Promise<CredencialVirtual | null> {
+export async function obtenerMiCredencial(token?: string | null): Promise<CredencialVirtual | null> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/credenciales/mia"), {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: authHeaders(token),
             cache: "no-store",
         });
     } catch {

@@ -19,7 +19,6 @@ export default function CheckoutPage() {
     const planIdParam = Number(params.plan_id);
 
     const [plan, setPlan] = useState<Plan | null>(null);
-    const [token, setToken] = useState("");
     const [nombre, setNombre] = useState("");
     const [email, setEmail] = useState("");
     const [perfilCompleto, setPerfilCompleto] = useState(false);
@@ -32,35 +31,36 @@ export default function CheckoutPage() {
     const [yaActiva, setYaActiva] = useState(false);
 
     useEffect(() => {
-        const storedToken = localStorage.getItem("celdoctor_token");
-        if (!storedToken) {
-            router.replace("/login");
-            return;
-        }
-
-        setToken(storedToken);
         setNombre(localStorage.getItem("celdoctor_nombre") ?? "");
 
-        getMiPerfil(storedToken)
-            .then((perfil) => {
-                if (!perfil) return;
+        Promise.all([getMiPerfil(), obtenerPlanes()])
+            .then(([perfil, planes]) => {
+                if (!perfil) {
+                    router.replace("/login");
+                    return;
+                }
+
                 if (perfil.email) {
                     localStorage.setItem("celdoctor_email", perfil.email);
                     setEmail(perfil.email);
                 }
                 setPerfilCompleto(perfilFacturacionCompleto(perfil));
-            })
-            .catch(() => null);
 
-        obtenerPlanes().then((planes) => {
-            const found = planes.find((item) => item.id === planIdParam);
-            if (!found) {
-                router.replace("/planes");
-                return;
-            }
-            setPlan(found);
-            setCargando(false);
-        });
+                const found = planes.find((item) => item.id === planIdParam);
+                if (!found) {
+                    router.replace("/planes");
+                    return;
+                }
+                setPlan(found);
+                setCargando(false);
+            })
+            .catch((err) => {
+                if (err instanceof ApiError && err.code === "UNAUTHORIZED") {
+                    router.replace("/login");
+                    return;
+                }
+                setCargando(false);
+            });
     }, [planIdParam, router]);
 
     const navigateTo = useCallback((next: 1 | 2 | 3) => {
@@ -80,7 +80,7 @@ export default function CheckoutPage() {
         setYaActiva(false);
 
         try {
-            await contratarPlan(plan.id, token);
+            await contratarPlan(plan.id);
             router.push(`/checkout/${plan.id}/upsell`);
         } catch (err) {
             if (err instanceof ApiError && err.code === "UNAUTHORIZED") {

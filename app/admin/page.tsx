@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
 import { login } from "@/lib/api";
-import { setSessionCookie } from "@/lib/session-cookie";
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -12,41 +12,37 @@ export default function AdminLoginPage() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
+    async function handleSubmit(event: React.FormEvent) {
+        event.preventDefault();
         setError(null);
         setLoading(true);
+
         try {
-            const res = await login(email, contrasenia);
-            if (res.usuario.rol !== "admin") {
-                setError("Sin permisos de administrador.");
-                return;
-            }
+            await login(email, contrasenia, "admin");
             localStorage.setItem("celdoctor_rol", "admin");
             localStorage.removeItem("celdoctor_token");
-            setSessionCookie("celdoctor_token", "", 0);
-            localStorage.setItem("celdoctor_admin_token", res.access_token);
-            setSessionCookie("celdoctor_admin_token", res.access_token);
+            localStorage.removeItem("celdoctor_admin_token");
+            localStorage.removeItem("celdoctor_commercial_token");
             router.push("/admin/dashboard");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error de conexión");
+            setError(err instanceof Error ? err.message : "Error de conexion");
         } finally {
             setLoading(false);
         }
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex min-h-screen items-center justify-center bg-slate-50">
             <div className="w-full max-w-sm">
-                <div className="text-center mb-8">
+                <div className="mb-8 text-center">
                     <span className="text-2xl font-black text-[#4C1D95] tracking-tight">CELDOCTOR.</span>
-                    <p className="text-slate-500 text-sm mt-1">Panel de Administración</p>
+                    <p className="mt-1 text-sm text-slate-500">Panel de Administracion</p>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
+                <div className="rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
+                            <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-700">
                                 Email
                             </label>
                             <input
@@ -54,28 +50,28 @@ export default function AdminLoginPage() {
                                 type="email"
                                 required
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
+                                onChange={(event) => setEmail(event.target.value)}
+                                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
                                 placeholder="admin@celdoctor.com"
                             />
                         </div>
                         <div>
-                            <label htmlFor="contrasenia" className="block text-sm font-medium text-slate-700 mb-1.5">
-                                Contraseña
+                            <label htmlFor="contrasenia" className="mb-1.5 block text-sm font-medium text-slate-700">
+                                Contrasena
                             </label>
                             <input
                                 id="contrasenia"
                                 type="password"
                                 required
                                 value={contrasenia}
-                                onChange={(e) => setContrasenia(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] transition-colors"
-                                placeholder="Contraseña"
+                                onChange={(event) => setContrasenia(event.target.value)}
+                                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
+                                placeholder="Contrasena"
                             />
                         </div>
 
                         {error && (
-                            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                            <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
                                 {error}
                             </p>
                         )}
@@ -83,7 +79,7 @@ export default function AdminLoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3.5 bg-[#4C1D95] text-white rounded-xl font-bold text-sm hover:bg-[#3b1675] transition-all shadow-lg shadow-[#4C1D95]/20 disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="w-full rounded-xl bg-[#4C1D95] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#4C1D95]/20 transition-all hover:bg-[#3b1675] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {loading ? "Ingresando..." : "Ingresar"}
                         </button>

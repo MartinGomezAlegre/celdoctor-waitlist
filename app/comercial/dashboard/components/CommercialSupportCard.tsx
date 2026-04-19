@@ -17,7 +17,7 @@ export function CommercialSupportCard({
     token,
     onSessionExpired,
 }: {
-    token: string;
+    token?: string | null;
     onSessionExpired: () => void;
 }) {
     const [tickets, setTickets] = useState<TicketUsuario[]>([]);
@@ -30,7 +30,7 @@ export function CommercialSupportCard({
     useEffect(() => {
         let cancelled = false;
 
-        obtenerMisTickets(token)
+        obtenerMisTickets(token, "commercial")
             .then((items) => {
                 if (!cancelled) setTickets(items);
             })
@@ -68,7 +68,7 @@ export function CommercialSupportCard({
         setSending(true);
         setError(null);
         try {
-            const ticket = await crearTicket(token, normalizedSubject, normalizedMessage);
+            const ticket = await crearTicket(token, normalizedSubject, normalizedMessage, "commercial");
             setTickets((prev) => [ticket, ...prev]);
             setAsunto("");
             setMensaje("");

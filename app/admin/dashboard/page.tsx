@@ -18,11 +18,10 @@ import {
     Menu,
     X,
 } from "lucide-react";
+import { logout } from "@/lib/api";
 import type { Section, Toast, ToastType, Alerta, MetricasEmpresas } from "./types";
 import { API, authHeaders } from "./lib";
 import { adminEndpoints } from "./admin-endpoints";
-import { clearSessionCookie } from "@/lib/session-cookie";
-import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 import SectionOverview from "./components/SectionOverview";
 import SectionPersonas from "./components/SectionPersonas";
 import SectionEmpresas from "./components/SectionEmpresas";
@@ -121,18 +120,9 @@ export default function AdminDashboardPage() {
     const [ticketsAbiertos, setTicketsAbiertos] = useState(0);
     const [leadsNuevos, setLeadsNuevos] = useState(0);
     const [upsellsNuevos, setUpsellsNuevos] = useState(0);
-    const [token, setToken, tokenHydrated] = useLocalStorageValue("celdoctor_admin_token");
+    const token = "";
 
     useEffect(() => {
-        if (!tokenHydrated) {
-            return;
-        }
-
-        if (!token) {
-            router.replace("/admin");
-            return;
-        }
-
         fetch(`${API}${adminEndpoints.alertas}`, { headers: authHeaders(token) })
             .then((response) => response.json())
             .then((data: unknown) => setAlertas(Array.isArray(data) ? (data as Alerta[]) : []))
@@ -157,7 +147,7 @@ export default function AdminDashboardPage() {
             .then((response) => response.json())
             .then((data: unknown) => setUpsellsNuevos(Array.isArray(data) ? (data as unknown[]).length : 0))
             .catch(() => null);
-    }, [router, token, tokenHydrated]);
+    }, [router, token]);
 
     function addToast(msg: string, type: ToastType) {
         const id = Date.now();
@@ -165,24 +155,16 @@ export default function AdminDashboardPage() {
         setTimeout(() => setToasts((prev) => prev.filter((toast) => toast.id !== id)), 4000);
     }
 
-    function logout() {
+    function handleLogout() {
         localStorage.removeItem("celdoctor_admin_token");
-        clearSessionCookie("celdoctor_admin_token");
-        setToken(null);
+        localStorage.removeItem("celdoctor_rol");
+        void logout();
         router.replace("/admin");
     }
 
     function navegarA(nextSection: Section) {
         setSection(nextSection);
         setSidebarAbierto(false);
-    }
-
-    if (!tokenHydrated || !token) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-100">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#4C1D95]/20 border-t-[#4C1D95]" />
-            </div>
-        );
     }
 
     const pendientesPago = alertas.find((alerta) => alerta.tipo === "pendientes_pago")?.cantidad ?? 0;
@@ -240,7 +222,7 @@ export default function AdminDashboardPage() {
     return (
         <div className="flex min-h-screen bg-slate-100">
             <aside className="hidden w-60 shrink-0 flex-col bg-[#1e0b4b] lg:flex">
-                <SidebarContent navGroups={navGroups} section={section} onNavigate={navegarA} onLogout={logout} />
+                        <SidebarContent navGroups={navGroups} section={section} onNavigate={navegarA} onLogout={handleLogout} />
             </aside>
 
             <>
@@ -264,7 +246,7 @@ export default function AdminDashboardPage() {
                             <X size={18} />
                         </button>
                     </div>
-                    <SidebarContent navGroups={navGroups} section={section} onNavigate={navegarA} onLogout={logout} />
+                    <SidebarContent navGroups={navGroups} section={section} onNavigate={navegarA} onLogout={handleLogout} />
                 </aside>
             </>
 

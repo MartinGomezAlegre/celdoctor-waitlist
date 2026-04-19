@@ -1,11 +1,11 @@
-import { ApiError, getApiUrl, getErrorDetail } from "./core";
+import { ApiError, authHeaders, getApiUrl, getErrorDetail } from "./core";
 import type { UpsellSeguro } from "./types";
 
-export async function obtenerMiUpsellSeguro(token: string): Promise<UpsellSeguro | null> {
+export async function obtenerMiUpsellSeguro(token?: string | null): Promise<UpsellSeguro | null> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/upsells/seguro/mio"), {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: authHeaders(token),
         });
     } catch {
         return null;
@@ -16,14 +16,14 @@ export async function obtenerMiUpsellSeguro(token: string): Promise<UpsellSeguro
     return res.json() as Promise<UpsellSeguro | null>;
 }
 
-export async function registrarDecisionUpsellSeguro(token: string, acepta: boolean): Promise<UpsellSeguro> {
+export async function registrarDecisionUpsellSeguro(token: string | null | undefined, acepta: boolean): Promise<UpsellSeguro> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/upsells/seguro"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                ...authHeaders(token),
             },
             body: JSON.stringify({ acepta }),
         });
@@ -36,10 +36,10 @@ export async function registrarDecisionUpsellSeguro(token: string, acepta: boole
     return res.json() as Promise<UpsellSeguro>;
 }
 
-export async function solicitarUpsellSeguro(token: string): Promise<UpsellSeguro> {
+export async function solicitarUpsellSeguro(token?: string | null): Promise<UpsellSeguro> {
     return registrarDecisionUpsellSeguro(token, true);
 }
 
-export async function rechazarUpsellSeguro(token: string): Promise<UpsellSeguro> {
+export async function rechazarUpsellSeguro(token?: string | null): Promise<UpsellSeguro> {
     return registrarDecisionUpsellSeguro(token, false);
 }

@@ -1,194 +1,293 @@
-# 🏥 CelDoctor — Hospital Digital en tu Bolsillo
+# CELDOCTOR Platform
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.1-black?logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+Este repositorio contiene el frontend principal de CELDOCTOR: la web publica, el checkout, el dashboard del cliente, el panel administrativo y el acceso comercial. Ya no es una simple waitlist; hoy funciona como la capa web de una plataforma de telemedicina con suscripcion, credencial digital y operacion interna.
 
-**CelDoctor** es una plataforma de telemedicina diseñada para democratizar el acceso a atención médica de calidad en Argentina. Este repositorio contiene la **landing page de lista de espera** — el primer punto de contacto con pacientes, médicos y empresas interesados en sumarse a la plataforma antes de su lanzamiento oficial.
+## Que es el proyecto
 
-> 🎓 **Proyecto desarrollado por un estudiante de Ingeniería en Informática** como parte de un emprendimiento real de health-tech, aplicando mejores prácticas de desarrollo web profesional, seguridad y arquitectura de software.
+CELDOCTOR es una plataforma de salud digital orientada a Argentina. El producto combina:
 
----
+- sitio publico con contenido comercial y SEO
+- venta de planes personales, familiares y corporativos
+- login y dashboard para clientes
+- credencial digital con QR dinamico
+- validacion publica de credenciales
+- panel administrativo para operar usuarios, empresas, soporte, leads y canal comercial
+- panel comercial para brokers, vendedores directos y vendedores de broker
 
-## ✨ Características principales
+La aplicacion web vive en Next.js y habla con un backend FastAPI separado que concentra reglas de negocio, persistencia y autenticacion.
 
-### 🎯 Producto
-- **Formulario de waitlist multi-perfil** — Soporte para pacientes, médicos y empresas con campos dinámicos y validación en tiempo real.
-- **Demo interactiva** — Simulación guiada de la app en un mockup de teléfono con navegación entre pantallas (Home, Chat, Videollamada, Recetas, Perfil).
-- **Secciones informativas** — Especialidades médicas, planes de cobertura, solución corporativa y flujo "Cómo funciona".
+## Repositorios del sistema
 
-### 🔒 Seguridad
-- **Validación con Zod v4** — Esquema estricto para todos los campos del formulario (email, WhatsApp, edad, tipo de usuario, provincia).
-- **Sanitización anti-injection** — Protección contra formula injection en Google Sheets (caracteres `=`, `+`, `-`, `@`, `\t`, `\r`, `\n`).
-- **Rate limiting dual** — Limitación por IP (`x-forwarded-for`) y por email (3 intentos / 60 segundos).
-- **Honeypot anti-bot** — Campo invisible que devuelve un falso positivo a bots para no revelar información.
-- **Security headers** — Content-Security-Policy, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy.
+La plataforma se divide en dos repos:
 
-### ⚡ Performance y SEO
-- **Server Components** — `page.tsx` y `PlansSection` renderizan en el servidor, reduciendo el bundle del cliente.
-- **Metadata optimizado** — Open Graph, Twitter Cards, JSON-LD (MedicalBusiness schema), robots, sitemap, keywords.
-- **Static generation** — Todas las páginas se generan estáticamente en build time.
-- **Font optimization** — Google Fonts (Inter) cargada via `next/font` sin layout shift.
+1. `celdoctor-waitlist`
+   Frontend Next.js.
+2. `broker-salud`
+   Backend FastAPI + PostgreSQL.
 
-### ♿ Accesibilidad (a11y)
-- Labels semánticos (`htmlFor`/`id`, `sr-only`) en todos los inputs.
-- Roles ARIA (`radiogroup`, `radio`, `alert`, `status`) en componentes interactivos.
-- `focus:ring` visible en todos los elementos focuseables.
-- Atributos `aria-expanded` y `aria-label` en controles dinámicos.
+Para una descripcion tecnica del backend, ver el README del repo `broker-salud`.
 
----
+## Stack principal
 
-## 🛠️ Stack tecnológico
+| Capa | Tecnologia |
+| --- | --- |
+| Frontend | Next.js 16 (App Router) |
+| UI | React 19 + Tailwind CSS 4 |
+| Tipado | TypeScript 5 |
+| Animacion y graficos | Framer Motion, Recharts |
+| Proxy y sesion web | Route Handlers de Next |
+| Rate limiting publico | Upstash Redis (formularios) |
+| Backend consumido | FastAPI sobre Railway |
 
-| Categoría | Tecnología | Versión |
-|-----------|------------|---------|
-| Framework | Next.js (App Router) | 16.1 |
-| UI Library | React | 19 |
-| Lenguaje | TypeScript | 5 |
-| Estilos | Tailwind CSS | 4 |
-| Animaciones | Framer Motion | 12 |
-| Iconos | Lucide React | 0.562 |
-| Validación | Zod | 4 |
-| Linting | ESLint | 9 |
+## Que incluye este repo
 
----
+### Web publica
 
-## 📁 Estructura del proyecto
+Rutas y secciones para captacion, informacion y conversion:
 
+- home
+- planes
+- atencion medica
+- blog
+- terminos y privacidad
+- formularios y llamadas a la accion
+
+### Autenticacion web
+
+Hay tres accesos distintos:
+
+- cliente: `/login`
+- admin: `/admin`
+- comercial: `/comercial`
+
+El frontend ya no depende de tokens en `localStorage` para operar la sesion. El login pasa por rutas internas de Next que:
+
+1. envian credenciales al backend
+2. validan que el rol corresponda al acceso correcto
+3. guardan la sesion en cookie `httpOnly`
+4. dejan que el proxy interno traduzca esa cookie a `Authorization: Bearer` hacia el backend
+
+Esto reduce bastante la exposicion de tokens en el navegador.
+
+### Checkout y suscripcion
+
+El flujo actual incluye:
+
+- seleccion de plan
+- confirmacion
+- upsell del seguro
+- consulta de estado de suscripcion
+
+### Dashboard del cliente
+
+El dashboard del cliente concentra:
+
+- saludo y estado del plan
+- credencial digital
+- gestion de cuenta
+- datos personales y de facturacion
+- soporte
+- beneficiarios del plan familiar
+- acceso a beneficios activos
+
+### Credencial digital y QR
+
+La app renderiza la credencial del titular y consume el backend para:
+
+- obtener el QR dinamico
+- ampliar la credencial
+- abrir la validacion publica del QR
+
+La ruta publica de validacion es:
+
+- `/validar/[token]`
+
+### Panel administrativo
+
+La ruta principal es:
+
+- `/admin/dashboard`
+
+Desde ahi se operan secciones como:
+
+- overview
+- personas
+- empresas
+- suscripciones
+- facturacion
+- catalogo
+- soporte
+- leads
+- upsells
+- canal comercial
+
+### Panel comercial
+
+La ruta principal es:
+
+- `/comercial/dashboard`
+
+Segun el rol, el usuario puede ver:
+
+- ventas aprobadas
+- link de referido
+- equipo de vendedores del broker
+- soporte operativo
+
+## Arquitectura web
+
+El frontend trabaja con tres piezas principales:
+
+### 1. UI y rutas
+
+Las paginas estan en `app/` y combinan:
+
+- rutas publicas
+- rutas autenticadas
+- paneles por rol
+
+### 2. Session layer
+
+Las rutas internas:
+
+- `app/api/session/login/route.ts`
+- `app/api/session/logout/route.ts`
+
+administran la cookie segura de sesion.
+
+### 3. API proxy
+
+La ruta:
+
+- `app/api/proxy/[...path]/route.ts`
+
+actua como puente entre Next y FastAPI. Toma la cookie correcta segun el tipo de sesion y reenvia la request al backend. Esto permite:
+
+- centralizar autenticacion
+- ocultar el backend al navegador
+- conservar una sola capa de consumo HTTP en el frontend
+
+## Estructura resumida
+
+```text
+app/
+  (auth)/                  login, registro y recuperacion
+  admin/                   login admin y dashboard admin
+  api/
+    proxy/                 proxy al backend
+    session/               login/logout con cookie httpOnly
+  atencion-medica/         landings por beneficio
+  blog/                    contenido SEO
+  checkout/                compra, confirmacion y upsell
+  comercial/               login y dashboard comercial
+  dashboard/               dashboard del cliente
+  planes/                  landings y variantes comerciales
+  validar/                 validacion publica de QR
+
+components/
+  Navbar, Footer y bloques de UI compartidos
+
+lib/
+  api/                     clientes HTTP hacia el proxy
+  session.ts               nombres de cookies y scopes
+  commercial-session.ts    metadata no sensible del canal comercial
 ```
-celdoctor-waitlist/
-├── app/
-│   ├── actions.ts          # Server Action (validación, sanitización, rate limiting)
-│   ├── globals.css          # Variables CSS y animaciones globales
-│   ├── layout.tsx           # Root layout con metadata SEO
-│   ├── loading.tsx          # Loading skeleton (Suspense)
-│   ├── not-found.tsx        # Página 404 personalizada
-│   └── page.tsx             # Página principal (Server Component)
-├── components/
-│   ├── interactive-demo/    # Sub-componentes del demo interactivo
-│   │   ├── ChatScreen.tsx
-│   │   ├── HomeScreen.tsx
-│   │   ├── PhoneNavBar.tsx
-│   │   ├── PhoneStatusBar.tsx
-│   │   ├── ProfileScreen.tsx
-│   │   ├── RecetasScreen.tsx
-│   │   └── VideoScreen.tsx
-│   ├── CorporateSection.tsx # Sección soluciones empresariales
-│   ├── DoctorsSection.tsx   # Sección para profesionales médicos
-│   ├── Footer.tsx           # Footer con navegación y contacto
-│   ├── HeroSection.tsx      # Hero principal con CTA
-│   ├── HowItWorksSection.tsx # Flujo de 3 pasos
-│   ├── InteractiveDemo.tsx  # Orquestador del demo (modal + portal)
-│   ├── JsonLd.tsx           # Datos estructurados para Google
-│   ├── Navbar.tsx           # Navbar responsive con hamburger menu
-│   ├── PlansSection.tsx     # Planes de cobertura (Server Component)
-│   ├── SpecialtiesSection.tsx # Grid de especialidades médicas
-│   └── WaitlistForm.tsx     # Formulario multi-perfil con validación
-├── public/                  # Assets estáticos (imágenes, OG image)
-├── next.config.ts           # Configuración de Next.js y security headers
-└── tsconfig.json
+
+## Variables de entorno
+
+Este repo usa principalmente:
+
+```env
+BACKEND_URL=http://localhost:8000
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+GOOGLE_SHEETS_URL=https://script.google.com/macros/s/...
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
 ```
 
----
+### Produccion
 
-## 🚀 Quick Start
+En Vercel, `BACKEND_URL` debe apuntar al backend publico, por ejemplo:
 
-### Prerrequisitos
-- Node.js 18+ 
-- npm, yarn o pnpm
+```env
+BACKEND_URL=https://api.celdoctor.com
+```
 
-### Instalación
+La URL publica del sitio deberia quedar alineada con el dominio activo:
+
+```env
+NEXT_PUBLIC_SITE_URL=https://www.celdoctor.com
+NEXT_PUBLIC_BASE_URL=https://www.celdoctor.com
+```
+
+## Desarrollo local
 
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/tu-usuario/celdoctor-waitlist.git
-cd celdoctor-waitlist
-
-# 2. Instalar dependencias
 npm install
-
-# 3. Configurar variables de entorno
-cp .env.example .env.local
-# Editar .env.local con tus valores (ver sección "Variables de entorno")
-
-# 4. Iniciar servidor de desarrollo
 npm run dev
 ```
 
-Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
+La app levanta en:
 
-### Scripts disponibles
+- [http://localhost:3000](http://localhost:3000)
 
-| Comando | Descripción |
-|---------|-------------|
-| `npm run dev` | Servidor de desarrollo con hot-reload |
-| `npm run build` | Build de producción optimizado |
-| `npm run start` | Servidor de producción |
-| `npm run lint` | Análisis estático con ESLint |
+Para trabajar completa, necesita un backend local corriendo en `http://localhost:8000` o una `BACKEND_URL` que apunte a staging.
 
----
+## Build y chequeos
 
-## ⚙️ Variables de entorno
-
-Crear un archivo `.env.local` en la raíz del proyecto:
-
-```env
-# URL del Google Apps Script que recibe los datos del formulario
-GOOGLE_SHEETS_URL=https://script.google.com/macros/s/TU_SCRIPT_ID/exec
-
-# URL base del sitio (para metadata SEO y Open Graph)
-NEXT_PUBLIC_SITE_URL=https://celdoctor.com
+```bash
+npm run lint
+npm run build
 ```
 
----
+Estos dos comandos son hoy el smoke check minimo antes de subir cambios.
 
-## 🏗️ Arquitectura
+## Flujo end-to-end del sistema
 
-```
-┌─────────────────────────────────────────────────┐
-│                   Cliente                        │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │ Navbar   │  │ Hero     │  │ InteractiveDemo│  │
-│  │(client)  │  │(client)  │  │   (client)     │  │
-│  └──────────┘  └──────────┘  └───────────────┘  │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │Specialt. │  │HowItWorks│  │  PlansSection  │  │
-│  │(client)  │  │(server)  │  │   (server)     │  │
-│  └──────────┘  └──────────┘  └───────────────┘  │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │ Doctors  │  │Corporate │  │ WaitlistForm   │  │
-│  │(client)  │  │(client)  │  │   (client)     │  │
-│  └──────────┘  └──────────┘  └───────────────┘  │
-└─────────────────────┬───────────────────────────┘
-                      │ Server Action
-                      ▼
-┌─────────────────────────────────────────────────┐
-│              actions.ts (Server)                 │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │ Zod      │  │  Rate    │  │  Sanitize     │  │
-│  │Validation│  │ Limiting │  │  for Sheets   │  │
-│  └──────────┘  └──────────┘  └───────────────┘  │
-└─────────────────────┬───────────────────────────┘
-                      │ HTTPS POST
-                      ▼
-          ┌───────────────────────┐
-          │   Google Sheets API   │
-          │  (Google Apps Script) │
-          └───────────────────────┘
-```
+1. El usuario navega la web publica y elige un plan.
+2. Inicia sesion por la ruta correcta segun su rol.
+3. Next valida credenciales contra FastAPI y guarda cookie `httpOnly`.
+4. El frontend consume `/api/proxy/...`.
+5. El proxy agrega autorizacion desde cookie y reenvia al backend.
+6. El backend responde con datos de cuenta, suscripcion, credencial, soporte o panel interno.
+7. El frontend renderiza dashboard, admin o panel comercial segun el rol.
 
----
+## Estado funcional actual
 
-## 📄 Licencia
+Hoy el frontend ya cubre:
 
-Este proyecto es privado y de uso exclusivo para CelDoctor Argentina.
+- experiencia publica completa
+- login cliente/admin/comercial
+- dashboards por rol
+- credencial digital con QR
+- validacion publica de credenciales
+- admin operativo
+- canal comercial
 
----
+## Pendientes estrategicos del producto
 
-## 👤 Autor
+Antes de un lanzamiento fuerte, las piezas tecnicas mas importantes a cerrar son:
 
-**Martín Gómez Alegre**  
-Estudiante de Ingeniería en Informática  
+- staging real
+- Redis operativo por ambiente
+- cron y jobs async
+- pagos recurrentes
+- invitaciones de cuenta
+- bulk de empleados robusto
+- paginacion server-side real en tablas grandes
 
-Desarrollado como proyecto de emprendimiento real, aplicando principios de ingeniería de software, seguridad web y diseño de interfaces modernas.
+## Como leer este proyecto rapido
+
+Si alguien nuevo entra al repo, este es el orden que mas conviene:
+
+1. `app/layout.tsx`
+2. `app/page.tsx`
+3. `app/api/session/login/route.ts`
+4. `app/api/proxy/[...path]/route.ts`
+5. `app/dashboard/page.tsx`
+6. `app/admin/dashboard/page.tsx`
+7. `app/comercial/dashboard/page.tsx`
+8. `lib/api/`
+
+Con ese recorrido se entiende casi toda la arquitectura web.

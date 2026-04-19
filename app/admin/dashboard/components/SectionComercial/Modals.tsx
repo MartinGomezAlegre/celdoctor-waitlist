@@ -81,11 +81,11 @@ export function BrokerModal({
                     <Input name="access_email" type="email" value={values.access_email} onChange={onChange} placeholder="broker@celdoctor.com" />
                 </Field>
                 <Field label={editing ? "Nueva contrasena" : "Contrasena inicial"}>
-                    <Input name="access_password" type="password" value={values.access_password} onChange={onChange} placeholder={editing ? "Solo si queres resetearla" : "Minimo 8 caracteres"} />
+                    <Input name="access_password" type="password" value={values.access_password} onChange={onChange} placeholder={editing ? "Solo si queres resetearla" : "Opcional: si la dejas vacia se envia invitacion"} />
                 </Field>
             </div>
             <p className="mt-3 text-xs text-slate-500">
-                El broker ingresa desde <span className="font-semibold text-slate-700">/comercial</span>. En edicion podes dejar la contrasena vacia para conservar la actual.
+                El broker ingresa desde <span className="font-semibold text-slate-700">/comercial</span>. Si al crear dejas la contrasena vacia, enviamos un link de activacion al email indicado.
             </p>
         </Modal>
     )
@@ -183,12 +183,12 @@ export function DirectSellerModal({
                     <Input name="access_email" type="email" value={values.access_email} onChange={onChange} placeholder="ventas@celdoctor.com" />
                 </Field>
                 <Field label={editing ? "Nueva contrasena" : "Contrasena inicial"}>
-                    <Input name="access_password" type="password" value={values.access_password} onChange={onChange} placeholder={editing ? "Solo si queres resetearla" : "Minimo 8 caracteres"} />
+                    <Input name="access_password" type="password" value={values.access_password} onChange={onChange} placeholder={editing ? "Solo si queres resetearla" : "Opcional: si la dejas vacia se envia invitacion"} />
                 </Field>
                 <Field label="Referral code"><Input name="referral_code" value={values.referral_code} onChange={onChange} placeholder="Opcional: se genera automaticamente" /></Field>
             </div>
             <p className="mt-3 text-xs text-slate-500">
-                El vendedor directo ingresa por <span className="font-semibold text-slate-700">/comercial</span>. En edicion podes dejar la contrasena vacia para conservar la actual.
+                El vendedor directo ingresa por <span className="font-semibold text-slate-700">/comercial</span>. Si al crear dejas la contrasena vacia, enviamos un link de activacion al email indicado.
             </p>
         </Modal>
     )

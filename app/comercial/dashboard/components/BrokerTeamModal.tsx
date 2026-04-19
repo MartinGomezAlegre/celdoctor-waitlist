@@ -40,8 +40,8 @@ export function BrokerTeamModal({
                         </h2>
                         <p className="mt-2 text-sm text-slate-500">
                             {editing
-                                ? "Actualizá el acceso y los datos comerciales de este vendedor."
-                                : "Creá un acceso comercial para un vendedor de tu equipo."}
+                                ? "Actualiza el acceso y los datos comerciales de este vendedor."
+                                : "Crea un acceso comercial para un vendedor de tu equipo."}
                         </p>
                     </div>
                     <button
@@ -66,7 +66,7 @@ export function BrokerTeamModal({
                             type="password"
                             value={values.contrasenia}
                             onChange={onChange}
-                            placeholder={editing ? "Solo si queres resetearla" : "Minimo 8 caracteres"}
+                            placeholder={editing ? "Solo si queres resetearla" : "Opcional: si la dejas vacia se envia invitacion"}
                         />
                     </Field>
                     <Field label="Estado">
@@ -91,8 +91,8 @@ export function BrokerTeamModal({
                 </div>
 
                 <p className="mt-4 text-xs text-slate-500">
-                    El vendedor accede desde <span className="font-semibold text-slate-700">/comercial</span>. Si estás editando, dejá la
-                    contrasena vacía para conservar la actual.
+                    El vendedor accede desde <span className="font-semibold text-slate-700">/comercial</span>. Si al crear dejas la
+                    contrasena vacia, enviamos un link de activacion al email indicado. Si estas editando, dejarla vacia conserva la actual.
                 </p>
 
                 <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

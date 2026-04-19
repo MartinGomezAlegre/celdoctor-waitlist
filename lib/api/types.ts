@@ -89,9 +89,9 @@ export interface UpsellSeguro {
 }
 
 export interface LoginResponse {
-    access_token: string;
-    token_type: string;
     usuario: Usuario;
+    access_token?: string;
+    token_type?: string;
 }
 
 export interface CommercialSale {

@@ -8,7 +8,6 @@ import { login } from "@/lib/api";
 import {
     clearCommercialSession,
     COMMERCIAL_ROLE_KEY,
-    COMMERCIAL_TOKEN_KEY,
     hasCommercialRole,
     setCommercialSession,
 } from "@/lib/commercial-session";
@@ -25,9 +24,8 @@ export default function ComercialLoginPage() {
 
     useEffect(() => {
         if (typeof window === "undefined") return;
-        const token = localStorage.getItem(COMMERCIAL_TOKEN_KEY);
         const role = localStorage.getItem(COMMERCIAL_ROLE_KEY);
-        if (token && hasCommercialRole(role)) {
+        if (hasCommercialRole(role)) {
             router.replace("/comercial/dashboard");
         }
     }, [router]);
@@ -38,15 +36,10 @@ export default function ComercialLoginPage() {
         setLoading(true);
 
         try {
-            const res = await login(email, contrasenia);
-            if (!hasCommercialRole(res.usuario.rol ?? "")) {
-                setError("Este acceso es exclusivo para brokers y vendedores autorizados.");
-                return;
-            }
+            const res = await login(email, contrasenia, "commercial");
 
             clearCommercialSession();
-            setCommercialSession(res.access_token, res.usuario);
-
+            setCommercialSession(res.usuario);
             router.push("/comercial/dashboard");
         } catch (err) {
             setError(err instanceof Error ? err.message : "No pudimos iniciar sesion");

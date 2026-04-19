@@ -79,8 +79,8 @@ export function useCommercialAdmin({ token, addToast }: Params) {
     async function guardarBroker(values: BrokerFormValues, brokerId?: number) {
         setGuardando(true)
         try {
-            if (!brokerId && (!values.access_email.trim() || !values.access_password.trim())) {
-                throw new Error("Para crear un broker necesitas definir email de acceso y contrasena inicial")
+            if (!brokerId && !values.access_email.trim()) {
+                throw new Error("Para crear un broker necesitas definir al menos el email de acceso")
             }
             const endpoint = brokerId ? adminEndpoints.broker(brokerId) : adminEndpoints.brokers
             const res = await fetch(`${API}${endpoint}`, {
@@ -136,8 +136,8 @@ export function useCommercialAdmin({ token, addToast }: Params) {
     async function guardarDirectSeller(values: DirectSellerFormValues, sellerId?: number) {
         setGuardando(true)
         try {
-            if (!sellerId && (!values.access_email.trim() || !values.access_password.trim())) {
-                throw new Error("Para crear un vendedor directo necesitas definir email de acceso y contrasena inicial")
+            if (!sellerId && !values.access_email.trim()) {
+                throw new Error("Para crear un vendedor directo necesitas definir al menos el email de acceso")
             }
             const endpoint = sellerId ? adminEndpoints.directSeller(sellerId) : adminEndpoints.directSellers
             const res = await fetch(`${API}${endpoint}`, {

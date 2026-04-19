@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, LogOut, Menu, Play, X } from "lucide-react"
 import InteractiveDemo from "./InteractiveDemo"
 import { resolveAccountRoute } from "@/lib/account-route"
-import { clearSessionCookie } from "@/lib/session-cookie"
+import { logout } from "@/lib/api"
 import { useLocalStorageValue } from "@/lib/use-local-storage-value"
 
 interface NavChild {
@@ -187,7 +187,6 @@ function MobileAccordion({ item, onNavigate }: { item: NavItem; onNavigate: () =
 
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
-    const [token, setToken] = useLocalStorageValue("celdoctor_token")
     const [nombre, setNombre] = useLocalStorageValue("celdoctor_nombre")
     const [rol, setRol] = useLocalStorageValue("celdoctor_rol")
     const router = useRouter()
@@ -201,15 +200,15 @@ export default function Navbar() {
         localStorage.removeItem("celdoctor_nombre")
         localStorage.removeItem("celdoctor_email")
         localStorage.removeItem("celdoctor_rol")
-        clearSessionCookie("celdoctor_token")
-        setToken(null)
         setNombre(null)
         setRol(null)
+        void logout()
         closeMenu()
         router.push("/login")
     }
 
     const accountRoute = resolveAccountRoute(rol)
+    const isAuthenticated = !!rol && rol !== "admin" && rol !== "broker" && rol !== "direct_seller" && rol !== "broker_seller"
 
     return (
         <nav className="sticky top-0 z-50 h-20 w-full border-b border-slate-100 bg-white/95 backdrop-blur-xl transition-all">
@@ -231,7 +230,7 @@ export default function Navbar() {
                         <InteractiveDemo />
                     </div>
 
-                    {token ? (
+                    {isAuthenticated ? (
                         <>
                             {nombre && (
                                 <span className="hidden whitespace-nowrap text-xs font-medium text-slate-500 md:block">
@@ -294,7 +293,7 @@ export default function Navbar() {
                             ))}
 
                             <div className="space-y-2.5 pt-3">
-                                {token ? (
+                                {isAuthenticated ? (
                                     <>
                                         {nombre && (
                                             <p className="pb-1 text-center text-xs font-medium text-slate-500">

@@ -13,7 +13,7 @@ export function BeneficiariosCard({
     maxBeneficiarios,
     totalIntegrantes,
 }: {
-    token: string;
+    token?: string | null;
     maxBeneficiarios: number;
     totalIntegrantes: number;
 }) {

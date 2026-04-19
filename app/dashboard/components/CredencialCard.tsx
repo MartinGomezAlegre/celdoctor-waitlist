@@ -87,7 +87,7 @@ function CredentialSurface({
     );
 }
 
-export function CredencialCard({ token }: { token: string }) {
+export function CredencialCard({ token }: { token?: string | null }) {
     const [credencial, setCredencial] = useState<CredencialVirtual | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

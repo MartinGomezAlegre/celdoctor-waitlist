@@ -13,7 +13,7 @@ export function DatosCuentaCard({
     onActualizar,
 }: {
     perfil: MiPerfil;
-    token: string;
+    token?: string | null;
     onActualizar: (perfil: MiPerfil) => void;
 }) {
     const [modalEditar, setModalEditar] = useState(false);

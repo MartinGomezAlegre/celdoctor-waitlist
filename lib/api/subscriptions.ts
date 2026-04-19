@@ -1,8 +1,8 @@
-import { ApiError, getApiUrl, getErrorDetail } from "./core";
+import { ApiError, authHeaders, getApiUrl, getErrorDetail } from "./core";
 import type { CancelacionSuscripcionResponse, Suscripcion } from "./types";
 import { clearStoredReferralCode, getStoredReferralCode } from "../referral";
 
-export async function contratarPlan(plan_id: number, token: string): Promise<Suscripcion> {
+export async function contratarPlan(plan_id: number, token?: string | null): Promise<Suscripcion> {
     const referralCode = getStoredReferralCode();
     const payload: {
         plan_id: number;
@@ -23,7 +23,7 @@ export async function contratarPlan(plan_id: number, token: string): Promise<Sus
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                ...authHeaders(token),
             },
             body: JSON.stringify(payload),
         });
@@ -40,14 +40,12 @@ export async function contratarPlan(plan_id: number, token: string): Promise<Sus
     return data;
 }
 
-export async function cancelarMiSuscripcion(token: string): Promise<CancelacionSuscripcionResponse> {
+export async function cancelarMiSuscripcion(token?: string | null): Promise<CancelacionSuscripcionResponse> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/suscripciones/mia/cancelar"), {
             method: "PUT",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+            headers: authHeaders(token),
         });
     } catch {
         throw new Error("Error al solicitar la baja del plan");
@@ -60,11 +58,11 @@ export async function cancelarMiSuscripcion(token: string): Promise<CancelacionS
     return res.json() as Promise<CancelacionSuscripcionResponse>;
 }
 
-export async function obtenerMiSuscripcion(token: string): Promise<Suscripcion | null> {
+export async function obtenerMiSuscripcion(token?: string | null): Promise<Suscripcion | null> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/suscripciones/mia"), {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: authHeaders(token),
         });
     } catch {
         return null;

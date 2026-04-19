@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ShieldCheck, ShieldPlus, X } from "lucide-react";
 
 import {
+    ApiError,
     obtenerMiUpsellSeguro,
     obtenerPlanes,
     registrarDecisionUpsellSeguro,
@@ -29,43 +30,37 @@ export default function UpsellSeguroPage() {
     const params = useParams();
     const router = useRouter();
     const [listo, setListo] = useState(false);
-    const [token, setToken] = useState<string | null>(null);
     const [plan, setPlan] = useState<Plan | null>(null);
     const [upsell, setUpsell] = useState<UpsellSeguro | null>(null);
     const [procesando, setProcesando] = useState<"acepta" | "rechaza" | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const storedToken = localStorage.getItem("celdoctor_token");
-        if (!storedToken) {
-            router.replace("/login");
-            return;
-        }
-
         const planId = Number(params.plan_id);
-        Promise.all([obtenerPlanes(), obtenerMiUpsellSeguro(storedToken)])
+        Promise.all([obtenerPlanes(), obtenerMiUpsellSeguro()])
             .then(([planes, upsellActual]) => {
                 const lista = planes.length > 0 ? planes : FALLBACK_PLANES;
                 const encontrado = lista.find((item) => item.id === planId) ?? lista[0];
-                setToken(storedToken);
                 setPlan(encontrado);
                 setUpsell(upsellActual);
                 setListo(true);
             })
-            .catch(() => {
+            .catch((err) => {
+                if (err instanceof ApiError && err.code === "UNAUTHORIZED") {
+                    router.replace("/login");
+                    return;
+                }
                 const encontrado = FALLBACK_PLANES.find((item) => item.id === Number(params.plan_id)) ?? FALLBACK_PLANES[0];
-                setToken(storedToken);
                 setPlan(encontrado);
                 setListo(true);
             });
     }, [params.plan_id, router]);
 
     async function decidir(acepta: boolean) {
-        if (!token) return;
         setError(null);
         setProcesando(acepta ? "acepta" : "rechaza");
         try {
-            await registrarDecisionUpsellSeguro(token, acepta);
+            await registrarDecisionUpsellSeguro(undefined, acepta);
             router.push(`/checkout/${params.plan_id}/confirmacion`);
         } catch (err) {
             setError(err instanceof Error ? err.message : "No pudimos registrar tu decision");

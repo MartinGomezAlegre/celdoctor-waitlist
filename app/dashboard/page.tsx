@@ -9,6 +9,7 @@ import {
     ApiError,
     cancelarMiSuscripcion,
     getMiPerfil,
+    logout,
     obtenerMiSuscripcion,
     obtenerPlanesUsuario,
     type MiPerfil,
@@ -16,7 +17,6 @@ import {
     type Suscripcion,
 } from "@/lib/api";
 import { isCommercialRole, resolveAccountRoute } from "@/lib/account-route";
-import { clearSessionCookie } from "@/lib/session-cookie";
 import { perfilFacturacionCompleto } from "@/lib/profile-completion";
 import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 import { BeneficiariosCard } from "./components/BeneficiariosCard";
@@ -37,7 +37,6 @@ const BENEFICIOS_ACTIVOS = [
 
 export default function DashboardPage() {
     const router = useRouter();
-    const [token, setToken, tokenHydrated] = useLocalStorageValue("celdoctor_token");
     const [suscripcion, setSuscripcion] = useState<Suscripcion | null | undefined>(undefined);
     const [perfil, setPerfil] = useState<MiPerfil | null>(null);
     const [planes, setPlanes] = useState<Plan[]>([]);
@@ -47,16 +46,9 @@ export default function DashboardPage() {
     const [cancelandoPlan, setCancelandoPlan] = useState(false);
 
     useEffect(() => {
-        if (!tokenHydrated) return;
-
-        if (!token) {
-            router.replace("/login");
-            return;
-        }
-
         Promise.all([
-            obtenerMiSuscripcion(token),
-            getMiPerfil(token),
+            obtenerMiSuscripcion(),
+            getMiPerfil(),
             obtenerPlanesUsuario(),
         ])
             .then(([sus, prof, pl]) => {
@@ -70,17 +62,16 @@ export default function DashboardPage() {
                     localStorage.removeItem("celdoctor_nombre");
                     localStorage.removeItem("celdoctor_email");
                     localStorage.removeItem("celdoctor_rol");
-                    clearSessionCookie("celdoctor_token");
-                    setToken(null);
                     setNombreFallback("");
                     setRol("");
+                    void logout();
                     router.replace("/login?expired=1");
                     return;
                 }
 
                 setSuscripcion(null);
             });
-    }, [router, setNombreFallback, setRol, setToken, token, tokenHydrated]);
+    }, [router, setNombreFallback, setRol]);
 
     useEffect(() => {
         if (perfil?.rol && isCommercialRole(perfil.rol)) {
@@ -88,7 +79,7 @@ export default function DashboardPage() {
         }
     }, [perfil?.rol, router]);
 
-    const cargando = !tokenHydrated || suscripcion === undefined;
+    const cargando = suscripcion === undefined;
     const nombre = perfil?.nombre ?? nombreFallback ?? "";
     const nombrePlan = suscripcion?.nombre_plan ?? (suscripcion ? `Plan #${suscripcion.plan_id}` : "");
     const perfilCompleto = perfilFacturacionCompleto(perfil);
@@ -106,12 +97,10 @@ export default function DashboardPage() {
     const esElMasCaro = suscripcion ? suscripcion.precio_pagado >= precioMaxPlan : false;
 
     async function handleCancelarPlan() {
-        if (!token) return;
-
         setCancelandoPlan(true);
         try {
-            const result = await cancelarMiSuscripcion(token);
-            const actualizada = await obtenerMiSuscripcion(token);
+            const result = await cancelarMiSuscripcion();
+            const actualizada = await obtenerMiSuscripcion();
             setSuscripcion(actualizada);
             setModalBaja(false);
             window.alert(result.mensaje);
@@ -120,24 +109,6 @@ export default function DashboardPage() {
         } finally {
             setCancelandoPlan(false);
         }
-    }
-
-    if (!tokenHydrated) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#4C1D95]/20 border-t-[#4C1D95]" />
-            </div>
-        );
-    }
-
-    if (!token) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
-                <div className="text-center">
-                    <p className="text-sm font-medium text-slate-600">Redirigiendo a inicio de sesion...</p>
-                </div>
-            </div>
-        );
     }
 
     return (
@@ -216,7 +187,7 @@ export default function DashboardPage() {
                     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.12fr)_360px] xl:grid-cols-[minmax(0,1.18fr)_380px] xl:gap-8">
                         <div className="space-y-6 lg:min-w-0">
                             {suscripcion ? (
-                                <CredencialCard token={token} />
+                                <CredencialCard />
                             ) : (
                                 <Card className="p-8">
                                     <h2 className="mb-2 text-lg font-bold text-slate-900">Sin suscripcion activa</h2>
@@ -257,13 +228,12 @@ export default function DashboardPage() {
 
                             {estaActiva && tieneBeneficiarios && (
                                 <BeneficiariosCard
-                                    token={token}
                                     maxBeneficiarios={maxBeneficiarios}
                                     totalIntegrantes={totalIntegrantes}
                                 />
                             )}
 
-                            {estaActiva && <SoporteCard token={token} />}
+                            {estaActiva && <SoporteCard />}
                         </div>
 
                         <div className="space-y-6 lg:pt-12">
@@ -273,7 +243,7 @@ export default function DashboardPage() {
                                 puedeMejorarPlan={estaActiva && !esElMasCaro && planes.length > 0}
                                 onManagePlan={() => setModalBaja(true)}
                             />
-                            {perfil && <DatosCuentaCard perfil={perfil} token={token} onActualizar={setPerfil} />}
+                            {perfil && <DatosCuentaCard perfil={perfil} onActualizar={setPerfil} />}
                         </div>
                     </div>
                 )}

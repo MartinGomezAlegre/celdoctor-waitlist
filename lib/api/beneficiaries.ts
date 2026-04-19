@@ -1,11 +1,11 @@
-import { ApiError, getApiUrl } from "./core";
+import { ApiError, authHeaders, getApiUrl } from "./core";
 import type { Beneficiario } from "./types";
 
-export async function obtenerBeneficiarios(token: string): Promise<Beneficiario[]> {
+export async function obtenerBeneficiarios(token?: string | null): Promise<Beneficiario[]> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/beneficiarios"), {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: authHeaders(token),
         });
     } catch {
         return [];
@@ -16,7 +16,7 @@ export async function obtenerBeneficiarios(token: string): Promise<Beneficiario[
 }
 
 export async function agregarBeneficiario(
-    token: string,
+    token: string | null | undefined,
     datos: { nombre: string; apellido: string; dni: string; fecha_nacimiento: string; relacion: string },
 ): Promise<Beneficiario> {
     let res: Response;
@@ -25,7 +25,7 @@ export async function agregarBeneficiario(
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                ...authHeaders(token),
             },
             body: JSON.stringify(datos),
         });
@@ -38,12 +38,12 @@ export async function agregarBeneficiario(
     return res.json() as Promise<Beneficiario>;
 }
 
-export async function eliminarBeneficiario(token: string, id: number): Promise<void> {
+export async function eliminarBeneficiario(token: string | null | undefined, id: number): Promise<void> {
     let res: Response;
     try {
         res = await fetch(getApiUrl(`/beneficiarios/${id}`), {
             method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
+            headers: authHeaders(token),
         });
     } catch {
         throw new Error("Error de conexión al eliminar el beneficiario");

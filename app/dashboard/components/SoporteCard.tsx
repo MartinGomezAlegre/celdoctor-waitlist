@@ -6,7 +6,7 @@ import type { TicketUsuario } from "@/lib/api";
 import { crearTicket, obtenerMisTickets } from "@/lib/api";
 import { Card, Modal, SkeletonBlock, TicketEstadoBadge } from "./ui";
 
-export function SoporteCard({ token }: { token: string }) {
+export function SoporteCard({ token }: { token?: string | null }) {
     const [tickets, setTickets] = useState<TicketUsuario[]>([]);
     const [cargando, setCargando] = useState(true);
     const [modalNuevo, setModalNuevo] = useState(false);

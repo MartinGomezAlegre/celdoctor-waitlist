@@ -1,7 +1,18 @@
+import type { SessionScope } from "../session";
+
 const BASE_URL = "/api/proxy";
 
 export function getApiUrl(path: string): string {
     return `${BASE_URL}${path}`;
+}
+
+export function authHeaders(token?: string | null, scope?: SessionScope): Record<string, string> {
+    const headers: Record<string, string> = {};
+
+    if (token) headers.Authorization = `Bearer ${token}`;
+    if (scope) headers["X-Session-Scope"] = scope;
+
+    return headers;
 }
 
 export async function getErrorDetail(res: Response, fallback: string): Promise<string> {

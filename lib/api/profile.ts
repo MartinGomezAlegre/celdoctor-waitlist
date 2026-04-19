@@ -1,11 +1,11 @@
-import { ApiError, getApiUrl } from "./core";
+import { ApiError, authHeaders, getApiUrl } from "./core";
 import type { MiPerfil } from "./types";
 
-export async function getMiPerfil(token: string): Promise<MiPerfil | null> {
+export async function getMiPerfil(token?: string | null): Promise<MiPerfil | null> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/usuarios/mi-perfil"), {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: authHeaders(token),
         });
     } catch {
         return null;
@@ -19,14 +19,14 @@ export async function getMiPerfil(token: string): Promise<MiPerfil | null> {
     return res.json() as Promise<MiPerfil>;
 }
 
-export async function editarPerfil(token: string, datos: Partial<MiPerfil>): Promise<MiPerfil> {
+export async function editarPerfil(token: string | null | undefined, datos: Partial<MiPerfil>): Promise<MiPerfil> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/usuarios/me"), {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                ...authHeaders(token),
             },
             body: JSON.stringify(datos),
         });

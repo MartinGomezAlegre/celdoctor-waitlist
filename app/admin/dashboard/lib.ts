@@ -1,6 +1,7 @@
 export const API = "/api/proxy"
 
-export function authHeaders(token: string): Record<string, string> {
+export function authHeaders(token?: string | null): Record<string, string> {
+    if (!token) return {}
     return { Authorization: `Bearer ${token}` }
 }
 

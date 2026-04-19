@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, Circle, Clock } from "lucide-react";
-import { obtenerPlanes, type Plan } from "@/lib/api";
+import { ApiError, getMiPerfil, obtenerPlanes, type Plan } from "@/lib/api";
 
 const FALLBACK_PLANES: Plan[] = [
     { id: 1, nombre: "Personal", descripcion: "Cobertura agil para vos.", precio_mensual: 5000, max_beneficiarios: 1 },
@@ -27,21 +27,23 @@ export default function ConfirmacionPage() {
     const [plan, setPlan] = useState<Plan | null>(null);
 
     useEffect(() => {
-        const storedToken = localStorage.getItem("celdoctor_token");
-        if (!storedToken) {
-            router.replace("/login");
-            return;
-        }
-
         const planId = Number(params.plan_id);
-        obtenerPlanes()
-            .then((planes) => {
+        Promise.all([getMiPerfil(), obtenerPlanes()])
+            .then(([perfil, planes]) => {
+                if (!perfil) {
+                    router.replace("/login");
+                    return;
+                }
                 const lista = planes.length > 0 ? planes : FALLBACK_PLANES;
                 const encontrado = lista.find((p) => p.id === planId) ?? lista[0];
                 setPlan(encontrado);
                 setListo(true);
             })
-            .catch(() => {
+            .catch((err) => {
+                if (err instanceof ApiError && err.code === "UNAUTHORIZED") {
+                    router.replace("/login");
+                    return;
+                }
                 const encontrado = FALLBACK_PLANES.find((p) => p.id === planId) ?? FALLBACK_PLANES[0];
                 setPlan(encontrado);
                 setListo(true);

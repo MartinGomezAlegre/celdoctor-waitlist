@@ -4,12 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Copy, Link2, LogOut, Pencil, Plus, TrendingUp, UserRound, Users } from "lucide-react";
 
-import { ApiError, createBrokerTeamMember, getCommercialDashboard, updateBrokerTeamMember, type CommercialDashboardData } from "@/lib/api";
+import { ApiError, createBrokerTeamMember, getCommercialDashboard, logout, updateBrokerTeamMember, type CommercialDashboardData } from "@/lib/api";
 import {
     clearCommercialSession,
     COMMERCIAL_NAME_KEY,
     COMMERCIAL_ROLE_KEY,
-    COMMERCIAL_TOKEN_KEY,
 } from "@/lib/commercial-session";
 import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 import { BrokerTeamModal, type BrokerTeamFormValues } from "./components/BrokerTeamModal";
@@ -76,7 +75,7 @@ function MetricCard({
 
 export default function ComercialDashboardPage() {
     const router = useRouter();
-    const [token, setToken, tokenHydrated] = useLocalStorageValue(COMMERCIAL_TOKEN_KEY);
+    const token = "";
     const [nombre, setNombre] = useLocalStorageValue(COMMERCIAL_NAME_KEY, "");
     const [, setRol] = useLocalStorageValue(COMMERCIAL_ROLE_KEY, "");
     const [data, setData] = useState<CommercialDashboardData | null>(null);
@@ -88,12 +87,6 @@ export default function ComercialDashboardPage() {
     const [teamSaving, setTeamSaving] = useState(false);
 
     useEffect(() => {
-        if (!tokenHydrated) return;
-        if (!token) {
-            router.replace("/comercial");
-            return;
-        }
-
         setError(null);
         getCommercialDashboard(token)
             .then((result) => {
@@ -103,15 +96,15 @@ export default function ComercialDashboardPage() {
             .catch((err) => {
                 if (err instanceof ApiError && err.code === "UNAUTHORIZED") {
                     clearCommercialSession();
-                    setToken(null);
                     setNombre("");
                     setRol("");
+                    void logout();
                     router.replace("/comercial?expired=1");
                     return;
                 }
                 setError(err instanceof Error ? err.message : "No pudimos cargar el panel comercial");
             });
-    }, [router, setNombre, setRol, setToken, token, tokenHydrated]);
+    }, [router, setNombre, setRol, token]);
 
     const referralLink =
         data?.perfil.link_referido
@@ -155,17 +148,17 @@ export default function ComercialDashboardPage() {
 
     function handleLogout() {
         clearCommercialSession();
-        setToken(null);
         setNombre("");
         setRol("");
+        void logout();
         router.push("/comercial");
     }
 
     function handleSessionExpired() {
         clearCommercialSession();
-        setToken(null);
         setNombre("");
         setRol("");
+        void logout();
         router.replace("/comercial?expired=1");
     }
 
@@ -204,7 +197,7 @@ export default function ComercialDashboardPage() {
     }
 
     async function handleSaveTeamMember() {
-        if (!token || data?.rol !== "broker") return;
+        if (data?.rol !== "broker") return;
 
         setError(null);
         setTeamSaving(true);
@@ -220,7 +213,7 @@ export default function ComercialDashboardPage() {
                 : await createBrokerTeamMember(token, {
                     nombre: teamForm.nombre.trim(),
                     email: teamForm.email.trim(),
-                    contrasenia: teamForm.contrasenia.trim(),
+                    contrasenia: teamForm.contrasenia.trim() || null,
                     referral_code: teamForm.referral_code.trim() || null,
                     estado: teamForm.estado,
                 });
@@ -251,7 +244,7 @@ export default function ComercialDashboardPage() {
         }
     }
 
-    if (!tokenHydrated || (token && !data && !error)) {
+    if (!data && !error) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-slate-50">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#4C1D95]/20 border-t-[#4C1D95]" />
@@ -465,7 +458,7 @@ export default function ComercialDashboardPage() {
                             )}
                         </div>
 
-                        <CommercialSupportCard token={token ?? ""} onSessionExpired={handleSessionExpired} />
+                        <CommercialSupportCard token={token} onSessionExpired={handleSessionExpired} />
                     </section>
                 </div>
             </main>

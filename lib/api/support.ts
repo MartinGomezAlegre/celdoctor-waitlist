@@ -1,11 +1,15 @@
-import { ApiError, getApiUrl, getErrorDetail } from "./core";
+import type { SessionScope } from "../session";
+import { ApiError, authHeaders, getApiUrl, getErrorDetail } from "./core";
 import type { TicketUsuario } from "./types";
 
-export async function obtenerMisTickets(token: string): Promise<TicketUsuario[]> {
+export async function obtenerMisTickets(
+    token?: string | null,
+    scope: SessionScope = "customer",
+): Promise<TicketUsuario[]> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/soporte/mis-tickets"), {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: authHeaders(token, scope),
         });
     } catch {
         return [];
@@ -15,14 +19,19 @@ export async function obtenerMisTickets(token: string): Promise<TicketUsuario[]>
     return res.json() as Promise<TicketUsuario[]>;
 }
 
-export async function crearTicket(token: string, asunto: string, mensaje: string): Promise<TicketUsuario> {
+export async function crearTicket(
+    token: string | null | undefined,
+    asunto: string,
+    mensaje: string,
+    scope: SessionScope = "customer",
+): Promise<TicketUsuario> {
     let res: Response;
     try {
         res = await fetch(getApiUrl("/soporte/tickets"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                ...authHeaders(token, scope),
             },
             body: JSON.stringify({ asunto, mensaje }),
         });
