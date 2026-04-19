@@ -66,7 +66,7 @@ export function BrokerTeamModal({
                             type="password"
                             value={values.contrasenia}
                             onChange={onChange}
-                            placeholder={editing ? "Solo si queres resetearla" : "Opcional: si la dejas vacia se envia invitacion"}
+                            placeholder={editing ? "Solo si queres resetearla" : "Definila junto al responsable del broker"}
                         />
                     </Field>
                     <Field label="Estado">
@@ -91,8 +91,8 @@ export function BrokerTeamModal({
                 </div>
 
                 <p className="mt-4 text-xs text-slate-500">
-                    El vendedor accede desde <span className="font-semibold text-slate-700">/comercial</span>. Si al crear dejas la
-                    contrasena vacia, enviamos un link de activacion al email indicado. Si estas editando, dejarla vacia conserva la actual.
+                    El vendedor accede desde <span className="font-semibold text-slate-700">/comercial</span>. La contrasena inicial la
+                    define el responsable del broker. Si estas editando, dejarla vacia conserva la actual.
                 </p>
 
                 <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

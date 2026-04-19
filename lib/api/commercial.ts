@@ -37,7 +37,7 @@ export async function createBrokerTeamMember(
     payload: {
         nombre: string;
         email: string;
-        contrasenia?: string | null;
+        contrasenia: string;
         referral_code?: string | null;
         estado: string;
     },

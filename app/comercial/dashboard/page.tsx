@@ -202,6 +202,9 @@ export default function ComercialDashboardPage() {
         setError(null);
         setTeamSaving(true);
         try {
+            if (!selectedTeamMemberId && !teamForm.contrasenia.trim()) {
+                throw new Error("Para crear un vendedor necesitas definir una contrasena inicial");
+            }
             const saved = selectedTeamMemberId
                 ? await updateBrokerTeamMember(token, selectedTeamMemberId, {
                     nombre: teamForm.nombre.trim(),
@@ -213,7 +216,7 @@ export default function ComercialDashboardPage() {
                 : await createBrokerTeamMember(token, {
                     nombre: teamForm.nombre.trim(),
                     email: teamForm.email.trim(),
-                    contrasenia: teamForm.contrasenia.trim() || null,
+                    contrasenia: teamForm.contrasenia.trim(),
                     referral_code: teamForm.referral_code.trim() || null,
                     estado: teamForm.estado,
                 });
