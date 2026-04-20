@@ -2,17 +2,23 @@
 
 import { useEffect, useState } from "react"
 
-import type { AdminUsuario, AdminUsuarioDetalle, ToastType } from "../../types"
+import type { AdminUsuario, AdminUsuarioDetalle, PaginatedResponse, ToastType } from "../../types"
 import { API, authHeaders } from "../../lib"
 import { adminEndpoints } from "../../admin-endpoints"
+import type { Filtro } from "./utils"
 
 interface UsePersonasAdminParams {
     token: string
     addToast: (msg: string, type: ToastType) => void
+    buscar: string
+    filtro: Filtro
+    page: number
+    perPage: number
 }
 
-export function usePersonasAdmin({ token, addToast }: UsePersonasAdminParams) {
+export function usePersonasAdmin({ token, addToast, buscar, filtro, page, perPage }: UsePersonasAdminParams) {
     const [usuarios, setUsuarios] = useState<AdminUsuario[]>([])
+    const [total, setTotal] = useState(0)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
     const [drawerUsuario, setDrawerUsuario] = useState<AdminUsuario | null>(null)
@@ -30,18 +36,31 @@ export function usePersonasAdmin({ token, addToast }: UsePersonasAdminParams) {
             setError(false)
 
             try {
-                const res = await fetch(`${API}${adminEndpoints.usuarios}`, { headers: authHeaders(token) })
+                const params = new URLSearchParams({
+                    limit: String(perPage),
+                    offset: String((page - 1) * perPage),
+                })
+                if (buscar.trim()) params.set("buscar", buscar.trim())
+                if (filtro !== "todos") params.set("filtro", filtro)
+
+                const res = await fetch(`${API}${adminEndpoints.usuarios}?${params.toString()}`, { headers: authHeaders(token) })
                 const data: unknown = await res.json()
 
                 if (ignore) return
 
-                if (Array.isArray(data)) {
-                    setUsuarios(data as AdminUsuario[])
+                const payload = data as PaginatedResponse<AdminUsuario>
+                if (payload && Array.isArray(payload.items)) {
+                    setUsuarios(payload.items)
+                    setTotal(payload.total ?? 0)
                 } else {
+                    setUsuarios([])
+                    setTotal(0)
                     setError(true)
                 }
             } catch {
                 if (!ignore) {
+                    setUsuarios([])
+                    setTotal(0)
                     setError(true)
                 }
             } finally {
@@ -55,7 +74,7 @@ export function usePersonasAdmin({ token, addToast }: UsePersonasAdminParams) {
         return () => {
             ignore = true
         }
-    }, [token])
+    }, [buscar, filtro, page, perPage, token])
 
     async function abrirDetalleUsuario(usuario: AdminUsuario) {
         setDrawerUsuario(usuario)
@@ -128,6 +147,7 @@ export function usePersonasAdmin({ token, addToast }: UsePersonasAdminParams) {
 
     return {
         usuarios,
+        total,
         loading,
         error,
         drawerUsuario,

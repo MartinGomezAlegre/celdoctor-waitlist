@@ -1,6 +1,8 @@
 "use client"
-import { useState, useEffect } from "react"
+
+import { useState } from "react"
 import { Plus } from "lucide-react"
+
 import type { Empresa, AdminPlan, EmpresaForm, ToastType } from "../../types"
 import { EMPRESA_FORM_VACIO } from "../../types"
 import { API, authHeaders, fmtDate, diasParaVencer, getApiErrorDetail } from "../../lib"
@@ -9,10 +11,12 @@ import { StatBadge } from "../shared/StatBadge"
 import { Pagination } from "../shared/Pagination"
 import { FormEmpresa } from "./FormEmpresa"
 
-const PER_PAGE = 25
-
 interface Props {
     empresas: Empresa[]
+    total: number
+    page: number
+    perPage: number
+    onPageChange: (page: number) => void
     loading: boolean
     error: boolean
     buscar: string
@@ -25,23 +29,24 @@ interface Props {
 }
 
 export function ListaEmpresas({
-    empresas, loading, error, buscar, onBuscar,
-    token, addToast, planes, onSeleccionar, onRefetch,
+    empresas,
+    total,
+    page,
+    perPage,
+    onPageChange,
+    loading,
+    error,
+    buscar,
+    onBuscar,
+    token,
+    addToast,
+    planes,
+    onSeleccionar,
+    onRefetch,
 }: Props) {
-    const [page, setPage] = useState(1)
     const [modalNueva, setModalNueva] = useState(false)
     const [form, setForm] = useState<EmpresaForm>(EMPRESA_FORM_VACIO)
     const [guardando, setGuardando] = useState(false)
-
-    const filtradas = empresas.filter((e) => {
-        const q = buscar.toLowerCase()
-        return e.razon_social.toLowerCase().includes(q) || e.cuit.includes(q)
-    })
-
-    // Resetear página al cambiar búsqueda
-    useEffect(() => { setPage(1) }, [buscar])
-
-    const paginadas = filtradas.slice((page - 1) * PER_PAGE, page * PER_PAGE)
 
     async function guardarNueva() {
         setGuardando(true)
@@ -83,7 +88,7 @@ export function ListaEmpresas({
                 })
 
                 if (!suscripcionRes.ok) {
-                    throw new Error(await getApiErrorDetail(suscripcionRes, "La empresa se creó, pero no se pudo generar la suscripción inicial"))
+                    throw new Error(await getApiErrorDetail(suscripcionRes, "La empresa se creo, pero no se pudo generar la suscripcion inicial"))
                 }
             }
 
@@ -105,7 +110,7 @@ export function ListaEmpresas({
                 <div className="flex gap-3">
                     <input
                         type="text"
-                        placeholder="Buscar por razón social o CUIT…"
+                        placeholder="Buscar por razon social o CUIT..."
                         value={buscar}
                         onChange={(e) => onBuscar(e.target.value)}
                         className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30 focus:border-[#4C1D95] w-64"
@@ -128,7 +133,7 @@ export function ListaEmpresas({
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-slate-100 bg-slate-50">
-                                {["Empresa", "Contacto", "Empleados", "Plan", "Estado", "Próx. cobro", "Acciones"].map((h) => (
+                                {["Empresa", "Contacto", "Empleados", "Plan", "Estado", "Prox. cobro", "Acciones"].map((h) => (
                                     <th key={h} className="text-left px-5 py-3.5 font-semibold text-slate-600 whitespace-nowrap">{h}</th>
                                 ))}
                             </tr>
@@ -142,14 +147,14 @@ export function ListaEmpresas({
                                         ))}
                                     </tr>
                                 ))
-                            ) : paginadas.length === 0 ? (
+                            ) : empresas.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="text-center text-slate-400 py-12 text-sm">
                                         No hay empresas registradas.
                                     </td>
                                 </tr>
                             ) : (
-                                paginadas.map((emp) => (
+                                empresas.map((emp) => (
                                     <tr key={emp.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                                         <td className="px-5 py-3.5">
                                             <p className="font-medium text-slate-900 whitespace-nowrap">{emp.razon_social}</p>
@@ -188,13 +193,13 @@ export function ListaEmpresas({
                             )}
                         </tbody>
                     </table>
-                    {!loading && filtradas.length > PER_PAGE && (
+                    {!loading && total > perPage && (
                         <div className="px-5 pb-4">
                             <Pagination
-                                total={filtradas.length}
+                                total={total}
                                 page={page}
-                                perPage={PER_PAGE}
-                                onPageChange={setPage}
+                                perPage={perPage}
+                                onPageChange={onPageChange}
                             />
                         </div>
                     )}

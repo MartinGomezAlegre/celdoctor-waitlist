@@ -29,13 +29,13 @@ async function proxy(req: NextRequest, ctx: Context) {
     const body =
         req.method === 'GET' || req.method === 'HEAD'
             ? undefined
-            : await req.text()
+            : await req.arrayBuffer()
 
     const headers = new Headers()
     const contentType = req.headers.get('Content-Type')
     const accept = req.headers.get('Accept')
 
-    if (body !== undefined) {
+    if (body !== undefined && contentType) {
         headers.set('Content-Type', contentType ?? 'application/json')
     }
     if (accept) headers.set('Accept', accept)

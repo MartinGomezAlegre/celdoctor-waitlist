@@ -1,16 +1,20 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import type { AdminSuscripcion, ToastType } from "../types"
+
+import type { AdminSuscripcion, PaginatedResponse, ToastType } from "../types"
 import { API, authHeaders, fmtCurrency, fmtDate } from "../lib"
 import { adminEndpoints } from "../admin-endpoints"
 import { TableSkeleton } from "./shared/Skeleton"
 import { StatBadge } from "./shared/StatBadge"
+import { Pagination } from "./shared/Pagination"
 
 interface Props {
     token: string
     addToast: (msg: string, type: ToastType) => void
 }
+
+const PER_PAGE = 25
 
 const ESTADOS_GESTIONABLES = [
     { value: "activa", label: "Activar" },
@@ -21,24 +25,58 @@ const ESTADOS_GESTIONABLES = [
 
 export default function SectionSuscripciones({ token, addToast }: Props) {
     const [suscripciones, setSuscripciones] = useState<AdminSuscripcion[]>([])
+    const [total, setTotal] = useState(0)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
     const [filtroEstado, setFiltroEstado] = useState("")
     const [buscar, setBuscar] = useState("")
+    const [page, setPage] = useState(1)
     const [modalGestion, setModalGestion] = useState<AdminSuscripcion | null>(null)
     const [nuevoEstado, setNuevoEstado] = useState("")
     const [motivoGestion, setMotivoGestion] = useState("")
     const [procesando, setProcesando] = useState(false)
 
     useEffect(() => {
+        let cancelled = false
+        const params = new URLSearchParams({
+            limit: String(PER_PAGE),
+            offset: String((page - 1) * PER_PAGE),
+        })
+        if (filtroEstado) params.set("estado", filtroEstado)
+        if (buscar.trim()) params.set("buscar", buscar.trim())
+
         setLoading(true)
         setError(false)
-        fetch(`${API}${adminEndpoints.suscripciones}`, { headers: authHeaders(token) })
+
+        fetch(`${API}${adminEndpoints.suscripciones}?${params.toString()}`, { headers: authHeaders(token) })
             .then((r) => r.json())
-            .then((d: unknown) => setSuscripciones(Array.isArray(d) ? (d as AdminSuscripcion[]) : []))
-            .catch(() => setError(true))
-            .finally(() => setLoading(false))
-    }, [token])
+            .then((d: unknown) => {
+                if (cancelled) return
+                const payload = d as PaginatedResponse<AdminSuscripcion>
+                if (payload && Array.isArray(payload.items)) {
+                    setSuscripciones(payload.items)
+                    setTotal(payload.total ?? 0)
+                    return
+                }
+                setSuscripciones([])
+                setTotal(0)
+                setError(true)
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setSuscripciones([])
+                    setTotal(0)
+                    setError(true)
+                }
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false)
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [buscar, filtroEstado, page, token])
 
     async function cambiarEstado() {
         if (!modalGestion || !nuevoEstado) return
@@ -64,37 +102,15 @@ export default function SectionSuscripciones({ token, addToast }: Props) {
         }
     }
 
-    const filtradas = suscripciones.filter((s) => {
-        const q = buscar.trim().toLowerCase()
-        const coincideEstado = !filtroEstado || s.estado === filtroEstado
-        return (
-            coincideEstado &&
-            (
-                !q ||
-                s.nombre_completo.toLowerCase().includes(q) ||
-                s.email.toLowerCase().includes(q) ||
-                s.plan_nombre.toLowerCase().includes(q)
-            )
-        )
-    })
-
-    const activas = suscripciones.filter((s) => s.estado === "activa").length
-    const bajasProgramadas = suscripciones.filter((s) => s.estado === "cancelacion_programada").length
-    const pendientes = suscripciones.filter((s) => s.estado === "pendiente_pago").length
-    const canceladas = suscripciones.filter((s) => s.estado === "cancelada" || s.estado === "vencida").length
-
     return (
         <div className="space-y-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-wrap items-center gap-3">
                     <h1 className="text-2xl font-bold text-slate-900">Suscripciones</h1>
                     {!loading && (
-                        <>
-                            <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">{activas} Activas</span>
-                            <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">{bajasProgramadas} Bajas programadas</span>
-                            <span className="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-amber-700">{pendientes} Pendientes</span>
-                            <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">{canceladas} Canceladas/vencidas</span>
-                        </>
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                            {total} resultados
+                        </span>
                     )}
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -102,12 +118,18 @@ export default function SectionSuscripciones({ token, addToast }: Props) {
                         type="text"
                         placeholder="Buscar por nombre, email o plan..."
                         value={buscar}
-                        onChange={(e) => setBuscar(e.target.value)}
+                        onChange={(e) => {
+                            setBuscar(e.target.value)
+                            setPage(1)
+                        }}
                         className="w-64 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
                     />
                     <select
                         value={filtroEstado}
-                        onChange={(e) => setFiltroEstado(e.target.value)}
+                        onChange={(e) => {
+                            setFiltroEstado(e.target.value)
+                            setPage(1)
+                        }}
                         className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
                     >
                         <option value="">Todos los estados</option>
@@ -137,14 +159,14 @@ export default function SectionSuscripciones({ token, addToast }: Props) {
                         <tbody>
                             {loading ? (
                                 <TableSkeleton rows={6} cols={7} />
-                            ) : filtradas.length === 0 ? (
+                            ) : suscripciones.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="px-5 py-12 text-center text-slate-400">
                                         No hay suscripciones para este filtro.
                                     </td>
                                 </tr>
                             ) : (
-                                filtradas.map((s) => (
+                                suscripciones.map((s) => (
                                     <tr key={s.id} className="border-b border-slate-50 transition-colors hover:bg-slate-50/50">
                                         <td className="whitespace-nowrap px-5 py-3.5 font-medium text-slate-900">{s.nombre_completo}</td>
                                         <td className="px-5 py-3.5 text-slate-600">{s.email}</td>
@@ -167,6 +189,11 @@ export default function SectionSuscripciones({ token, addToast }: Props) {
                             )}
                         </tbody>
                     </table>
+                    {!loading && total > PER_PAGE && (
+                        <div className="px-5 pb-4">
+                            <Pagination total={total} page={page} perPage={PER_PAGE} onPageChange={setPage} />
+                        </div>
+                    )}
                 </div>
             )}
 

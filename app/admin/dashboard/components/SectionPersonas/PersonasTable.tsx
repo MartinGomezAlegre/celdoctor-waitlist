@@ -1,19 +1,15 @@
 import type { AdminUsuario } from "../../types"
 import { fmtDate } from "../../lib"
 import { StatBadge } from "../shared/StatBadge"
-import { matchUsuario, situacionUsuario } from "./utils"
+import { situacionUsuario } from "./utils"
 
 interface Props {
     usuarios: AdminUsuario[]
-    buscar: string
-    filtro: import("./utils").Filtro
     onOpenDetail: (usuario: AdminUsuario) => void
     onOpenStatusModal: (usuario: AdminUsuario) => void
 }
 
-export function PersonasTable({ usuarios, buscar, filtro, onOpenDetail, onOpenStatusModal }: Props) {
-    const filtrados = usuarios.filter((usuario) => matchUsuario(usuario, buscar, filtro))
-
+export function PersonasTable({ usuarios, onOpenDetail, onOpenStatusModal }: Props) {
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 text-sm">
@@ -30,14 +26,14 @@ export function PersonasTable({ usuarios, buscar, filtro, onOpenDetail, onOpenSt
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                    {filtrados.length === 0 ? (
+                    {usuarios.length === 0 ? (
                         <tr>
                             <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
                                 No se encontraron usuarios.
                             </td>
                         </tr>
                     ) : (
-                        filtrados.map((usuario) => (
+                        usuarios.map((usuario) => (
                             <tr key={usuario.id} className="transition-colors hover:bg-gray-50">
                                 <td className="px-4 py-3">
                                     <div className="space-y-1">

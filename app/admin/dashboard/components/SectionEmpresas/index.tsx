@@ -6,6 +6,8 @@ import { useEmpresas } from "./hooks/useEmpresas"
 import { ListaEmpresas } from "./ListaEmpresas"
 import { DetalleEmpresa } from "./DetalleEmpresa"
 
+const PER_PAGE = 25
+
 interface Props {
     token: string
     addToast: (msg: string, type: ToastType) => void
@@ -14,7 +16,8 @@ interface Props {
 export default function SectionEmpresas({ token, addToast }: Props) {
     const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null)
     const [buscar, setBuscar] = useState("")
-    const { empresas, loading, error, refetch } = useEmpresas(token)
+    const [page, setPage] = useState(1)
+    const { empresas, total, loading, error, refetch } = useEmpresas(token, buscar, page, PER_PAGE)
     const [planes, setPlanes] = useState<AdminPlan[]>([])
 
     useEffect(() => {
@@ -39,10 +42,17 @@ export default function SectionEmpresas({ token, addToast }: Props) {
     return (
         <ListaEmpresas
             empresas={empresas}
+            total={total}
+            page={page}
+            perPage={PER_PAGE}
+            onPageChange={setPage}
             loading={loading}
             error={error}
             buscar={buscar}
-            onBuscar={setBuscar}
+            onBuscar={(value) => {
+                setBuscar(value)
+                setPage(1)
+            }}
             token={token}
             addToast={addToast}
             planes={planes}

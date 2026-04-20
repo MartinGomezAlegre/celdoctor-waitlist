@@ -2,6 +2,7 @@ export type Section = "overview" | "personas" | "empresas" | "suscripciones" | "
 export type ToastType = "success" | "error" | "warning"
 
 export interface Toast { id: number; msg: string; type: ToastType }
+export interface PaginatedResponse<T> { items: T[]; total: number; limit: number; offset: number }
 export interface Alerta { tipo: string; cantidad: number; mensaje: string }
 export interface GraficoPoint { fecha: string; nuevas: number; total_acumulado: number }
 export interface RevenuePlan { plan: string; suscriptores: number; revenue: number }
@@ -213,7 +214,37 @@ export interface LiquidacionComercial {
     paid_at: string | null
     created_at: string | null
 }
-export interface ResultadoBulk { cargados: number; fallidos: number; errores: string[] }
+
+export interface BulkEmpleadoError {
+    fila: number
+    campo?: string | null
+    mensaje: string
+}
+
+export interface BulkEmpleadoPreview {
+    fila: number
+    nombre: string
+    apellido: string
+    dni: string
+    email: string
+    cargo?: string | null
+    telefono?: string | null
+}
+
+export interface BulkEmpleadoDryRun {
+    total_filas: number
+    validas: number
+    invalidas: number
+    preview: BulkEmpleadoPreview[]
+    errores: BulkEmpleadoError[]
+}
+
+export interface ResultadoBulk {
+    cargados: number
+    fallidos: number
+    errores: BulkEmpleadoError[]
+    preview?: BulkEmpleadoPreview[]
+}
 
 export interface Cupon {
     id: number; codigo: string; descripcion: string | null; tipo_descuento: string;

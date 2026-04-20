@@ -10,6 +10,9 @@ import { PersonaStatusModal } from "./SectionPersonas/PersonaStatusModal"
 import { PersonasToolbar } from "./SectionPersonas/PersonasToolbar"
 import { usePersonasAdmin } from "./SectionPersonas/usePersonasAdmin"
 import type { Filtro } from "./SectionPersonas/utils"
+import { Pagination } from "./shared/Pagination"
+
+const PER_PAGE = 25
 
 interface Props {
     token: string
@@ -19,9 +22,11 @@ interface Props {
 export default function SectionPersonas({ token, addToast }: Props) {
     const [buscar, setBuscar] = useState("")
     const [filtro, setFiltro] = useState<Filtro>("todos")
+    const [page, setPage] = useState(1)
 
     const {
         usuarios,
+        total,
         loading,
         error,
         drawerUsuario,
@@ -36,15 +41,21 @@ export default function SectionPersonas({ token, addToast }: Props) {
         closeDrawer,
         openStatusModal,
         setModalBaja,
-    } = usePersonasAdmin({ token, addToast })
+    } = usePersonasAdmin({ token, addToast, buscar, filtro, page, perPage: PER_PAGE })
 
     return (
         <div className="space-y-6">
             <PersonasToolbar
                 buscar={buscar}
                 filtro={filtro}
-                onBuscarChange={setBuscar}
-                onFiltroChange={setFiltro}
+                onBuscarChange={(value) => {
+                    setBuscar(value)
+                    setPage(1)
+                }}
+                onFiltroChange={(value) => {
+                    setFiltro(value)
+                    setPage(1)
+                }}
             />
 
             <div className="overflow-hidden rounded-2xl bg-white shadow">
@@ -59,13 +70,17 @@ export default function SectionPersonas({ token, addToast }: Props) {
                 ) : (
                     <PersonasTable
                         usuarios={usuarios}
-                        buscar={buscar}
-                        filtro={filtro}
                         onOpenDetail={(usuario) => void abrirDetalleUsuario(usuario)}
                         onOpenStatusModal={openStatusModal}
                     />
                 )}
             </div>
+
+            {!loading && !error && total > PER_PAGE && (
+                <div className="rounded-2xl bg-white px-6 py-4 shadow">
+                    <Pagination total={total} page={page} perPage={PER_PAGE} onPageChange={setPage} />
+                </div>
+            )}
 
             <PersonaDetailDrawer
                 usuario={drawerUsuario}

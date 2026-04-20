@@ -1,32 +1,72 @@
 import { useState, useEffect, useCallback } from "react"
-import type { Empresa } from "../../../types"
+import type { Empresa, PaginatedResponse } from "../../../types"
 import { API, authHeaders } from "../../../lib"
 
-export function useEmpresas(token: string) {
+export function useEmpresas(token: string, buscar: string, page: number, perPage: number) {
     const [empresas, setEmpresas] = useState<Empresa[]>([])
+    const [total, setTotal] = useState(0)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
 
     const fetchEmpresas = useCallback(() => {
         setLoading(true)
         setError(false)
-        fetch(`${API}/admin/empresas`, { headers: authHeaders(token) })
+        const params = new URLSearchParams({
+            limit: String(perPage),
+            offset: String((page - 1) * perPage),
+        })
+        if (buscar.trim()) params.set("buscar", buscar.trim())
+
+        fetch(`${API}/admin/empresas?${params.toString()}`, { headers: authHeaders(token) })
             .then((r) => r.json())
-            .then((d: unknown) => setEmpresas(Array.isArray(d) ? (d as Empresa[]) : []))
-            .catch(() => setError(true))
+            .then((d: unknown) => {
+                const payload = d as PaginatedResponse<Empresa>
+                if (payload && Array.isArray(payload.items)) {
+                    setEmpresas(payload.items)
+                    setTotal(payload.total ?? 0)
+                    return
+                }
+                setEmpresas([])
+                setTotal(0)
+                setError(true)
+            })
+            .catch(() => {
+                setEmpresas([])
+                setTotal(0)
+                setError(true)
+            })
             .finally(() => setLoading(false))
-    }, [token])
+    }, [buscar, page, perPage, token])
 
     useEffect(() => {
         let cancelled = false
 
-        fetch(`${API}/admin/empresas`, { headers: authHeaders(token) })
+        const params = new URLSearchParams({
+            limit: String(perPage),
+            offset: String((page - 1) * perPage),
+        })
+        if (buscar.trim()) params.set("buscar", buscar.trim())
+
+        fetch(`${API}/admin/empresas?${params.toString()}`, { headers: authHeaders(token) })
             .then((r) => r.json())
             .then((d: unknown) => {
-                if (!cancelled) setEmpresas(Array.isArray(d) ? (d as Empresa[]) : [])
+                if (cancelled) return
+                const payload = d as PaginatedResponse<Empresa>
+                if (payload && Array.isArray(payload.items)) {
+                    setEmpresas(payload.items)
+                    setTotal(payload.total ?? 0)
+                    return
+                }
+                setEmpresas([])
+                setTotal(0)
+                setError(true)
             })
             .catch(() => {
-                if (!cancelled) setError(true)
+                if (!cancelled) {
+                    setEmpresas([])
+                    setTotal(0)
+                    setError(true)
+                }
             })
             .finally(() => {
                 if (!cancelled) setLoading(false)
@@ -35,7 +75,7 @@ export function useEmpresas(token: string) {
         return () => {
             cancelled = true
         }
-    }, [token])
+    }, [buscar, page, perPage, token])
 
-    return { empresas, loading, error, refetch: fetchEmpresas }
+    return { empresas, total, loading, error, refetch: fetchEmpresas }
 }

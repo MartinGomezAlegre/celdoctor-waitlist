@@ -24,6 +24,9 @@ export const adminEndpoints = {
     empresaEstado: (id: number) =>     `/admin/empresas/${id}/estado`,
     empresaEmpleados: (id: number) =>  `/admin/empresas/${id}/empleados`,
     empresaBulk: (id: number) =>       `/admin/empresas/${id}/empleados/bulk`,
+    empresaBulkDryRun: (id: number) => `/admin/empresas/${id}/empleados/bulk/dry-run`,
+    empresaBulkUpload: (id: number) => `/admin/empresas/${id}/empleados/bulk/upload`,
+    empresaBulkTemplate: (id: number) => `/admin/empresas/${id}/empleados/plantilla`,
     empresaExportar: (id: number) =>   `/admin/empresas/${id}/exportar-empleados`,
     empleadoEstado: (empId: number, empId2: number) =>
         `/admin/empresas/${empId}/empleados/${empId2}/estado`,
