@@ -22,6 +22,10 @@ function resolveSessionCookieNameForRequest(req: NextRequest, path: string[]) {
     return SESSION_COOKIE_NAMES.customer
 }
 
+function shouldAttachSession(path: string[]) {
+    return !(path[0] === 'auth' && path[1] === 'invitaciones')
+}
+
 async function proxy(req: NextRequest, ctx: Context) {
     const { path } = await ctx.params
     const url = `${BACKEND}/${path.join('/')}${req.nextUrl.search}`
@@ -41,7 +45,9 @@ async function proxy(req: NextRequest, ctx: Context) {
     if (accept) headers.set('Accept', accept)
 
     const auth = req.headers.get('Authorization')
-    const sessionToken = req.cookies.get(resolveSessionCookieNameForRequest(req, path))?.value
+    const sessionToken = shouldAttachSession(path)
+        ? req.cookies.get(resolveSessionCookieNameForRequest(req, path))?.value
+        : undefined
     if (auth) {
         headers.set('Authorization', auth)
     } else if (sessionToken) {

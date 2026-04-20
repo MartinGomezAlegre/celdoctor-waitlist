@@ -115,6 +115,7 @@ export default function AdminDashboardPage() {
     const [section, setSection] = useState<Section>("overview");
     const [toasts, setToasts] = useState<Toast[]>([]);
     const [sidebarAbierto, setSidebarAbierto] = useState(false);
+    const [sessionChecked, setSessionChecked] = useState(false);
     const [alertas, setAlertas] = useState<Alerta[]>([]);
     const [metricasEmpresas, setMetricasEmpresas] = useState<MetricasEmpresas | null>(null);
     const [ticketsAbiertos, setTicketsAbiertos] = useState(0);
@@ -122,38 +123,80 @@ export default function AdminDashboardPage() {
     const [upsellsNuevos, setUpsellsNuevos] = useState(0);
     const token = "";
 
-    useEffect(() => {
-        fetch(`${API}${adminEndpoints.alertas}`, { headers: authHeaders(token) })
-            .then((response) => response.json())
-            .then((data: unknown) => setAlertas(Array.isArray(data) ? (data as Alerta[]) : []))
-            .catch(() => null);
-
-        fetch(`${API}${adminEndpoints.metricasEmpresas}`, { headers: authHeaders(token) })
-            .then((response) => response.json())
-            .then((data: MetricasEmpresas) => setMetricasEmpresas(data))
-            .catch(() => null);
-
-        fetch(`${API}${adminEndpoints.tickets}?estado=abierto`, { headers: authHeaders(token) })
-            .then((response) => response.json())
-            .then((data: unknown) => setTicketsAbiertos(Array.isArray(data) ? (data as unknown[]).length : 0))
-            .catch(() => null);
-
-        fetch(`${API}${adminEndpoints.leads}?estado=nuevo`, { headers: authHeaders(token) })
-            .then((response) => response.json())
-            .then((data: unknown) => setLeadsNuevos(Array.isArray(data) ? (data as unknown[]).length : 0))
-            .catch(() => null);
-
-        fetch(`${API}${adminEndpoints.upsellsSeguro}?estado=nuevo`, { headers: authHeaders(token) })
-            .then((response) => response.json())
-            .then((data: unknown) => setUpsellsNuevos(Array.isArray(data) ? (data as unknown[]).length : 0))
-            .catch(() => null);
-    }, [router, token]);
-
     function addToast(msg: string, type: ToastType) {
         const id = Date.now();
         setToasts((prev) => [...prev, { id, msg, type }]);
         setTimeout(() => setToasts((prev) => prev.filter((toast) => toast.id !== id)), 4000);
     }
+
+    useEffect(() => {
+        let cancelado = false;
+
+        async function validarSesion() {
+            const response = await fetch("/api/session/me?scope=admin", {
+                cache: "no-store",
+                credentials: "same-origin",
+            }).catch(() => null);
+
+            if (!response || response.status === 401 || response.status === 403) {
+                localStorage.removeItem("celdoctor_admin_token");
+                localStorage.removeItem("celdoctor_rol");
+                await logout().catch(() => null);
+                if (!cancelado) {
+                    router.replace("/admin?expired=1");
+                }
+                return false;
+            }
+
+            if (!response.ok) {
+                if (!cancelado) {
+                    addToast("No pudimos validar tu sesion de administrador", "error");
+                }
+                return false;
+            }
+
+            if (!cancelado) {
+                setSessionChecked(true);
+            }
+            return true;
+        }
+
+        async function cargarResumen() {
+            const sesionOk = await validarSesion();
+            if (!sesionOk || cancelado) return;
+
+            fetch(`${API}${adminEndpoints.alertas}`, { headers: authHeaders(token) })
+            .then((response) => response.json())
+            .then((data: unknown) => setAlertas(Array.isArray(data) ? (data as Alerta[]) : []))
+            .catch(() => null);
+
+            fetch(`${API}${adminEndpoints.metricasEmpresas}`, { headers: authHeaders(token) })
+            .then((response) => response.json())
+            .then((data: MetricasEmpresas) => setMetricasEmpresas(data))
+            .catch(() => null);
+
+            fetch(`${API}${adminEndpoints.tickets}?estado=abierto`, { headers: authHeaders(token) })
+            .then((response) => response.json())
+            .then((data: unknown) => setTicketsAbiertos(Array.isArray(data) ? (data as unknown[]).length : 0))
+            .catch(() => null);
+
+            fetch(`${API}${adminEndpoints.leads}?estado=nuevo`, { headers: authHeaders(token) })
+            .then((response) => response.json())
+            .then((data: unknown) => setLeadsNuevos(Array.isArray(data) ? (data as unknown[]).length : 0))
+            .catch(() => null);
+
+            fetch(`${API}${adminEndpoints.upsellsSeguro}?estado=nuevo`, { headers: authHeaders(token) })
+            .then((response) => response.json())
+            .then((data: unknown) => setUpsellsNuevos(Array.isArray(data) ? (data as unknown[]).length : 0))
+            .catch(() => null);
+        }
+
+        void cargarResumen();
+
+        return () => {
+            cancelado = true;
+        };
+    }, [router, token]);
 
     function handleLogout() {
         localStorage.removeItem("celdoctor_admin_token");
@@ -218,6 +261,16 @@ export default function AdminDashboardPage() {
             items: [{ id: "reportes", label: "Reportes", Icon: BarChart2 }],
         },
     ];
+
+    if (!sessionChecked) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-slate-100 px-6">
+                <div className="rounded-3xl border border-slate-200 bg-white px-8 py-6 text-center shadow-sm">
+                    <p className="text-sm font-medium text-slate-500">Validando sesion de administrador...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex min-h-screen bg-slate-100">
