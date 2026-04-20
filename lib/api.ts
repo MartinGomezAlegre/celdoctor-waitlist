@@ -9,3 +9,4 @@ export * from "./api/beneficiaries";
 export * from "./api/upsells";
 export * from "./api/credentials";
 export * from "./api/commercial";
+export * from "./api/company-admin";

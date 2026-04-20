@@ -64,6 +64,8 @@ export function ListaEmpresas({
                 contacto_cargo: form.contacto_cargo.trim() || undefined,
                 contacto_email: form.contacto_email.trim(),
                 contacto_telefono: form.contacto_telefono.trim() || undefined,
+                admin_access_email: form.admin_access_email.trim() || undefined,
+                admin_access_password: form.admin_access_password.trim() || undefined,
             }
 
             const res = await fetch(`${API}/admin/empresas`, {
@@ -212,6 +214,7 @@ export function ListaEmpresas({
                     form={form}
                     setForm={setForm}
                     planes={planes}
+                    hasExistingAccess={false}
                     guardando={guardando}
                     onClose={() => { setModalNueva(false); setForm(EMPRESA_FORM_VACIO) }}
                     onSave={guardarNueva}

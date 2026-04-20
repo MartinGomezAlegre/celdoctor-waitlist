@@ -8,6 +8,7 @@ interface Props {
     form: EmpresaForm
     setForm: React.Dispatch<React.SetStateAction<EmpresaForm>>
     planes: AdminPlan[]
+    hasExistingAccess?: boolean
     guardando: boolean
     onClose: () => void
     onSave: () => void
@@ -36,10 +37,24 @@ function Campo({ label, name, tipo, required, form, setForm }: {
     )
 }
 
-export function FormEmpresa({ title, form, setForm, planes, guardando, onClose, onSave }: Props) {
+export function FormEmpresa({
+    title,
+    form,
+    setForm,
+    planes,
+    hasExistingAccess = false,
+    guardando,
+    onClose,
+    onSave,
+}: Props) {
     const showSuscripcion = title === "Nueva empresa"
     const suscripcionValida = !showSuscripcion || !form.plan_id || (!!form.cantidad_empleados && !!form.precio_por_empleado)
+    const accesoEmpresaValido =
+        (!form.admin_access_email && !form.admin_access_password) ||
+        (!!form.admin_access_email && !!form.admin_access_password) ||
+        (!!form.admin_access_email && hasExistingAccess && title !== "Nueva empresa")
     const canSave = !!form.razon_social && !!form.cuit && !!form.responsabilidad_iva && !!form.contacto_nombre && !!form.contacto_email && suscripcionValida
+        && accesoEmpresaValido
 
     return (
         <Modal
@@ -100,6 +115,32 @@ export function FormEmpresa({ title, form, setForm, planes, guardando, onClose, 
                     <Campo label="Email contacto" name="contacto_email" tipo="email" required form={form} setForm={setForm} />
                     <Campo label="Telefono" name="contacto_telefono" form={form} setForm={setForm} />
                 </div>
+
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider pt-2">Acceso empresa</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <Campo label="Email acceso empresa_admin" name="admin_access_email" tipo="email" form={form} setForm={setForm} />
+                    <Campo
+                        label={title === "Nueva empresa" ? "Contrasena inicial" : "Nueva contrasena (opcional)"}
+                        name="admin_access_password"
+                        tipo="password"
+                        form={form}
+                        setForm={setForm}
+                    />
+                </div>
+                <p className="text-xs text-slate-500">
+                    {title === "Nueva empresa"
+                        ? "Si completas estos campos, creamos el acceso del responsable de empresa con email y contrasena inicial."
+                        : "Puedes cambiar el email de acceso o definir una nueva contrasena para el responsable de empresa."}
+                </p>
+                {!accesoEmpresaValido && (
+                    <p className="text-xs text-amber-600">
+                        {title === "Nueva empresa"
+                            ? "Para crear el acceso empresa_admin necesitas email y contrasena inicial."
+                            : hasExistingAccess
+                                ? "Si cambias el email o la contrasena del acceso existente, puedes guardar directo."
+                                : "Si la empresa todavia no tiene acceso creado, necesitas email y contrasena inicial."}
+                    </p>
+                )}
 
                 {showSuscripcion && (
                     <>

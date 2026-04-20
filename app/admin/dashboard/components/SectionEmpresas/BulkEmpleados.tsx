@@ -7,15 +7,22 @@ import { API, authHeaders } from "../../lib"
 import type { BulkEmpleadoDryRun, ResultadoBulk, ToastType } from "../../types"
 import { Modal } from "../shared/Modal"
 
+interface BulkEndpoints {
+    dryRun: string
+    upload: string
+    template: string
+}
+
 interface Props {
     empresaId: number
     token: string
     addToast: (msg: string, type: ToastType) => void
     onClose: () => void
     onSuccess: () => void
+    endpoints?: BulkEndpoints
 }
 
-export function BulkEmpleados({ empresaId, token, addToast, onClose, onSuccess }: Props) {
+export function BulkEmpleados({ empresaId, token, addToast, onClose, onSuccess, endpoints }: Props) {
     const [archivo, setArchivo] = useState<File | null>(null)
     const [analisis, setAnalisis] = useState<BulkEmpleadoDryRun | null>(null)
     const [resultado, setResultado] = useState<ResultadoBulk | null>(null)
@@ -25,6 +32,11 @@ export function BulkEmpleados({ empresaId, token, addToast, onClose, onSuccess }
 
     const nombreArchivo = archivo?.name ?? "Ningun archivo seleccionado"
     const puedeImportar = useMemo(() => (analisis?.validas ?? 0) > 0 && !!archivo, [analisis, archivo])
+    const resolvedEndpoints = endpoints ?? {
+        dryRun: adminEndpoints.empresaBulkDryRun(empresaId),
+        upload: adminEndpoints.empresaBulkUpload(empresaId),
+        template: adminEndpoints.empresaBulkTemplate(empresaId),
+    }
 
     function resetResultadoParcial(nextFile: File | null) {
         setArchivo(nextFile)
@@ -35,7 +47,7 @@ export function BulkEmpleados({ empresaId, token, addToast, onClose, onSuccess }
     async function descargarPlantilla() {
         setDescargando(true)
         try {
-            const res = await fetch(`${API}${adminEndpoints.empresaBulkTemplate(empresaId)}`, {
+            const res = await fetch(`${API}${resolvedEndpoints.template}`, {
                 headers: authHeaders(token),
             })
             if (!res.ok) throw new Error()
@@ -67,7 +79,7 @@ export function BulkEmpleados({ empresaId, token, addToast, onClose, onSuccess }
             const formData = new FormData()
             formData.append("archivo", archivo)
 
-            const res = await fetch(`${API}${adminEndpoints.empresaBulkDryRun(empresaId)}`, {
+            const res = await fetch(`${API}${resolvedEndpoints.dryRun}`, {
                 method: "POST",
                 headers: authHeaders(token),
                 body: formData,
@@ -103,7 +115,7 @@ export function BulkEmpleados({ empresaId, token, addToast, onClose, onSuccess }
             const formData = new FormData()
             formData.append("archivo", archivo)
 
-            const res = await fetch(`${API}${adminEndpoints.empresaBulkUpload(empresaId)}`, {
+            const res = await fetch(`${API}${resolvedEndpoints.upload}`, {
                 method: "POST",
                 headers: authHeaders(token),
                 body: formData,

@@ -78,6 +78,8 @@ export function DetalleEmpresa({ empresa, token, addToast, planes, onVolver }: P
             contacto_cargo: empresaLocal.contacto_cargo ?? "",
             contacto_email: empresaLocal.contacto_email,
             contacto_telefono: empresaLocal.contacto_telefono ?? "",
+            admin_access_email: empresaLocal.admin_access_email ?? "",
+            admin_access_password: "",
             plan_id: empresaLocal.plan_id ? String(empresaLocal.plan_id) : "",
             cantidad_empleados: String(empresaLocal.cantidad_empleados),
             precio_por_empleado: empresaLocal.precio_por_empleado ? String(empresaLocal.precio_por_empleado) : "",
@@ -290,6 +292,7 @@ export function DetalleEmpresa({ empresa, token, addToast, planes, onVolver }: P
                     form={form}
                     setForm={setForm}
                     planes={planes}
+                    hasExistingAccess={!!empresaLocal.admin_user_id}
                     guardando={guardando}
                     onClose={() => setModalEditar(false)}
                     onSave={guardarEdicion}

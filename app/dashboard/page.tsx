@@ -74,7 +74,7 @@ export default function DashboardPage() {
     }, [router, setNombreFallback, setRol]);
 
     useEffect(() => {
-        if (perfil?.rol && isCommercialRole(perfil.rol)) {
+        if (perfil?.rol && (isCommercialRole(perfil.rol) || perfil.rol === "empresa_admin")) {
             router.replace(resolveAccountRoute(perfil.rol));
         }
     }, [perfil?.rol, router]);
