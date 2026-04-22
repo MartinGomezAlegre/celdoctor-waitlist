@@ -11,9 +11,10 @@ const PER_PAGE = 25
 interface Props {
     token: string
     addToast: (msg: string, type: ToastType) => void
+    currentRole: string | null
 }
 
-export default function SectionEmpresas({ token, addToast }: Props) {
+export default function SectionEmpresas({ token, addToast, currentRole }: Props) {
     const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null)
     const [buscar, setBuscar] = useState("")
     const [page, setPage] = useState(1)
@@ -33,6 +34,7 @@ export default function SectionEmpresas({ token, addToast }: Props) {
                 empresa={empresaSeleccionada}
                 token={token}
                 addToast={addToast}
+                currentRole={currentRole}
                 planes={planes}
                 onVolver={() => { setEmpresaSeleccionada(null); refetch() }}
             />

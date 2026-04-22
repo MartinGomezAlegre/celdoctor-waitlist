@@ -1,5 +1,5 @@
 import type { SessionScope } from "../session";
-import { getApiUrl } from "./core";
+import { getApiUrl, getErrorDetail } from "./core";
 import type { LoginResponse, Usuario } from "./types";
 
 export interface InvitationPreview {
@@ -69,8 +69,13 @@ export async function registrarUsuario(datos: {
         throw new Error("Error de conexion");
     }
 
-    if (res.status === 400) throw new Error("Este email ya esta registrado");
-    if (!res.ok) throw new Error("Error de conexion");
+    if (res.status === 400) {
+        throw new Error(await getErrorDetail(res, "Este email ya esta registrado"));
+    }
+    if (res.status === 422) {
+        throw new Error(await getErrorDetail(res, "Revisa los datos del formulario"));
+    }
+    if (!res.ok) throw new Error(await getErrorDetail(res, "Error de conexion"));
 
     return res.json() as Promise<Usuario>;
 }

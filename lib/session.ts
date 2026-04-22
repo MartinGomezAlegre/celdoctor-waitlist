@@ -13,7 +13,7 @@ export function hasCommercialRole(role?: string | null): boolean {
 }
 
 export function isAdminRole(role?: string | null): boolean {
-    return role === "admin";
+    return role === "admin" || role === "gestor_interno";
 }
 
 export function isCustomerRole(role?: string | null): boolean {

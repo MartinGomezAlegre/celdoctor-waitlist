@@ -112,10 +112,12 @@ function SidebarContent({ navGroups, section, onNavigate, onLogout }: SidebarCon
 
 export default function AdminDashboardPage() {
     const router = useRouter();
+    const defaultInternalSection: Section = "personas";
     const [section, setSection] = useState<Section>("overview");
     const [toasts, setToasts] = useState<Toast[]>([]);
     const [sidebarAbierto, setSidebarAbierto] = useState(false);
     const [sessionChecked, setSessionChecked] = useState(false);
+    const [currentRole, setCurrentRole] = useState<string | null>(null);
     const [alertas, setAlertas] = useState<Alerta[]>([]);
     const [metricasEmpresas, setMetricasEmpresas] = useState<MetricasEmpresas | null>(null);
     const [ticketsAbiertos, setTicketsAbiertos] = useState(0);
@@ -145,35 +147,49 @@ export default function AdminDashboardPage() {
                 if (!cancelado) {
                     router.replace("/admin?expired=1");
                 }
-                return false;
+                return null;
             }
 
             if (!response.ok) {
                 if (!cancelado) {
                     addToast("No pudimos validar tu sesion de administrador", "error");
                 }
-                return false;
+                return null;
             }
 
+            const data = await response.json().catch(() => null) as { usuario?: { rol?: string | null } } | null;
+            const role = data?.usuario?.rol ?? null;
+
             if (!cancelado) {
+                if (role === "gestor_interno") {
+                    setSection(defaultInternalSection);
+                }
+                setCurrentRole(role);
                 setSessionChecked(true);
             }
-            return true;
+            return role;
         }
 
         async function cargarResumen() {
-            const sesionOk = await validarSesion();
-            if (!sesionOk || cancelado) return;
+            const role = await validarSesion();
+            if (!role || cancelado) return;
 
-            fetch(`${API}${adminEndpoints.alertas}`, { headers: authHeaders(token) })
-            .then((response) => response.json())
-            .then((data: unknown) => setAlertas(Array.isArray(data) ? (data as Alerta[]) : []))
-            .catch(() => null);
+            const esGestorInterno = role === "gestor_interno";
 
-            fetch(`${API}${adminEndpoints.metricasEmpresas}`, { headers: authHeaders(token) })
-            .then((response) => response.json())
-            .then((data: MetricasEmpresas) => setMetricasEmpresas(data))
-            .catch(() => null);
+            if (!esGestorInterno) {
+                fetch(`${API}${adminEndpoints.alertas}`, { headers: authHeaders(token) })
+                .then((response) => response.json())
+                .then((data: unknown) => setAlertas(Array.isArray(data) ? (data as Alerta[]) : []))
+                .catch(() => null);
+
+                fetch(`${API}${adminEndpoints.metricasEmpresas}`, { headers: authHeaders(token) })
+                .then((response) => response.json())
+                .then((data: MetricasEmpresas) => setMetricasEmpresas(data))
+                .catch(() => null);
+            } else {
+                setAlertas([]);
+                setMetricasEmpresas(null);
+            }
 
             fetch(`${API}${adminEndpoints.tickets}?estado=abierto`, { headers: authHeaders(token) })
             .then((response) => response.json())
@@ -198,6 +214,8 @@ export default function AdminDashboardPage() {
         };
     }, [router, token]);
 
+    const isInternalManager = currentRole === "gestor_interno";
+
     function handleLogout() {
         localStorage.removeItem("celdoctor_admin_token");
         localStorage.removeItem("celdoctor_rol");
@@ -210,57 +228,77 @@ export default function AdminDashboardPage() {
         setSidebarAbierto(false);
     }
 
-    const pendientesPago = alertas.find((alerta) => alerta.tipo === "pendientes_pago")?.cantidad ?? 0;
-    const sinConvertir = alertas.find((alerta) => alerta.tipo === "sin_convertir")?.cantidad ?? 0;
-    const empresasAlerta =
-        (metricasEmpresas?.empresas_vencen_esta_semana ?? 0) + (metricasEmpresas?.empresas_pendiente_pago ?? 0);
+    const pendientesPago = isInternalManager ? 0 : alertas.find((alerta) => alerta.tipo === "pendientes_pago")?.cantidad ?? 0;
+    const sinConvertir = isInternalManager ? 0 : alertas.find((alerta) => alerta.tipo === "sin_convertir")?.cantidad ?? 0;
+    const empresasAlerta = isInternalManager
+        ? 0
+        : (metricasEmpresas?.empresas_vencen_esta_semana ?? 0) + (metricasEmpresas?.empresas_pendiente_pago ?? 0);
     const totalAlertas = pendientesPago + sinConvertir + empresasAlerta;
 
-    const navGroups: NavGroup[] = [
-        {
-            items: [
-                {
-                    id: "overview",
-                    label: "Inicio",
-                    Icon: LayoutDashboard,
-                    badge: totalAlertas > 0 ? totalAlertas : undefined,
-                },
-            ],
-        },
-        {
-            label: "Usuarios",
-            items: [
-                { id: "personas", label: "Personas", Icon: Users, badge: sinConvertir > 0 ? sinConvertir : undefined },
-                { id: "empresas", label: "Empresas", Icon: Building2, badge: empresasAlerta > 0 ? empresasAlerta : undefined },
-            ],
-        },
-        {
-            label: "Negocio",
-            items: [
-                {
-                    id: "suscripciones",
-                    label: "Suscripciones",
-                    Icon: CreditCard,
-                    badge: pendientesPago > 0 ? pendientesPago : undefined,
-                },
-                { id: "facturacion", label: "Facturacion", Icon: Receipt },
-                { id: "catalogo", label: "Catalogo", Icon: Package },
-            ],
-        },
-        {
-            label: "Comercial",
-            items: [
-                { id: "leads", label: "Leads", Icon: Briefcase, badge: leadsNuevos > 0 ? leadsNuevos : undefined },
-                { id: "comercial", label: "Canal ventas", Icon: Network },
-                { id: "upsells", label: "Seguro medico", Icon: ShieldPlus, badge: upsellsNuevos > 0 ? upsellsNuevos : undefined },
-                { id: "soporte", label: "Soporte", Icon: MessageSquare, badge: ticketsAbiertos > 0 ? ticketsAbiertos : undefined },
-            ],
-        },
-        {
-            label: "Analisis",
-            items: [{ id: "reportes", label: "Reportes", Icon: BarChart2 }],
-        },
-    ];
+    const navGroups: NavGroup[] = isInternalManager
+        ? [
+            {
+                label: "Operacion",
+                items: [
+                    { id: "personas", label: "Personas", Icon: Users },
+                    { id: "empresas", label: "Empresas", Icon: Building2 },
+                ],
+            },
+            {
+                label: "Seguimiento",
+                items: [
+                    { id: "leads", label: "Leads", Icon: Briefcase, badge: leadsNuevos > 0 ? leadsNuevos : undefined },
+                    { id: "comercial", label: "Canal ventas", Icon: Network },
+                    { id: "upsells", label: "Seguro medico", Icon: ShieldPlus, badge: upsellsNuevos > 0 ? upsellsNuevos : undefined },
+                    { id: "soporte", label: "Soporte", Icon: MessageSquare, badge: ticketsAbiertos > 0 ? ticketsAbiertos : undefined },
+                ],
+            },
+        ]
+        : [
+            {
+                items: [
+                    {
+                        id: "overview",
+                        label: "Inicio",
+                        Icon: LayoutDashboard,
+                        badge: totalAlertas > 0 ? totalAlertas : undefined,
+                    },
+                ],
+            },
+            {
+                label: "Usuarios",
+                items: [
+                    { id: "personas", label: "Personas", Icon: Users, badge: sinConvertir > 0 ? sinConvertir : undefined },
+                    { id: "empresas", label: "Empresas", Icon: Building2, badge: empresasAlerta > 0 ? empresasAlerta : undefined },
+                ],
+            },
+            {
+                label: "Negocio",
+                items: [
+                    {
+                        id: "suscripciones",
+                        label: "Suscripciones",
+                        Icon: CreditCard,
+                        badge: pendientesPago > 0 ? pendientesPago : undefined,
+                    },
+                    { id: "facturacion", label: "Facturacion", Icon: Receipt },
+                    { id: "catalogo", label: "Catalogo", Icon: Package },
+                ],
+            },
+            {
+                label: "Comercial",
+                items: [
+                    { id: "leads", label: "Leads", Icon: Briefcase, badge: leadsNuevos > 0 ? leadsNuevos : undefined },
+                    { id: "comercial", label: "Canal ventas", Icon: Network },
+                    { id: "upsells", label: "Seguro medico", Icon: ShieldPlus, badge: upsellsNuevos > 0 ? upsellsNuevos : undefined },
+                    { id: "soporte", label: "Soporte", Icon: MessageSquare, badge: ticketsAbiertos > 0 ? ticketsAbiertos : undefined },
+                ],
+            },
+            {
+                label: "Analisis",
+                items: [{ id: "reportes", label: "Reportes", Icon: BarChart2 }],
+            },
+        ];
 
     if (!sessionChecked) {
         return (
@@ -317,14 +355,14 @@ export default function AdminDashboardPage() {
 
                 <main className="flex-1 overflow-auto">
                     <div className="p-4 sm:p-8">
-                        {section === "overview" && <SectionOverview token={token} addToast={addToast} onNavigate={navegarA} />}
-                        {section === "personas" && <SectionPersonas token={token} addToast={addToast} />}
-                        {section === "empresas" && <SectionEmpresas token={token} addToast={addToast} />}
-                        {section === "suscripciones" && <SectionSuscripciones token={token} addToast={addToast} />}
-                        {section === "facturacion" && <SectionFacturacion token={token} addToast={addToast} />}
-                        {section === "catalogo" && <SectionCatalogo token={token} addToast={addToast} />}
+                        {section === "overview" && !isInternalManager && <SectionOverview token={token} addToast={addToast} onNavigate={navegarA} />}
+                        {section === "personas" && <SectionPersonas token={token} addToast={addToast} currentRole={currentRole} />}
+                        {section === "empresas" && <SectionEmpresas token={token} addToast={addToast} currentRole={currentRole} />}
+                        {section === "suscripciones" && !isInternalManager && <SectionSuscripciones token={token} addToast={addToast} />}
+                        {section === "facturacion" && !isInternalManager && <SectionFacturacion token={token} addToast={addToast} />}
+                        {section === "catalogo" && !isInternalManager && <SectionCatalogo token={token} addToast={addToast} />}
                         {section === "comercial" && <SectionComercial token={token} addToast={addToast} />}
-                        {section === "reportes" && <SectionReportes token={token} addToast={addToast} />}
+                        {section === "reportes" && !isInternalManager && <SectionReportes token={token} addToast={addToast} />}
                         {section === "soporte" && <SectionSoporte token={token} addToast={addToast} />}
                         {section === "leads" && <SectionLeads token={token} addToast={addToast} />}
                         {section === "upsells" && <SectionUpsells token={token} addToast={addToast} />}

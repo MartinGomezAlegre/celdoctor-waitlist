@@ -17,9 +17,10 @@ const PER_PAGE = 25
 interface Props {
     token: string
     addToast: (msg: string, type: ToastType) => void
+    currentRole: string | null
 }
 
-export default function SectionPersonas({ token, addToast }: Props) {
+export default function SectionPersonas({ token, addToast, currentRole }: Props) {
     const [buscar, setBuscar] = useState("")
     const [filtro, setFiltro] = useState<Filtro>("todos")
     const [page, setPage] = useState(1)
@@ -35,13 +36,15 @@ export default function SectionPersonas({ token, addToast }: Props) {
         modalBaja,
         motivoBaja,
         procesando,
+        procesandoRol,
         setMotivoBaja,
         abrirDetalleUsuario,
         cambiarEstadoUsuario,
+        cambiarRolUsuario,
         closeDrawer,
         openStatusModal,
         setModalBaja,
-    } = usePersonasAdmin({ token, addToast, buscar, filtro, page, perPage: PER_PAGE })
+    } = usePersonasAdmin({ token, addToast, currentRole, buscar, filtro, page, perPage: PER_PAGE })
 
     return (
         <div className="space-y-6">
@@ -83,11 +86,17 @@ export default function SectionPersonas({ token, addToast }: Props) {
             )}
 
             <PersonaDetailDrawer
+                key={drawerUsuario?.id ?? "empty"}
                 usuario={drawerUsuario}
                 detalle={drawerDetalle}
                 loading={loadingDetalle}
+                currentRole={currentRole}
+                updatingRole={procesandoRol}
                 onClose={closeDrawer}
                 onOpenStatusModal={openStatusModal}
+                onChangeRole={(usuario, rol) => {
+                    void cambiarRolUsuario(usuario, rol)
+                }}
             />
 
             <PersonaStatusModal

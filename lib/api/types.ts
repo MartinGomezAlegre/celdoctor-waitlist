@@ -28,6 +28,52 @@ export interface Suscripcion {
     tipo_plan?: string | null;
 }
 
+export interface PagoIntento {
+    id: number;
+    suscripcion_id: number;
+    usuario_id: number;
+    proveedor: "mercadopago" | string;
+    external_reference: string;
+    estado: string;
+    monto: number;
+    moneda: string;
+    checkout_url?: string | null;
+    payment_id?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PagoProcesado {
+    id: number;
+    proveedor: string;
+    payment_id: string | null;
+    estado: string;
+    suscripcion_id: number | null;
+    pago_id: number | null;
+    monto: number | null;
+    moneda: string | null;
+    processed_at?: string | null;
+}
+
+export interface PagoRegistrado {
+    id: number;
+    monto: number | null;
+    moneda: string | null;
+    pasarela: string;
+    estado: string;
+    tipo: string;
+    fecha_aprobacion?: string | null;
+    created_at?: string | null;
+}
+
+export interface EstadoPagoSuscripcion {
+    suscripcion_id: number;
+    estado_suscripcion: string;
+    intento: PagoIntento | null;
+    pago_procesado: PagoProcesado | null;
+    pago: PagoRegistrado | null;
+}
+
 export interface CredencialVirtual {
     nombre_completo: string;
     dni?: string | null;

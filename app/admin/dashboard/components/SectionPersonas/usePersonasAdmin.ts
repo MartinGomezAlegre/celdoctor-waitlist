@@ -10,13 +10,14 @@ import type { Filtro } from "./utils"
 interface UsePersonasAdminParams {
     token: string
     addToast: (msg: string, type: ToastType) => void
+    currentRole: string | null
     buscar: string
     filtro: Filtro
     page: number
     perPage: number
 }
 
-export function usePersonasAdmin({ token, addToast, buscar, filtro, page, perPage }: UsePersonasAdminParams) {
+export function usePersonasAdmin({ token, addToast, currentRole, buscar, filtro, page, perPage }: UsePersonasAdminParams) {
     const [usuarios, setUsuarios] = useState<AdminUsuario[]>([])
     const [total, setTotal] = useState(0)
     const [loading, setLoading] = useState(true)
@@ -27,6 +28,7 @@ export function usePersonasAdmin({ token, addToast, buscar, filtro, page, perPag
     const [modalBaja, setModalBaja] = useState<AdminUsuario | null>(null)
     const [motivoBaja, setMotivoBaja] = useState("")
     const [procesando, setProcesando] = useState(false)
+    const [procesandoRol, setProcesandoRol] = useState(false)
 
     useEffect(() => {
         let ignore = false
@@ -135,6 +137,40 @@ export function usePersonasAdmin({ token, addToast, buscar, filtro, page, perPag
         }
     }
 
+    async function cambiarRolUsuario(usuario: AdminUsuario, rol: string) {
+        if (currentRole !== "admin") {
+            addToast("Solo un admin puede cambiar roles internos.", "warning")
+            return
+        }
+
+        setProcesandoRol(true)
+        try {
+            const res = await fetch(`${API}${adminEndpoints.usuarioRol(usuario.id)}`, {
+                method: "PUT",
+                headers: { ...authHeaders(token), "Content-Type": "application/json" },
+                body: JSON.stringify({ rol }),
+            })
+
+            const data = await res.json().catch(() => null) as AdminUsuario | { detail?: string } | null
+            if (!res.ok) {
+                throw new Error(typeof data === "object" && data && "detail" in data && typeof data.detail === "string" ? data.detail : "No pudimos cambiar el rol.")
+            }
+
+            setUsuarios((prev) => prev.map((current) => (current.id === usuario.id ? { ...current, rol } : current)))
+            if (drawerUsuario?.id === usuario.id) {
+                setDrawerUsuario((prev) => (prev ? { ...prev, rol } : prev))
+            }
+            if (drawerDetalle?.id === usuario.id) {
+                setDrawerDetalle((prev) => (prev ? { ...prev, rol } : prev))
+            }
+            addToast(`Rol actualizado a ${rol}.`, "success")
+        } catch (error) {
+            addToast(error instanceof Error ? error.message : "Error al cambiar el rol.", "error")
+        } finally {
+            setProcesandoRol(false)
+        }
+    }
+
     function closeDrawer() {
         setDrawerUsuario(null)
         setDrawerDetalle(null)
@@ -156,9 +192,11 @@ export function usePersonasAdmin({ token, addToast, buscar, filtro, page, perPag
         modalBaja,
         motivoBaja,
         procesando,
+        procesandoRol,
         setMotivoBaja,
         abrirDetalleUsuario,
         cambiarEstadoUsuario,
+        cambiarRolUsuario,
         closeDrawer,
         openStatusModal,
         setModalBaja,

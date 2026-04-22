@@ -30,7 +30,9 @@ export default function RegistroPage() {
         if (!emailRegex.test(form.email)) return "El email no es valido.";
         const dniRegex = /^\d{7,8}$/;
         if (!dniRegex.test(form.dni)) return "Ingresa un DNI valido (7-8 digitos).";
-        if (form.contrasenia.length < 8) return "La contrasena debe tener al menos 8 caracteres.";
+        if (form.contrasenia.length < 10) return "La contrasena debe tener al menos 10 caracteres.";
+        if (!/[A-Za-z]/.test(form.contrasenia)) return "La contrasena debe incluir al menos una letra.";
+        if (!/\d/.test(form.contrasenia)) return "La contrasena debe incluir al menos un numero.";
         if (!aceptaTerminos) return "Debes aceptar los terminos y condiciones.";
         return null;
     }
@@ -179,11 +181,11 @@ export default function RegistroPage() {
                             type="password"
                             required
                             autoComplete="new-password"
-                            minLength={8}
+                            minLength={10}
                             value={form.contrasenia}
                             onChange={handleChange}
                             className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-[#4C1D95] focus:outline-none focus:ring-2 focus:ring-[#4C1D95]/30"
-                            placeholder="Minimo 8 caracteres"
+                            placeholder="Minimo 10 caracteres, con letra y numero"
                         />
                     </div>
 

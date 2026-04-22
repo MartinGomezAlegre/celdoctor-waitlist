@@ -12,6 +12,7 @@ export const adminEndpoints = {
     // Usuarios
     usuarios:                "/admin/usuarios",
     usuarioEstado: (id: number) => `/admin/usuarios/${id}/estado`,
+    usuarioRol: (id: number) => `/admin/usuarios/${id}/rol`,
 
     // Suscripciones
     suscripciones:           "/admin/suscripciones",
@@ -28,6 +29,8 @@ export const adminEndpoints = {
     empresaBulkUpload: (id: number) => `/admin/empresas/${id}/empleados/bulk/upload`,
     empresaBulkTemplate: (id: number) => `/admin/empresas/${id}/empleados/plantilla`,
     empresaExportar: (id: number) =>   `/admin/empresas/${id}/exportar-empleados`,
+    empresaAcuerdos: (id: number) =>   `/admin/empresas/${id}/acuerdos`,
+    empresaAcuerdo: (id: number, acuerdoId: number) => `/admin/empresas/${id}/acuerdos/${acuerdoId}`,
     empleadoEstado: (empId: number, empId2: number) =>
         `/admin/empresas/${empId}/empleados/${empId2}/estado`,
 

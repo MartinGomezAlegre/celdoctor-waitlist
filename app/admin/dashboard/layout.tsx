@@ -28,7 +28,7 @@ export default async function AdminDashboardLayout({
     }
 
     const profile = await response.json().catch(() => null) as { rol?: string | null } | null;
-    if (profile?.rol !== "admin") {
+    if (profile?.rol !== "admin" && profile?.rol !== "gestor_interno") {
         redirect("/admin");
     }
 

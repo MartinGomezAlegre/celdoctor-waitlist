@@ -77,6 +77,21 @@ export interface Empresa {
     empleados_activos: number; empleados_total: number; auditoria?: EventoHistorial[];
 }
 
+export interface EmpresaAcuerdo {
+    id: number
+    empresa_id: number
+    tipo: string
+    titulo: string
+    descripcion: string | null
+    estado: string
+    fecha_firma: string | null
+    fecha_vencimiento: string | null
+    archivo_url: string | null
+    notas: string | null
+    created_at: string | null
+    updated_at: string | null
+}
+
 export interface EmpleadoEmpresa {
     id: number; nombre: string; apellido: string; dni: string; email: string;
     cargo: string | null; telefono?: string | null; activo: boolean; fecha_alta: string;

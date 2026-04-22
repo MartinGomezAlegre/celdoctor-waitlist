@@ -1,4 +1,5 @@
 import { X } from "lucide-react"
+import { useState } from "react"
 
 import type { AdminBeneficiario, AdminUsuario, AdminUsuarioDetalle } from "../../types"
 import { fmtDate } from "../../lib"
@@ -9,16 +10,29 @@ interface Props {
     usuario: AdminUsuario | null
     detalle: AdminUsuarioDetalle | null
     loading: boolean
+    currentRole: string | null
+    updatingRole: boolean
     onClose: () => void
     onOpenStatusModal: (usuario: AdminUsuario) => void
+    onChangeRole: (usuario: AdminUsuario, rol: string) => void
 }
 
-export function PersonaDetailDrawer({ usuario, detalle, loading, onClose, onOpenStatusModal }: Props) {
+const ROLE_OPTIONS = [
+    { value: "cliente", label: "Cliente" },
+    { value: "gestor_interno", label: "Gestor interno" },
+    { value: "empresa_admin", label: "Empresa admin" },
+    { value: "admin", label: "Admin" },
+]
+
+export function PersonaDetailDrawer({ usuario, detalle, loading, currentRole, updatingRole, onClose, onOpenStatusModal, onChangeRole }: Props) {
+    const [selectedRole, setSelectedRole] = useState(usuario?.rol ?? "cliente")
+
     if (!usuario) {
         return null
     }
 
     const usuarioDetalle = detalle ?? usuario
+    const canManageRoles = currentRole === "admin"
 
     return (
         <>
@@ -94,6 +108,35 @@ export function PersonaDetailDrawer({ usuario, detalle, loading, onClose, onOpen
                             </span>
                             <ActiveDot activo={usuarioDetalle.activo} />
                         </div>
+
+                        {canManageRoles && (
+                            <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-4">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-violet-500">
+                                    Rol interno
+                                </p>
+                                <div className="mt-3 flex flex-col gap-3">
+                                    <select
+                                        value={selectedRole}
+                                        onChange={(event) => setSelectedRole(event.target.value)}
+                                        className="rounded-xl border border-violet-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-violet-400"
+                                    >
+                                        {ROLE_OPTIONS.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={() => onChangeRole(usuarioDetalle, selectedRole)}
+                                        disabled={updatingRole || selectedRole === usuarioDetalle.rol}
+                                        className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        {updatingRole ? "Guardando..." : "Guardar rol"}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {shouldShowBeneficiarios(detalle) && (
                             <div className="flex flex-col gap-2 pt-2">
