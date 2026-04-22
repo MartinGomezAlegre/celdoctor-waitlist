@@ -9,9 +9,10 @@ interface Props {
     onCreate: () => void
     onEdit: (item: DirectSellerAdmin) => void
     onCopy: (link: string) => void
+    onManage: (item: DirectSellerAdmin) => void
 }
 
-export function DirectSellersCard({ items, onCreate, onEdit, onCopy }: Props) {
+export function DirectSellersCard({ items, onCreate, onEdit, onCopy, onManage }: Props) {
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between gap-3">
@@ -52,6 +53,12 @@ export function DirectSellersCard({ items, onCreate, onEdit, onCopy }: Props) {
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => onManage(item)}
+                                        className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                                    >
+                                        Gestionar
+                                    </button>
                                     <button
                                         onClick={() => onCopy(buildReferralLink(item.referral_code))}
                                         className="rounded-lg border border-slate-200 p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"

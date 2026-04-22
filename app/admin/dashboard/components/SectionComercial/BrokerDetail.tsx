@@ -4,13 +4,16 @@ import { ArrowLeft, Pencil } from "lucide-react"
 import type {
     BrokerAdmin,
     BrokerSellerAdmin,
+    ToastType,
     VentaReferidaAdmin,
 } from "../../types"
 import { ESTADO_BADGE, fmtCurrency, fmtDate } from "../../lib"
+import { adminEndpoints } from "../../admin-endpoints"
 import { BrokerSellersCard } from "./BrokerSellersCard"
+import { CommercialAgreementsPanel } from "./CommercialAgreementsPanel"
 import { SalesCard } from "./SalesCard"
 
-type BrokerDetailTab = "info" | "vendedores" | "ventas"
+type BrokerDetailTab = "info" | "vendedores" | "ventas" | "acuerdos"
 
 function InfoRow({ label, value }: { label: string; value: string | null | undefined }) {
     if (!value) return null
@@ -36,6 +39,9 @@ interface Props {
     broker: BrokerAdmin
     brokerSellers: BrokerSellerAdmin[]
     ventas: VentaReferidaAdmin[]
+    token: string
+    currentRole: string | null
+    addToast: (msg: string, type: ToastType) => void
     onVolver: () => void
     onEditar: (broker: BrokerAdmin) => void
     onCopiarLink: (link: string) => void
@@ -45,6 +51,9 @@ export function BrokerDetail({
     broker,
     brokerSellers,
     ventas,
+    token,
+    currentRole,
+    addToast,
     onVolver,
     onEditar,
     onCopiarLink,
@@ -53,6 +62,7 @@ export function BrokerDetail({
         { id: "info", label: "Informacion" },
         { id: "vendedores", label: "Vendedores" },
         { id: "ventas", label: "Ventas" },
+        ...(currentRole === "admin" ? [{ id: "acuerdos" as BrokerDetailTab, label: "Acuerdos" }] : []),
     ]
     const [tab, setTab] = React.useState<BrokerDetailTab>("info")
 
@@ -153,6 +163,18 @@ export function BrokerDetail({
                     title="Ventas del broker"
                     description="Ventas aprobadas y atribuidas al equipo de este broker."
                     emptyMessage="Este broker todavia no tiene ventas aprobadas registradas."
+                />
+            )}
+
+            {tab === "acuerdos" && currentRole === "admin" && (
+                <CommercialAgreementsPanel
+                    token={token}
+                    addToast={addToast}
+                    listEndpoint={adminEndpoints.brokerAcuerdos(broker.id)}
+                    itemEndpoint={(acuerdoId) => adminEndpoints.brokerAcuerdo(broker.id, acuerdoId)}
+                    title="Acuerdos con el broker"
+                    description="Guarda contratos, condiciones comerciales, anexos y cualquier punto acordado con este broker."
+                    emptyMessage="Todavia no hay acuerdos cargados para este broker."
                 />
             )}
         </div>

@@ -1,4 +1,4 @@
-export type Section = "overview" | "personas" | "empresas" | "suscripciones" | "facturacion" | "catalogo" | "comercial" | "reportes" | "soporte" | "leads" | "upsells"
+export type Section = "overview" | "personas" | "personal" | "empresas" | "suscripciones" | "facturacion" | "catalogo" | "comercial" | "reportes" | "soporte" | "leads" | "upsells"
 export type ToastType = "success" | "error" | "warning"
 
 export interface Toast { id: number; msg: string; type: ToastType }
@@ -27,6 +27,24 @@ export interface AdminUsuario {
     id: number; nombre: string; apellido: string; email: string; telefono: string;
     dni: string | null; fecha_nacimiento: string; rol: string; activo: boolean;
     plan_nombre?: string | null; estado_suscripcion?: string | null; created_at: string;
+}
+
+export interface PersonalInterno {
+    id: number
+    nombre: string
+    apellido: string
+    email: string
+    telefono?: string | null
+    rol: "admin" | "gestor_interno"
+    activo: boolean
+    created_at: string | null
+    area?: string | null
+    cargo?: string | null
+    responsabilidades?: string | null
+    perfil_updated_at?: string | null
+    empresas_visibles_count?: number
+    empresas_visibles?: string[]
+    empresa_ids?: number[]
 }
 
 export interface AdminBeneficiario {
@@ -229,6 +247,22 @@ export interface LiquidacionComercial {
     notas: string | null
     paid_at: string | null
     created_at: string | null
+}
+
+export interface ComercialAcuerdo {
+    id: number
+    destinatario_tipo: "broker" | "direct_seller"
+    destinatario_id: number
+    tipo: string
+    titulo: string
+    descripcion: string | null
+    estado: string
+    fecha_firma: string | null
+    fecha_vencimiento: string | null
+    archivo_url: string | null
+    notas: string | null
+    created_at: string | null
+    updated_at: string | null
 }
 
 export interface BulkEmpleadoError {

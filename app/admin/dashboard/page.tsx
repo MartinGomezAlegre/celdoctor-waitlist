@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
     LayoutDashboard,
     Users,
+    UserCog,
     Building2,
     CreditCard,
     Receipt,
@@ -24,6 +25,7 @@ import { API, authHeaders } from "./lib";
 import { adminEndpoints } from "./admin-endpoints";
 import SectionOverview from "./components/SectionOverview";
 import SectionPersonas from "./components/SectionPersonas";
+import SectionPersonal from "./components/SectionPersonal";
 import SectionEmpresas from "./components/SectionEmpresas";
 import SectionSuscripciones from "./components/SectionSuscripciones";
 import SectionFacturacion from "./components/SectionFacturacion";
@@ -269,6 +271,7 @@ export default function AdminDashboardPage() {
                 label: "Usuarios",
                 items: [
                     { id: "personas", label: "Personas", Icon: Users, badge: sinConvertir > 0 ? sinConvertir : undefined },
+                    { id: "personal", label: "Personal", Icon: UserCog },
                     { id: "empresas", label: "Empresas", Icon: Building2, badge: empresasAlerta > 0 ? empresasAlerta : undefined },
                 ],
             },
@@ -357,11 +360,12 @@ export default function AdminDashboardPage() {
                     <div className="p-4 sm:p-8">
                         {section === "overview" && !isInternalManager && <SectionOverview token={token} addToast={addToast} onNavigate={navegarA} />}
                         {section === "personas" && <SectionPersonas token={token} addToast={addToast} currentRole={currentRole} />}
+                        {section === "personal" && !isInternalManager && <SectionPersonal token={token} addToast={addToast} />}
                         {section === "empresas" && <SectionEmpresas token={token} addToast={addToast} currentRole={currentRole} />}
                         {section === "suscripciones" && !isInternalManager && <SectionSuscripciones token={token} addToast={addToast} />}
                         {section === "facturacion" && !isInternalManager && <SectionFacturacion token={token} addToast={addToast} />}
                         {section === "catalogo" && !isInternalManager && <SectionCatalogo token={token} addToast={addToast} />}
-                        {section === "comercial" && <SectionComercial token={token} addToast={addToast} />}
+                        {section === "comercial" && <SectionComercial token={token} currentRole={currentRole} addToast={addToast} />}
                         {section === "reportes" && !isInternalManager && <SectionReportes token={token} addToast={addToast} />}
                         {section === "soporte" && <SectionSoporte token={token} addToast={addToast} />}
                         {section === "leads" && <SectionLeads token={token} addToast={addToast} />}

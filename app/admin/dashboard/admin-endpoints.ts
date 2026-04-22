@@ -13,6 +13,8 @@ export const adminEndpoints = {
     usuarios:                "/admin/usuarios",
     usuarioEstado: (id: number) => `/admin/usuarios/${id}/estado`,
     usuarioRol: (id: number) => `/admin/usuarios/${id}/rol`,
+    personal:                "/admin/personal",
+    personalItem: (id: number) => `/admin/personal/${id}`,
 
     // Suscripciones
     suscripciones:           "/admin/suscripciones",
@@ -55,10 +57,14 @@ export const adminEndpoints = {
     comercialUsuarios:       "/admin/comercial/usuarios",
     brokers:                 "/admin/comercial/brokers",
     broker: (id: number) =>          `/admin/comercial/brokers/${id}`,
+    brokerAcuerdos: (id: number) =>  `/admin/comercial/brokers/${id}/acuerdos`,
+    brokerAcuerdo: (id: number, acuerdoId: number) => `/admin/comercial/brokers/${id}/acuerdos/${acuerdoId}`,
     brokerSellers:           "/admin/comercial/broker-sellers",
     brokerSeller: (id: number) =>    `/admin/comercial/broker-sellers/${id}`,
     directSellers:           "/admin/comercial/direct-sellers",
     directSeller: (id: number) =>    `/admin/comercial/direct-sellers/${id}`,
+    directSellerAcuerdos: (id: number) => `/admin/comercial/direct-sellers/${id}/acuerdos`,
+    directSellerAcuerdo: (id: number, acuerdoId: number) => `/admin/comercial/direct-sellers/${id}/acuerdos/${acuerdoId}`,
     ventasReferidas:         "/admin/comercial/ventas",
     liquidacionesComercial:  "/admin/comercial/liquidaciones",
 

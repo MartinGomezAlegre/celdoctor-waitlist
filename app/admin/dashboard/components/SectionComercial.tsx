@@ -9,6 +9,7 @@ import type {
     ToastType,
 } from "../types"
 import { BrokerDetail } from "./SectionComercial/BrokerDetail"
+import { DirectSellerDetail } from "./SectionComercial/DirectSellerDetail"
 import { SummaryCards } from "./SectionComercial/SummaryCards"
 import { BrokersCard } from "./SectionComercial/BrokersCard"
 import { DirectSellersCard } from "./SectionComercial/DirectSellersCard"
@@ -30,12 +31,13 @@ import { Skeleton } from "./shared/Skeleton"
 
 interface Props {
     token: string
+    currentRole: string | null
     addToast: (msg: string, type: ToastType) => void
 }
 
 type ComercialTab = "brokers" | "directos" | "metricas"
 
-export default function SectionComercial({ token, addToast }: Props) {
+export default function SectionComercial({ token, currentRole, addToast }: Props) {
     const {
         resumen,
         brokers,
@@ -56,6 +58,7 @@ export default function SectionComercial({ token, addToast }: Props) {
     const [selectedBroker, setSelectedBroker] = useState<BrokerAdmin | null>(null)
     const [managedBrokerId, setManagedBrokerId] = useState<number | null>(null)
     const [selectedDirectSeller, setSelectedDirectSeller] = useState<DirectSellerAdmin | null>(null)
+    const [managedDirectSellerId, setManagedDirectSellerId] = useState<number | null>(null)
     const [activeTab, setActiveTab] = useState<ComercialTab>("brokers")
 
     const [brokerForm, setBrokerForm] = useState<BrokerFormValues>({ ...EMPTY_BROKER_FORM })
@@ -68,6 +71,10 @@ export default function SectionComercial({ token, addToast }: Props) {
     const managedBroker = useMemo(
         () => brokers.find((item) => item.id === managedBrokerId) ?? null,
         [brokers, managedBrokerId],
+    )
+    const managedDirectSeller = useMemo(
+        () => directSellers.find((item) => item.id === managedDirectSellerId) ?? null,
+        [directSellers, managedDirectSellerId],
     )
 
     function handleBrokerChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -88,7 +95,14 @@ export default function SectionComercial({ token, addToast }: Props) {
 
     function openBrokerDetail(item: BrokerAdmin) {
         setManagedBrokerId(item.id)
+        setManagedDirectSellerId(null)
         setActiveTab("brokers")
+    }
+
+    function openDirectSellerDetail(item: DirectSellerAdmin) {
+        setManagedDirectSellerId(item.id)
+        setManagedBrokerId(null)
+        setActiveTab("directos")
     }
 
     function openDirectSellerModal(item?: DirectSellerAdmin) {
@@ -194,6 +208,7 @@ export default function SectionComercial({ token, addToast }: Props) {
                                 onClick={() => {
                                     setActiveTab(tab.id)
                                     if (tab.id !== "brokers") setManagedBrokerId(null)
+                                    if (tab.id !== "directos") setManagedDirectSellerId(null)
                                 }}
                                 className={`-mb-px border-b-2 px-5 py-2.5 text-sm font-medium transition-colors ${
                                     activeTab === tab.id
@@ -212,6 +227,9 @@ export default function SectionComercial({ token, addToast }: Props) {
                                 broker={managedBroker}
                                 brokerSellers={brokerSellers}
                                 ventas={ventas}
+                                token={token}
+                                currentRole={currentRole}
+                                addToast={addToast}
                                 onVolver={() => setManagedBrokerId(null)}
                                 onEditar={openBrokerModal}
                                 onCopiarLink={copyLink}
@@ -227,12 +245,25 @@ export default function SectionComercial({ token, addToast }: Props) {
                     )}
 
                     {activeTab === "directos" && (
-                        <DirectSellersCard
-                            items={directSellers}
-                            onCreate={() => openDirectSellerModal()}
-                            onEdit={openDirectSellerModal}
-                            onCopy={copyLink}
-                        />
+                        managedDirectSeller ? (
+                            <DirectSellerDetail
+                                item={managedDirectSeller}
+                                ventas={ventas}
+                                token={token}
+                                currentRole={currentRole}
+                                addToast={addToast}
+                                onVolver={() => setManagedDirectSellerId(null)}
+                                onEditar={openDirectSellerModal}
+                            />
+                        ) : (
+                            <DirectSellersCard
+                                items={directSellers}
+                                onCreate={() => openDirectSellerModal()}
+                                onEdit={openDirectSellerModal}
+                                onCopy={copyLink}
+                                onManage={openDirectSellerDetail}
+                            />
+                        )
                     )}
 
                     {activeTab === "metricas" && (
