@@ -2,45 +2,75 @@
 
 import { useEffect, useState } from "react";
 import { obtenerMiSuscripcion, type Suscripcion } from "@/lib/api";
-import { useLocalStorageValue } from "@/lib/use-local-storage-value";
 
 export function useCurrentSubscription() {
-    const [token, , tokenHydrated] = useLocalStorageValue("celdoctor_token");
-    const [suscripcionInterna, setSuscripcionInterna] = useState<Suscripcion | null>(null);
-    const [ultimoTokenCargado, setUltimoTokenCargado] = useState<string | null>(null);
+    const [suscripcion, setSuscripcion] = useState<Suscripcion | null>(null);
+    const [sessionChecked, setSessionChecked] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [cargandoSuscripcion, setCargandoSuscripcion] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
 
-        if (!tokenHydrated || !token) {
-            return;
+        async function cargarSesion() {
+            setCargandoSuscripcion(true);
+
+            const response = await fetch("/api/session/me?scope=customer", {
+                cache: "no-store",
+                credentials: "same-origin",
+            }).catch(() => null);
+
+            if (!response || response.status === 401 || response.status === 403) {
+                if (!cancelled) {
+                    setIsAuthenticated(false);
+                    setSuscripcion(null);
+                    setSessionChecked(true);
+                    setCargandoSuscripcion(false);
+                }
+                return;
+            }
+
+            if (!response.ok) {
+                if (!cancelled) {
+                    setIsAuthenticated(false);
+                    setSuscripcion(null);
+                    setSessionChecked(true);
+                    setCargandoSuscripcion(false);
+                }
+                return;
+            }
+
+            if (!cancelled) {
+                setIsAuthenticated(true);
+                setSessionChecked(true);
+            }
+
+            try {
+                const data = await obtenerMiSuscripcion();
+                if (!cancelled) {
+                    setSuscripcion(data);
+                }
+            } catch {
+                if (!cancelled) {
+                    setSuscripcion(null);
+                }
+            } finally {
+                if (!cancelled) {
+                    setCargandoSuscripcion(false);
+                }
+            }
         }
 
-        obtenerMiSuscripcion(token)
-            .then((data) => {
-                if (!cancelled) {
-                    setSuscripcionInterna(data);
-                    setUltimoTokenCargado(token);
-                }
-            })
-            .catch(() => {
-                if (!cancelled) {
-                    setSuscripcionInterna(null);
-                    setUltimoTokenCargado(token);
-                }
-            });
+        void cargarSesion();
 
         return () => {
             cancelled = true;
         };
-    }, [token, tokenHydrated]);
-
-    const suscripcion = token ? suscripcionInterna : null;
-    const cargandoSuscripcion = Boolean(token && tokenHydrated && ultimoTokenCargado !== token);
+    }, []);
 
     return {
-        token,
-        tokenHydrated,
+        isAuthenticated,
+        sessionChecked,
         suscripcion,
         cargandoSuscripcion,
     };

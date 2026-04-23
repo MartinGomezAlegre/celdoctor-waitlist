@@ -3,6 +3,8 @@
 import { Modal } from "../shared/Modal"
 import type { AdminPlan, EmpresaForm } from "../../types"
 
+type EmpresaFormTextKey = Exclude<keyof EmpresaForm, "visible_para_gestores">
+
 interface Props {
     title: string
     form: EmpresaForm
@@ -16,7 +18,7 @@ interface Props {
 
 function Campo({ label, name, tipo, required, form, setForm }: {
     label: string
-    name: keyof EmpresaForm
+    name: EmpresaFormTextKey
     tipo?: string
     required?: boolean
     form: EmpresaForm
@@ -141,6 +143,23 @@ export function FormEmpresa({
                                 : "Si la empresa todavia no tiene acceso creado, necesitas email y contrasena inicial."}
                     </p>
                 )}
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                    <label className="flex items-start gap-3">
+                        <input
+                            type="checkbox"
+                            checked={Boolean(form.visible_para_gestores)}
+                            onChange={(e) => setForm((prev) => ({ ...prev, visible_para_gestores: e.target.checked }))}
+                            className="mt-1 h-4 w-4 rounded border-slate-300 text-[#4C1D95] focus:ring-[#4C1D95]"
+                        />
+                        <span>
+                            <span className="block text-sm font-medium text-slate-800">Visible para gestores internos</span>
+                            <span className="mt-1 block text-xs text-slate-500">
+                                Si lo activas, todos los gestores internos/comerciales van a poder ver esta empresa en su panel.
+                            </span>
+                        </span>
+                    </label>
+                </div>
 
                 {showSuscripcion && (
                     <>

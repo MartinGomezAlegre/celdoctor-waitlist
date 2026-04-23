@@ -14,8 +14,8 @@ export function isCorporatePlan(plan: Plan): boolean {
 export function getPlanPurchaseState(
     plan: Plan,
     suscripcion: Suscripcion | null | undefined,
-    token: string | null,
-    tokenHydrated: boolean
+    isAuthenticated: boolean,
+    sessionChecked: boolean
 ): PlanPurchaseState {
     if (isCorporatePlan(plan)) {
         return {
@@ -25,7 +25,15 @@ export function getPlanPurchaseState(
         };
     }
 
-    if (!tokenHydrated || !token) {
+    if (!sessionChecked) {
+        return {
+            href: null,
+            label: "Cargando...",
+            disabled: true,
+        };
+    }
+
+    if (!isAuthenticated) {
         return {
             href: "/registro",
             label: "Contratar ahora",
@@ -55,6 +63,21 @@ export function getPlanPurchaseState(
     }
 
     const mantieneServicio = estado === "activa" || estado === "cancelacion_programada";
+    const fechaVencimiento = suscripcion.fecha_vencimiento ? new Date(suscripcion.fecha_vencimiento) : null;
+    const diasHastaVencimiento = fechaVencimiento
+        ? Math.ceil((fechaVencimiento.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        : null;
+    const puedeRenovarMismoPlan =
+        esMismoPlan &&
+        (estado === "cancelacion_programada" || (diasHastaVencimiento !== null && diasHastaVencimiento <= 7));
+
+    if (mantieneServicio && puedeRenovarMismoPlan) {
+        return {
+            href: `/checkout/${plan.id}`,
+            label: "Renovar plan",
+            disabled: false,
+        };
+    }
 
     if (mantieneServicio && esMismoPlan) {
         return {

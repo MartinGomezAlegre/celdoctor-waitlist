@@ -26,15 +26,15 @@ const FEATURES = [
 ];
 
 export default function PlanesCards() {
-    const { token, tokenHydrated, suscripcion } = useCurrentSubscription();
+    const { isAuthenticated, sessionChecked, suscripcion } = useCurrentSubscription();
     const [plan, setPlan] = useState<Plan>(PLAN_INDIVIDUAL_FALLBACK);
 
     useEffect(() => {
-        if (!tokenHydrated) {
+        if (!sessionChecked) {
             return;
         }
 
-        const fetchPlanes = token ? obtenerPlanesUsuario() : obtenerPlanes();
+        const fetchPlanes = isAuthenticated ? obtenerPlanesUsuario() : obtenerPlanes();
         fetchPlanes.then((planes) => {
             const individual = planes.find((item) => {
                 const nombre = item.nombre.toLowerCase();
@@ -45,9 +45,9 @@ export default function PlanesCards() {
                 setPlan(individual);
             }
         });
-    }, [token, tokenHydrated]);
+    }, [isAuthenticated, sessionChecked]);
 
-    const action = getPlanPurchaseState(plan, suscripcion, token, tokenHydrated);
+    const action = getPlanPurchaseState(plan, suscripcion, isAuthenticated, sessionChecked);
 
     return (
         <section id="planes" className="bg-white py-20">

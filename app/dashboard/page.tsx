@@ -95,6 +95,7 @@ export default function DashboardPage() {
     const tieneBeneficiarios = maxBeneficiarios > 0;
     const precioMaxPlan = planes.length > 0 ? Math.max(...planes.map((plan) => plan.precio_mensual)) : 0;
     const esElMasCaro = suscripcion ? suscripcion.precio_pagado >= precioMaxPlan : false;
+    const renewalHref = suscripcion?.plan_id ? `/checkout/${suscripcion.plan_id}` : "/planes";
 
     async function handleCancelarPlan() {
         setCancelandoPlan(true);
@@ -141,7 +142,7 @@ export default function DashboardPage() {
                                         <p className="font-bold text-amber-800">Tu plan vence en {diasRestantes} dias</p>
                                         <p className="text-sm text-amber-600">Renovalo ahora para no perder el acceso</p>
                                     </div>
-                                    <Link href="/planes" className="shrink-0 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-amber-600">
+                                    <Link href={renewalHref} className="shrink-0 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-amber-600">
                                         Renovar
                                     </Link>
                                 </div>
@@ -154,7 +155,7 @@ export default function DashboardPage() {
                                         <p className="font-bold text-red-800">Tu plan vencio</p>
                                         <p className="text-sm text-red-600">Renovalo para recuperar el acceso a tus beneficios</p>
                                     </div>
-                                    <Link href="/planes" className="shrink-0 rounded-xl bg-red-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-600">
+                                    <Link href={renewalHref} className="shrink-0 rounded-xl bg-red-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-600">
                                         Renovar
                                     </Link>
                                 </div>

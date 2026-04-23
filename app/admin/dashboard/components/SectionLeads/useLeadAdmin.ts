@@ -31,14 +31,29 @@ export function useLeadAdmin({ token, filtro, addToast }: Params) {
 
         try {
             const res = await fetch(url, { headers: authHeaders(token) })
-            const data: unknown = await res.json()
+            const data: unknown = await res.json().catch(() => null)
+
+            if (res.status === 401 || res.status === 403) {
+                addToast("Tu sesion de administrador expiro. Volve a ingresar.", "error")
+                window.location.href = "/admin?expired=1"
+                return
+            }
+
+            if (!res.ok) {
+                const detail =
+                    data && typeof data === "object" && "detail" in data && typeof data.detail === "string"
+                        ? data.detail
+                        : "Error al cargar leads"
+                throw new Error(detail)
+            }
+
             const lista = Array.isArray(data) ? (data as LeadEmpresarial[]) : []
             setLeads(lista)
             if (filtro === "todos" || filtro === "nuevo") {
                 setCantidadNuevos(lista.filter((lead) => lead.estado === "nuevo").length)
             }
-        } catch {
-            addToast("Error al cargar leads", "error")
+        } catch (error) {
+            addToast(error instanceof Error ? error.message : "Error al cargar leads", "error")
         } finally {
             setLoading(false)
         }
@@ -71,12 +86,24 @@ export function useLeadAdmin({ token, filtro, addToast }: Params) {
                 headers: { ...authHeaders(token), "Content-Type": "application/json" },
                 body: JSON.stringify({ estado: estadoForm, nota_admin: nota }),
             })
-            if (!res.ok) throw new Error()
+
+            const data = await res.json().catch(() => null) as { detail?: string } | null
+
+            if (res.status === 401 || res.status === 403) {
+                addToast("Tu sesion de administrador expiro. Volve a ingresar.", "error")
+                window.location.href = "/admin?expired=1"
+                return
+            }
+
+            if (!res.ok) {
+                throw new Error(data?.detail || "Error al actualizar el lead")
+            }
+
             addToast("Lead actualizado", "success")
             cerrarDetalle()
             await cargarLeads()
-        } catch {
-            addToast("Error al actualizar el lead", "error")
+        } catch (error) {
+            addToast(error instanceof Error ? error.message : "Error al actualizar el lead", "error")
         } finally {
             setGuardando(false)
         }

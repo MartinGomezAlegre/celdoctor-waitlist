@@ -94,17 +94,17 @@ function SkeletonPlanCard() {
 function PlanActionButton({
     plan,
     destacado,
-    token,
-    tokenHydrated,
+    isAuthenticated,
+    sessionChecked,
     suscripcion,
 }: {
     plan: Plan;
     destacado?: boolean;
-    token: string | null;
-    tokenHydrated: boolean;
+    isAuthenticated: boolean;
+    sessionChecked: boolean;
     suscripcion: Suscripcion | null | undefined;
 }) {
-    const action = getPlanPurchaseState(plan, suscripcion, token, tokenHydrated);
+    const action = getPlanPurchaseState(plan, suscripcion, isAuthenticated, sessionChecked);
     const enabledClass = destacado
         ? "bg-white text-[#2E1065] hover:bg-slate-100 shadow-lg"
         : "border border-white/20 text-white hover:bg-white hover:text-[#2E1065]";
@@ -136,14 +136,14 @@ function PlanActionButton({
 function PlanCard({
     plan,
     destacado,
-    token,
-    tokenHydrated,
+    isAuthenticated,
+    sessionChecked,
     suscripcion,
 }: {
     plan: Plan;
     destacado?: boolean;
-    token: string | null;
-    tokenHydrated: boolean;
+    isAuthenticated: boolean;
+    sessionChecked: boolean;
     suscripcion: Suscripcion | null | undefined;
 }) {
     const baseCard = destacado
@@ -200,8 +200,8 @@ function PlanCard({
             <PlanActionButton
                 plan={plan}
                 destacado={destacado}
-                token={token}
-                tokenHydrated={tokenHydrated}
+                isAuthenticated={isAuthenticated}
+                sessionChecked={sessionChecked}
                 suscripcion={suscripcion}
             />
         </div>
@@ -211,7 +211,7 @@ function PlanCard({
 export default function PlansSection() {
     const [planes, setPlanes] = useState<Plan[]>([]);
     const [cargando, setCargando] = useState(true);
-    const { token, tokenHydrated, suscripcion } = useCurrentSubscription();
+    const { isAuthenticated, sessionChecked, suscripcion } = useCurrentSubscription();
 
     useEffect(() => {
         obtenerPlanes()
@@ -241,8 +241,8 @@ export default function PlansSection() {
                                   key={plan.id}
                                   plan={plan}
                                   destacado={plan.id === planDestacadoId}
-                                  token={token}
-                                  tokenHydrated={tokenHydrated}
+                                  isAuthenticated={isAuthenticated}
+                                  sessionChecked={sessionChecked}
                                   suscripcion={suscripcion}
                               />
                           ))}

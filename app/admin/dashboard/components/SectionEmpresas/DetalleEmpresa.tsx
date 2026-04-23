@@ -113,6 +113,7 @@ export function DetalleEmpresa({ empresa, token, currentRole, addToast, planes, 
             contacto_telefono: empresaLocal.contacto_telefono ?? "",
             admin_access_email: empresaLocal.admin_access_email ?? "",
             admin_access_password: "",
+            visible_para_gestores: Boolean(empresaLocal.visible_para_gestores),
             plan_id: empresaLocal.plan_id ? String(empresaLocal.plan_id) : "",
             cantidad_empleados: String(empresaLocal.cantidad_empleados),
             precio_por_empleado: empresaLocal.precio_por_empleado ? String(empresaLocal.precio_por_empleado) : "",
@@ -323,6 +324,7 @@ export function DetalleEmpresa({ empresa, token, currentRole, addToast, planes, 
                         <InfoRow label="Cargo" value={empresaLocal.contacto_cargo} />
                         <InfoRow label="Email" value={empresaLocal.contacto_email} />
                         <InfoRow label="Teléfono" value={empresaLocal.contacto_telefono} />
+                        <InfoRow label="Visible para gestores" value={empresaLocal.visible_para_gestores ? "Si" : "No"} />
                     </div>
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-3">
                         <h3 className="font-semibold text-slate-800 text-sm">Suscripción</h3>

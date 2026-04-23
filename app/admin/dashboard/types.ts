@@ -87,6 +87,7 @@ export interface Empresa {
     rubro: string | null; direccion?: string | null; localidad?: string | null; provincia?: string | null;
     responsabilidad_iva?: string | null; contacto_nombre: string; contacto_cargo: string | null;
     contacto_email: string; contacto_telefono: string | null; activo: boolean;
+    visible_para_gestores?: boolean;
     admin_user_id?: number | null; admin_access_email?: string | null; admin_access_name?: string | null;
     created_at: string; plan_nombre: string | null; plan_id: number | null;
     cantidad_empleados: number; precio_por_empleado: number | null; precio_total: number | null;
@@ -349,6 +350,7 @@ export const EMPRESA_FORM_VACIO = {
     direccion: "", localidad: "", provincia: "", responsabilidad_iva: "",
     contacto_nombre: "", contacto_cargo: "", contacto_email: "", contacto_telefono: "",
     admin_access_email: "", admin_access_password: "",
+    visible_para_gestores: false,
     plan_id: "", cantidad_empleados: "", precio_por_empleado: "", periodicidad: "mensual",
 }
 export type EmpresaForm = typeof EMPRESA_FORM_VACIO

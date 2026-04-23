@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react"
 
-import type { Empresa, PaginatedResponse, PersonalInterno, ToastType } from "../types"
+import type { PaginatedResponse, PersonalInterno, ToastType } from "../types"
 import { API, authHeaders, fmtDate, getApiErrorDetail } from "../lib"
 import { adminEndpoints } from "../admin-endpoints"
 import { Pagination } from "./shared/Pagination"
@@ -36,8 +36,6 @@ export default function SectionPersonal({ token, addToast }: Props) {
     const [filtro, setFiltro] = useState("todos")
     const [page, setPage] = useState(1)
     const [total, setTotal] = useState(0)
-    const [companyOptions, setCompanyOptions] = useState<Empresa[]>([])
-    const [loadingCompanies, setLoadingCompanies] = useState(true)
     const [modalOpen, setModalOpen] = useState(false)
     const [editing, setEditing] = useState<PersonalInterno | null>(null)
     const [guardando, setGuardando] = useState(false)
@@ -89,39 +87,6 @@ export default function SectionPersonal({ token, addToast }: Props) {
         }
     }, [buscar, filtro, page, token])
 
-    useEffect(() => {
-        let cancelled = false
-
-        async function fetchCompanies() {
-            setLoadingCompanies(true)
-            try {
-                const params = new URLSearchParams({
-                    limit: "500",
-                    offset: "0",
-                })
-                const res = await fetch(`${API}${adminEndpoints.empresas}?${params.toString()}`, {
-                    headers: authHeaders(token),
-                })
-                const data = (await res.json().catch(() => null)) as PaginatedResponse<Empresa> | null
-                if (cancelled) return
-                if (res.ok && data && Array.isArray(data.items)) {
-                    setCompanyOptions(data.items)
-                } else {
-                    setCompanyOptions([])
-                }
-            } catch {
-                if (!cancelled) setCompanyOptions([])
-            } finally {
-                if (!cancelled) setLoadingCompanies(false)
-            }
-        }
-
-        void fetchCompanies()
-        return () => {
-            cancelled = true
-        }
-    }, [token])
-
     const resumen = useMemo(() => {
         const activos = items.filter((item) => item.activo).length
         const admins = items.filter((item) => item.rol === "admin").length
@@ -159,18 +124,6 @@ export default function SectionPersonal({ token, addToast }: Props) {
         setForm({ ...EMPTY_FORM })
     }
 
-    function toggleCompany(empresaId: number) {
-        setForm((prev) => {
-            const selected = new Set(prev.empresa_ids)
-            if (selected.has(empresaId)) {
-                selected.delete(empresaId)
-            } else {
-                selected.add(empresaId)
-            }
-            return { ...prev, empresa_ids: Array.from(selected).sort((a, b) => a - b) }
-        })
-    }
-
     async function savePersonal() {
         setGuardando(true)
         try {
@@ -185,7 +138,6 @@ export default function SectionPersonal({ token, addToast }: Props) {
                     cargo: form.cargo || null,
                     responsabilidades: form.responsabilidades || null,
                     nueva_contrasenia: form.nueva_contrasenia || null,
-                    empresa_ids: form.rol === "gestor_interno" ? form.empresa_ids : [],
                 }
                 : {
                     nombre: form.nombre,
@@ -197,7 +149,6 @@ export default function SectionPersonal({ token, addToast }: Props) {
                     area: form.area || null,
                     cargo: form.cargo || null,
                     responsabilidades: form.responsabilidades || null,
-                    empresa_ids: form.rol === "gestor_interno" ? form.empresa_ids : [],
                 }
 
             const endpoint = editing ? `${API}${adminEndpoints.personalItem(editing.id)}` : `${API}${adminEndpoints.personal}`
@@ -344,26 +295,15 @@ export default function SectionPersonal({ token, addToast }: Props) {
                                             <td className="px-4 py-3">
                                                 {item.rol !== "gestor_interno" ? (
                                                     <span className="text-xs text-slate-400">No aplica</span>
-                                                ) : item.empresas_visibles_count ? (
+                                                ) : (
                                                     <div className="space-y-1">
                                                         <p className="text-xs font-semibold text-slate-700">
-                                                            {item.empresas_visibles_count} empresa{item.empresas_visibles_count === 1 ? "" : "s"}
+                                                            Se define desde cada empresa
                                                         </p>
-                                                        <div className="flex max-w-xs flex-wrap gap-1">
-                                                            {(item.empresas_visibles ?? []).slice(0, 3).map((empresa) => (
-                                                                <span key={empresa} className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
-                                                                    {empresa}
-                                                                </span>
-                                                            ))}
-                                                            {(item.empresas_visibles?.length ?? 0) > 3 && (
-                                                                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
-                                                                    +{(item.empresas_visibles?.length ?? 0) - 3}
-                                                                </span>
-                                                            )}
-                                                        </div>
+                                                        <p className="text-xs text-slate-500">
+                                                            El admin marca en cada empresa si es visible o no para gestores internos.
+                                                        </p>
                                                     </div>
-                                                ) : (
-                                                    <span className="text-xs text-amber-600">Sin empresas asignadas</span>
                                                 )}
                                             </td>
                                             <td className="max-w-sm px-4 py-3 text-slate-600">
@@ -480,44 +420,8 @@ export default function SectionPersonal({ token, addToast }: Props) {
                             </Field>
                             {form.rol === "gestor_interno" && (
                                 <Field label="Empresas visibles" className="md:col-span-2">
-                                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                                        <p className="mb-3 text-xs text-slate-500">
-                                            El gestor interno solo podra ver y operar sobre las empresas que marques aca.
-                                        </p>
-                                        {loadingCompanies ? (
-                                            <p className="text-sm text-slate-500">Cargando empresas...</p>
-                                        ) : companyOptions.length === 0 ? (
-                                            <p className="text-sm text-slate-500">No hay empresas disponibles para asignar.</p>
-                                        ) : (
-                                            <div className="grid max-h-56 gap-2 overflow-y-auto pr-1 md:grid-cols-2">
-                                                {companyOptions.map((empresa) => {
-                                                    const checked = form.empresa_ids.includes(empresa.id)
-                                                    return (
-                                                        <label
-                                                            key={empresa.id}
-                                                            className={`flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 text-sm transition-colors ${
-                                                                checked
-                                                                    ? "border-violet-300 bg-violet-50 text-violet-900"
-                                                                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-                                                            }`}
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={checked}
-                                                                onChange={() => toggleCompany(empresa.id)}
-                                                                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
-                                                            />
-                                                            <span className="min-w-0">
-                                                                <span className="block font-medium">{empresa.razon_social}</span>
-                                                                <span className="block truncate text-xs text-slate-500">
-                                                                    {empresa.nombre_comercial ?? empresa.cuit}
-                                                                </span>
-                                                            </span>
-                                                        </label>
-                                                    )
-                                                })}
-                                            </div>
-                                        )}
+                                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                                        El alcance de empresas se define desde cada ficha de empresa, con el switch <strong>Visible para gestores internos</strong>.
                                     </div>
                                 </Field>
                             )}

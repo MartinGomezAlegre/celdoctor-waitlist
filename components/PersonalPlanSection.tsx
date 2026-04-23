@@ -25,8 +25,8 @@ const FEATURES = [
 ];
 
 export default function PersonalPlanSection() {
-    const { token, tokenHydrated, suscripcion } = useCurrentSubscription();
-    const action = getPlanPurchaseState(PLAN_INDIVIDUAL, suscripcion, token, tokenHydrated);
+    const { isAuthenticated, sessionChecked, suscripcion } = useCurrentSubscription();
+    const action = getPlanPurchaseState(PLAN_INDIVIDUAL, suscripcion, isAuthenticated, sessionChecked);
 
     return (
         <section id="plan-personal" className="relative overflow-hidden border-t border-slate-100 bg-white py-24">

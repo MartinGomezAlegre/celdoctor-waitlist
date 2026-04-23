@@ -64,19 +64,19 @@ function SkeletonCard() {
 // ─── Plan card ────────────────────────────────────────────────────────────────
 function PlanCard({
     plan,
-    token,
-    tokenHydrated,
+    isAuthenticated,
+    sessionChecked,
     suscripcion,
     destacado,
 }: {
     plan: Plan;
-    token: string | null;
-    tokenHydrated: boolean;
+    isAuthenticated: boolean;
+    sessionChecked: boolean;
     suscripcion: Suscripcion | null | undefined;
     destacado?: boolean;
 }) {
     const beneficios = getBeneficios(plan.nombre);
-    const action = getPlanPurchaseState(plan, suscripcion, token, tokenHydrated);
+    const action = getPlanPurchaseState(plan, suscripcion, isAuthenticated, sessionChecked);
     const esCorporativo = isCorporatePlan(plan);
 
     if (destacado) {
@@ -169,19 +169,19 @@ export default function PlanesPage() {
     const [tab, setTab] = useState<TabId>("personal");
     const [planes, setPlanes] = useState<Plan[]>([]);
     const [cargando, setCargando] = useState(true);
-    const { token, tokenHydrated, suscripcion } = useCurrentSubscription();
+    const { isAuthenticated, sessionChecked, suscripcion } = useCurrentSubscription();
 
     useEffect(() => {
-        if (!tokenHydrated) {
+        if (!sessionChecked) {
             return;
         }
 
-        const fetchPlanes = token ? obtenerPlanesUsuario() : obtenerPlanes();
+        const fetchPlanes = isAuthenticated ? obtenerPlanesUsuario() : obtenerPlanes();
         fetchPlanes.then((data) => {
             setPlanes(data.length > 0 ? data : FALLBACK_PLANES);
             setCargando(false);
         });
-    }, [token, tokenHydrated]);
+    }, [isAuthenticated, sessionChecked]);
 
     const planesPersonal = planes.filter((p) => {
         const n = p.nombre.toLowerCase();
@@ -221,7 +221,7 @@ export default function PlanesPage() {
 
                 {/* Tabs */}
                 <div className="flex items-center justify-center gap-2 mt-8 overflow-x-auto pb-1">
-                    {TABS.filter((t) => !(token && t.id === "corporativo")).map((t) => (
+                    {TABS.filter((t) => !(isAuthenticated && t.id === "corporativo")).map((t) => (
                         <button
                             key={t.id}
                             onClick={() => setTab(t.id)}
@@ -250,7 +250,12 @@ export default function PlanesPage() {
                             </div>
                         ) : efectivoPersonal.length === 1 ? (
                             <div className="max-w-sm mx-auto">
-                                <PlanCard plan={efectivoPersonal[0]} token={token} tokenHydrated={tokenHydrated} suscripcion={suscripcion} />
+                                <PlanCard
+                                    plan={efectivoPersonal[0]}
+                                    isAuthenticated={isAuthenticated}
+                                    sessionChecked={sessionChecked}
+                                    suscripcion={suscripcion}
+                                />
                             </div>
                         ) : (
                             <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -258,8 +263,8 @@ export default function PlanesPage() {
                                     <PlanCard
                                         key={plan.id}
                                         plan={plan}
-                                        token={token}
-                                        tokenHydrated={tokenHydrated}
+                                        isAuthenticated={isAuthenticated}
+                                        sessionChecked={sessionChecked}
                                         suscripcion={suscripcion}
                                         destacado={plan.id === planDestacadoId}
                                     />
@@ -279,9 +284,19 @@ export default function PlanesPage() {
                         ) : (
                             <div className="grid lg:grid-cols-2 gap-8 max-w-3xl mx-auto items-center">
                                 {efectivoFamiliar.length > 0 ? (
-                                    <PlanCard plan={efectivoFamiliar[0]} token={token} tokenHydrated={tokenHydrated} suscripcion={suscripcion} />
+                                    <PlanCard
+                                        plan={efectivoFamiliar[0]}
+                                        isAuthenticated={isAuthenticated}
+                                        sessionChecked={sessionChecked}
+                                        suscripcion={suscripcion}
+                                    />
                                 ) : (
-                                    <PlanCard plan={FALLBACK_PLANES[1]} token={token} tokenHydrated={tokenHydrated} suscripcion={suscripcion} />
+                                    <PlanCard
+                                        plan={FALLBACK_PLANES[1]}
+                                        isAuthenticated={isAuthenticated}
+                                        sessionChecked={sessionChecked}
+                                        suscripcion={suscripcion}
+                                    />
                                 )}
                                 {/* Decorative image */}
                                 <div className="hidden lg:block rounded-3xl overflow-hidden aspect-4/3 relative">
@@ -311,9 +326,19 @@ export default function PlanesPage() {
                         ) : (
                             <>
                                 {efectivoCorporativo.length > 0 ? (
-                                    <PlanCard plan={efectivoCorporativo[0]} token={token} tokenHydrated={tokenHydrated} suscripcion={suscripcion} />
+                                    <PlanCard
+                                        plan={efectivoCorporativo[0]}
+                                        isAuthenticated={isAuthenticated}
+                                        sessionChecked={sessionChecked}
+                                        suscripcion={suscripcion}
+                                    />
                                 ) : (
-                                    <PlanCard plan={FALLBACK_PLANES[2]} token={token} tokenHydrated={tokenHydrated} suscripcion={suscripcion} />
+                                    <PlanCard
+                                        plan={FALLBACK_PLANES[2]}
+                                        isAuthenticated={isAuthenticated}
+                                        sessionChecked={sessionChecked}
+                                        suscripcion={suscripcion}
+                                    />
                                 )}
 
                                 {/* Características empresariales */}

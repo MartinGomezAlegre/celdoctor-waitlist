@@ -66,6 +66,7 @@ export function ListaEmpresas({
                 contacto_telefono: form.contacto_telefono.trim() || undefined,
                 admin_access_email: form.admin_access_email.trim() || undefined,
                 admin_access_password: form.admin_access_password.trim() || undefined,
+                visible_para_gestores: Boolean(form.visible_para_gestores),
             }
 
             const res = await fetch(`${API}/admin/empresas`, {
@@ -161,6 +162,9 @@ export function ListaEmpresas({
                                         <td className="px-5 py-3.5">
                                             <p className="font-medium text-slate-900 whitespace-nowrap">{emp.razon_social}</p>
                                             <p className="text-xs text-slate-400">{emp.cuit}</p>
+                                            <p className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${emp.visible_para_gestores ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-500"}`}>
+                                                {emp.visible_para_gestores ? "Visible para gestores" : "Solo admin"}
+                                            </p>
                                         </td>
                                         <td className="px-5 py-3.5">
                                             <p className="text-slate-700 whitespace-nowrap">{emp.contacto_nombre}</p>

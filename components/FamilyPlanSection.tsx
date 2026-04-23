@@ -25,8 +25,8 @@ const FEATURES = [
 ];
 
 export default function FamilyPlanSection() {
-    const { token, tokenHydrated, suscripcion } = useCurrentSubscription();
-    const action = getPlanPurchaseState(PLAN_FAMILIAR, suscripcion, token, tokenHydrated);
+    const { isAuthenticated, sessionChecked, suscripcion } = useCurrentSubscription();
+    const action = getPlanPurchaseState(PLAN_FAMILIAR, suscripcion, isAuthenticated, sessionChecked);
 
     return (
         <section id="plan-familiar" className="relative overflow-hidden border-t border-slate-100 bg-slate-50 py-24">
