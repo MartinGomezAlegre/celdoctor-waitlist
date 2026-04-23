@@ -97,7 +97,7 @@ export default function HeroSection() {
           </div>
 
           <div className="relative mt-2 flex justify-center lg:mt-0 lg:justify-end">
-            <div className="hero-phone-motion relative z-10 mx-auto max-w-[1100px] translate-x-2 sm:translate-x-6 lg:translate-x-20 xl:translate-x-28">
+            <div className="relative z-10 mx-auto max-w-[1100px] translate-x-2 sm:translate-x-6 lg:translate-x-20 xl:translate-x-28">
               <div className="pointer-events-none absolute left-1/2 top-1/2 h-[19rem] w-[19rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#7C3AED]/16 blur-3xl sm:h-[23rem] sm:w-[23rem] lg:h-[28rem] lg:w-[28rem]" />
               <div className="pointer-events-none absolute left-1/2 top-1/2 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(124,58,237,0.12)_0%,rgba(124,58,237,0.07)_34%,rgba(124,58,237,0.03)_52%,transparent_70%)] sm:h-[34rem] sm:w-[34rem] lg:h-[40rem] lg:w-[40rem]" />
               <Image
