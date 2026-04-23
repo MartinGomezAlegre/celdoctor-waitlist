@@ -8,74 +8,82 @@ export function useEmpresas(token: string, buscar: string, page: number, perPage
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
 
-    const fetchEmpresas = useCallback(() => {
-        setLoading(true)
-        setError(false)
-        const params = new URLSearchParams({
-            limit: String(perPage),
-            offset: String((page - 1) * perPage),
-        })
-        if (buscar.trim()) params.set("buscar", buscar.trim())
+    const cargar = useCallback(
+        async (shouldIgnore: () => boolean) => {
+            const params = new URLSearchParams({
+                limit: String(perPage),
+                offset: String((page - 1) * perPage),
+            })
+            if (buscar.trim()) params.set("buscar", buscar.trim())
 
-        fetch(`${API}/admin/empresas?${params.toString()}`, { headers: authHeaders(token) })
-            .then((r) => r.json())
-            .then((d: unknown) => {
-                const payload = d as PaginatedResponse<Empresa>
-                if (payload && Array.isArray(payload.items)) {
-                    setEmpresas(payload.items)
-                    setTotal(payload.total ?? 0)
+            try {
+                const response = await fetch(`${API}/admin/empresas?${params.toString()}`, {
+                    headers: authHeaders(token),
+                })
+                const data = await response.json().catch(() => null) as
+                    | PaginatedResponse<Empresa>
+                    | { detail?: string }
+                    | null
+
+                if (response.status === 401 || response.status === 403) {
+                    if (!shouldIgnore()) {
+                        window.location.href = "/admin?expired=1"
+                    }
                     return
                 }
-                setEmpresas([])
-                setTotal(0)
-                setError(true)
-            })
-            .catch(() => {
-                setEmpresas([])
-                setTotal(0)
-                setError(true)
-            })
-            .finally(() => setLoading(false))
-    }, [buscar, page, perPage, token])
 
-    useEffect(() => {
-        let cancelled = false
+                if (!response.ok) {
+                    throw new Error(
+                        data && "detail" in data && typeof data.detail === "string"
+                            ? data.detail
+                            : "No pudimos cargar las empresas",
+                    )
+                }
 
-        const params = new URLSearchParams({
-            limit: String(perPage),
-            offset: String((page - 1) * perPage),
-        })
-        if (buscar.trim()) params.set("buscar", buscar.trim())
-
-        fetch(`${API}/admin/empresas?${params.toString()}`, { headers: authHeaders(token) })
-            .then((r) => r.json())
-            .then((d: unknown) => {
-                if (cancelled) return
-                const payload = d as PaginatedResponse<Empresa>
-                if (payload && Array.isArray(payload.items)) {
-                    setEmpresas(payload.items)
-                    setTotal(payload.total ?? 0)
+                if (!shouldIgnore() && data && "items" in data && Array.isArray(data.items)) {
+                    setEmpresas(data.items)
+                    setTotal(data.total ?? 0)
+                    setError(false)
                     return
                 }
-                setEmpresas([])
-                setTotal(0)
-                setError(true)
-            })
-            .catch(() => {
-                if (!cancelled) {
+
+                if (!shouldIgnore()) {
                     setEmpresas([])
                     setTotal(0)
                     setError(true)
                 }
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false)
-            })
+            } catch (err) {
+                if (!shouldIgnore()) {
+                    console.error("Error al cargar empresas:", err)
+                    setEmpresas([])
+                    setTotal(0)
+                    setError(true)
+                }
+            } finally {
+                if (!shouldIgnore()) {
+                    setLoading(false)
+                }
+            }
+        },
+        [buscar, page, perPage, token],
+    )
+
+    const fetchEmpresas = useCallback(() => {
+        setLoading(true)
+        setError(false)
+        void cargar(() => false)
+    }, [cargar])
+
+    useEffect(() => {
+        let cancelled = false
+        setLoading(true)
+        setError(false)
+        void cargar(() => cancelled)
 
         return () => {
             cancelled = true
         }
-    }, [buscar, page, perPage, token])
+    }, [cargar])
 
     return { empresas, total, loading, error, refetch: fetchEmpresas }
 }

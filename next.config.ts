@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 
+const isProduction = process.env.NODE_ENV === "production";
 const connectSrc = [
   "'self'",
   "https://script.google.com",
@@ -16,16 +17,25 @@ if (process.env.NODE_ENV !== "production") {
   );
 }
 
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  ...(isProduction ? [] : ["'unsafe-eval'"]),
+];
+
 const securityHeaders = [
   {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+      `script-src ${scriptSrc.join(" ")}`,
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
       "img-src 'self' data: https:",
       `connect-src ${connectSrc.join(" ")}`,
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
       "frame-ancestors 'none'",
     ].join("; "),
   },
