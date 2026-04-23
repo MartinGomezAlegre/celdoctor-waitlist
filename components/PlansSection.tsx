@@ -12,14 +12,14 @@ const FALLBACK_PLANES: Plan[] = [
         id: 1,
         nombre: "Individual",
         descripcion: "Cobertura agil para vos. Sin vueltas.",
-        precio_mensual: 5000,
+        precio_mensual: 9500,
         max_beneficiarios: 1,
     },
     {
         id: 2,
         nombre: "Familiar",
         descripcion: "Proteccion total para tus seres queridos.",
-        precio_mensual: 12500,
+        precio_mensual: 18000,
         max_beneficiarios: 4,
     },
     {
@@ -67,6 +67,20 @@ function getBeneficios(nombre: string): string[] {
     }
 
     return BENEFICIOS_PERSONAL;
+}
+
+function normalizeHomePlan(plan: Plan): Plan {
+    const nombre = plan.nombre.toLowerCase();
+
+    if (nombre.includes("individual") || nombre.includes("personal")) {
+        return { ...plan, precio_mensual: 9500 };
+    }
+
+    if (nombre.includes("familiar") || nombre.includes("familia")) {
+        return { ...plan, precio_mensual: 18000 };
+    }
+
+    return plan;
 }
 
 function formatBeneficiarios(max: number | null): string {
@@ -216,7 +230,8 @@ export default function PlansSection() {
     useEffect(() => {
         obtenerPlanes()
             .then((data) => {
-                setPlanes(data.length > 0 ? data : FALLBACK_PLANES);
+                const source = data.length > 0 ? data : FALLBACK_PLANES;
+                setPlanes(source.map(normalizeHomePlan));
             })
             .finally(() => setCargando(false));
     }, []);

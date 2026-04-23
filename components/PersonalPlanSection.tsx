@@ -12,7 +12,7 @@ const PLAN_INDIVIDUAL: Plan = {
     id: 1,
     nombre: "Individual",
     descripcion: "Plan para una persona",
-    precio_mensual: 5000,
+    precio_mensual: 9500,
     max_beneficiarios: 1,
 };
 
@@ -63,7 +63,7 @@ export default function PersonalPlanSection() {
                             </div>
                             <div>
                                 <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Precio</p>
-                                <p className="text-base font-bold text-slate-900">$5.000/mes</p>
+                                <p className="text-base font-bold text-slate-900">$9.500/mes</p>
                             </div>
                         </motion.div>
                     </div>
@@ -86,7 +86,7 @@ export default function PersonalPlanSection() {
                             </h2>
 
                             <div className="mb-4">
-                                <span className="text-4xl font-bold text-[#4C1D95]">$5.000</span>
+                                <span className="text-4xl font-bold text-[#4C1D95]">$9.500</span>
                                 <span className="ml-1 text-lg font-medium text-slate-400">/mes</span>
                             </div>
 

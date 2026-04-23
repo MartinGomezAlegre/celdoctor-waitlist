@@ -12,7 +12,7 @@ const PLAN_FAMILIAR: Plan = {
     id: 2,
     nombre: "Familiar",
     descripcion: "Proteccion completa para tu familia",
-    precio_mensual: 12500,
+    precio_mensual: 18000,
     max_beneficiarios: 4,
 };
 
@@ -52,7 +52,7 @@ export default function FamilyPlanSection() {
                             </h2>
 
                             <div className="mb-4">
-                                <span className="text-4xl font-bold text-[#4C1D95]">$12.500</span>
+                                <span className="text-4xl font-bold text-[#4C1D95]">$18.000</span>
                                 <span className="ml-1 text-lg font-medium text-slate-400">/mes</span>
                             </div>
 

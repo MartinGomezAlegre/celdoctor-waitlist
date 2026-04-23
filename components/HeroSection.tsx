@@ -28,23 +28,14 @@ const highlights = [
   },
 ];
 
-const floatingBenefits = [
-  { label: "Atencion rapida", top: "14%", right: "-3%" },
-  { label: "Seguridad y confianza", top: "45%", right: "-6%" },
-  { label: "Cuidado cercano", top: "77%", right: "-1%" },
-];
-
 export default function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(124,58,237,0.09),_transparent_28%),linear-gradient(180deg,#ffffff_0%,#f8f7ff_46%,#ffffff_100%)] pt-18 pb-20 lg:pt-28 lg:pb-28"
+      className="relative overflow-hidden bg-white pt-18 pb-20 lg:pt-28 lg:pb-28"
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(circle_at_72%_28%,rgba(124,58,237,0.14),transparent_26%),radial-gradient(circle_at_70%_75%,rgba(124,58,237,0.12),transparent_21%)]" />
-      <div className="absolute left-1/2 top-[8rem] hidden h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#7C3AED]/6 blur-3xl lg:block" />
-
       <div className="relative mx-auto max-w-7xl px-6">
-        <div className="grid items-center gap-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10">
+        <div className="grid items-center gap-12 lg:grid-cols-[0.86fr_1.14fr] lg:gap-4">
           <div className="relative z-10 mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#4C1D95]/10 bg-white/80 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#5B21B6] shadow-sm shadow-[#4C1D95]/5 backdrop-blur">
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#7C3AED]/10 text-[#6D28D9]">
@@ -90,9 +81,9 @@ export default function HeroSection() {
               </Link>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-start justify-center gap-x-7 gap-y-4 border-t border-slate-200/80 pt-6 lg:justify-start">
+            <div className="mt-10 grid gap-x-7 gap-y-4 border-t border-slate-200/80 pt-6 sm:grid-cols-2 lg:grid-cols-3">
               {highlights.map(({ icon: Icon, title, description }) => (
-                <div key={title} className="flex min-w-[170px] items-start gap-3">
+                <div key={title} className="flex min-w-0 items-start gap-3">
                   <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#7C3AED]/10 text-[#6D28D9]">
                     <Icon size={20} />
                   </div>
@@ -105,27 +96,16 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div className="relative mt-6 flex justify-center lg:mt-0 lg:justify-end">
-            <div className="absolute inset-x-6 bottom-4 top-4 rounded-[3.2rem] bg-[radial-gradient(circle_at_center,rgba(124,58,237,0.12),transparent_64%)] blur-2xl lg:inset-x-0" />
-            <div className="absolute left-10 right-0 top-8 hidden h-[86%] rounded-[50%] bg-[#7C3AED]/6 lg:block" />
-
-            {floatingBenefits.map(({ label, top, right }) => (
-              <div
-                key={label}
-                className="absolute z-20 hidden w-44 rounded-3xl border border-white/80 bg-white/92 px-5 py-4 text-sm font-semibold text-slate-700 shadow-[0_22px_60px_-30px_rgba(91,33,182,0.35)] backdrop-blur lg:block"
-                style={{ top, right }}
-              >
-                {label}
-              </div>
-            ))}
-
-            <div className="relative z-10 mx-auto max-w-[660px]">
+          <div className="relative mt-2 flex justify-center lg:mt-0 lg:justify-end">
+            <div className="hero-phone-motion relative z-10 mx-auto max-w-[1100px] translate-x-2 sm:translate-x-6 lg:translate-x-20 xl:translate-x-28">
+              <div className="pointer-events-none absolute left-1/2 top-1/2 h-[19rem] w-[19rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#7C3AED]/16 blur-3xl sm:h-[23rem] sm:w-[23rem] lg:h-[28rem] lg:w-[28rem]" />
+              <div className="pointer-events-none absolute left-1/2 top-1/2 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(124,58,237,0.12)_0%,rgba(124,58,237,0.07)_34%,rgba(124,58,237,0.03)_52%,transparent_70%)] sm:h-[34rem] sm:w-[34rem] lg:h-[40rem] lg:w-[40rem]" />
               <Image
-                src="/HEROIMAGE.png"
+                src="/app-hero.png"
                 alt="Interfaz de CelDoctor en celular mostrando consultas, beneficios y estudios"
-                width={1365}
-                height={1194}
-                className="mx-auto w-full max-w-[640px] drop-shadow-[0_32px_80px_rgba(76,29,149,0.2)]"
+                width={2160}
+                height={3840}
+                className="mx-auto w-full max-w-[800px] drop-shadow-[0_54px_140px_rgba(76,29,149,0.28)] lg:max-w-[1860px]"
                 priority
               />
             </div>
