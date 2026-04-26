@@ -281,14 +281,25 @@ export default function DashboardPage() {
     function renderHomeTab() {
         return (
             <div className="space-y-5">
-                <section className="space-y-2 px-1">
-                    <p className="text-sm font-medium text-slate-500">{nombre ? saludo(nombre) : "Hola"}</p>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-950">
-                        Tu salud, en un solo lugar
-                    </h1>
-                    <p className="max-w-md text-sm leading-6 text-slate-500">
-                        Accedé rápido a tu credencial, tus beneficios y la gestión de tu cobertura desde una sola app.
-                    </p>
+                <section className="space-y-4 px-1">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 space-y-2">
+                            <p className="text-sm font-medium text-slate-500">{nombre ? saludo(nombre) : "Hola"}</p>
+                            <h1 className="text-3xl font-black tracking-tight text-slate-950">
+                                Tu salud, en un solo lugar
+                            </h1>
+                            <p className="max-w-md text-sm leading-6 text-slate-500">
+                                Accedé rápido a tu credencial, tus beneficios y la gestión de tu cobertura desde una sola app.
+                            </p>
+                        </div>
+
+                        <div className="flex shrink-0 items-center gap-3">
+                            {suscripcion ? <EstadoBadge estado={suscripcion.estado} /> : null}
+                            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F3ECFF] text-sm font-bold text-[#5B21B6] shadow-sm">
+                                {avatarLabel}
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
                 <CredencialCard showToolbar={false} />
@@ -543,25 +554,7 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-[#F6F4FD]">
             <main className="mx-auto flex min-h-screen max-w-[480px] flex-col bg-white lg:max-w-6xl lg:bg-transparent lg:px-6 lg:py-8">
-                <div className="sticky top-0 z-20 border-b border-slate-100 bg-white/90 backdrop-blur">
-                    <div className="flex items-center justify-between px-5 py-4 lg:px-8">
-                        <div className="flex items-center gap-3">
-                            <div className="text-[28px] font-black leading-none tracking-tight text-slate-950">
-                                <span className="font-black">CEL</span>
-                                <span className="font-light text-[#5B21B6]">DOCTOR</span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            {suscripcion ? <EstadoBadge estado={suscripcion.estado} /> : null}
-                            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F3ECFF] text-sm font-bold text-[#5B21B6]">
-                                {avatarLabel}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex-1 px-5 pb-28 pt-6 lg:px-8 lg:pb-8">
+                <div className="flex-1 px-5 pb-28 pt-7 lg:px-8 lg:pb-8 lg:pt-2">
                     {content}
                 </div>
 
