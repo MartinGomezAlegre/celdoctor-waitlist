@@ -87,7 +87,13 @@ function CredentialSurface({
     );
 }
 
-export function CredencialCard({ token }: { token?: string | null }) {
+export function CredencialCard({
+    token,
+    showToolbar = true,
+}: {
+    token?: string | null;
+    showToolbar?: boolean;
+}) {
     const [credencial, setCredencial] = useState<CredencialVirtual | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -200,21 +206,23 @@ export function CredencialCard({ token }: { token?: string | null }) {
     return (
         <>
             <div className="w-full max-w-[860px] space-y-4">
-                <div className="flex items-center justify-between gap-4">
-                    <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
-                            Credencial digital
-                        </p>
+                {showToolbar && (
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                                Credencial digital
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setExpanded(true)}
+                            className="inline-flex items-center gap-2 rounded-full border border-[#4C1D95]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#4C1D95] shadow-sm transition-colors hover:bg-[#4C1D95]/5"
+                        >
+                            <Expand className="h-3.5 w-3.5" />
+                            Ampliar
+                        </button>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => setExpanded(true)}
-                        className="inline-flex items-center gap-2 rounded-full border border-[#4C1D95]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#4C1D95] shadow-sm transition-colors hover:bg-[#4C1D95]/5"
-                    >
-                        <Expand className="h-3.5 w-3.5" />
-                        Ampliar
-                    </button>
-                </div>
+                )}
 
                 <button
                     type="button"

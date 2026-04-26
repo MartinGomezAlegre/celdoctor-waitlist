@@ -39,6 +39,7 @@ export const adminEndpoints = {
     // Catálogo
     catalogoPlanes:          "/admin/catalogo/planes",
     catalogoPlan: (id: number) => `/admin/catalogo/planes/${id}`,
+    catalogoServices:        "/admin/catalogo/services",
     planes:                  "/admin/planes",
     plan: (id: number) =>    `/admin/planes/${id}`,
     cupones:                 "/admin/catalogo/cupones",

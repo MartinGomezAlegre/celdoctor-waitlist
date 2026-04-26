@@ -80,6 +80,23 @@ export interface AdminPlan {
     id: number; nombre: string; descripcion: string; precio_mensual: number;
     precio_anual?: number; max_beneficiarios?: number | null; tipo?: string;
     badge?: string | null; activo: boolean; suscriptores?: number; revenue_mensual?: number;
+    service_ids?: number[]
+    services?: AdminService[]
+    orden_display?: number | null
+    created_at?: string | null
+}
+
+export interface AdminService {
+    id: number
+    code: string
+    nombre: string
+    descripcion: string | null
+    proveedor: string
+    access_mode?: string | null
+    access_instructions?: string | null
+    cta_label?: string | null
+    cta_url?: string | null
+    activo: boolean
 }
 
 export interface Empresa {

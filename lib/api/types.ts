@@ -1,9 +1,26 @@
+export interface PlanService {
+    id: number;
+    code: string;
+    nombre: string;
+    descripcion: string;
+    proveedor: string;
+    access_mode?: string | null;
+    access_instructions?: string | null;
+    cta_label?: string | null;
+    cta_url?: string | null;
+    activo?: boolean | null;
+}
+
 export interface Plan {
     id: number;
     nombre: string;
     descripcion: string;
     precio_mensual: number;
     max_beneficiarios: number | null;
+    tipo?: string | null;
+    badge?: string | null;
+    activo?: boolean | null;
+    services?: PlanService[];
 }
 
 export interface Usuario {
@@ -26,6 +43,7 @@ export interface Suscripcion {
     fue_exportado?: boolean;
     max_beneficiarios?: number | null;
     tipo_plan?: string | null;
+    services?: PlanService[];
 }
 
 export interface PagoIntento {

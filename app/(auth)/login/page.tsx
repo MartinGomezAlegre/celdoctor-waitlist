@@ -48,7 +48,7 @@ export default function LoginPage() {
             <div className="rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
                 <h1 className="mb-1 text-2xl font-bold text-slate-900">Iniciar sesion</h1>
                 <p className="mb-8 text-sm text-slate-500">
-                    No tenes cuenta?{" "}
+                    Ingresá con tu cuenta de cliente, empresa o afiliado. No tenes cuenta?{" "}
                     <Link href="/registro" className="font-semibold text-[#4C1D95] hover:underline">
                         Crear cuenta
                     </Link>
