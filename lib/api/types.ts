@@ -11,6 +11,35 @@ export interface PlanService {
     activo?: boolean | null;
 }
 
+export interface VademecumMedicamento {
+    id: number;
+    nombre: string;
+    principio_activo?: string | null;
+    presentacion?: string | null;
+    laboratorio?: string | null;
+    descripcion?: string | null;
+    cobertura_resumen?: string | null;
+    descuento_porcentaje?: number | null;
+    keywords?: string | null;
+    activo?: boolean | null;
+}
+
+export interface FarmaciaAdherida {
+    id: number;
+    nombre: string;
+    direccion: string;
+    localidad?: string | null;
+    provincia?: string | null;
+    telefono?: string | null;
+    horario?: string | null;
+    estado_atencion?: string | null;
+    distancia_km?: number | null;
+    descuento_porcentaje?: number | null;
+    maps_url?: string | null;
+    descripcion?: string | null;
+    activo?: boolean | null;
+}
+
 export interface Plan {
     id: number;
     nombre: string;

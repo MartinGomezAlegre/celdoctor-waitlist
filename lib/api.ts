@@ -11,3 +11,4 @@ export * from "./api/credentials";
 export * from "./api/commercial";
 export * from "./api/company-admin";
 export * from "./api/payments";
+export * from "./api/benefits";

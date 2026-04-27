@@ -99,6 +99,37 @@ export interface AdminService {
     activo: boolean
 }
 
+export interface AdminMedicamento {
+    id: number
+    nombre: string
+    principio_activo?: string | null
+    presentacion?: string | null
+    laboratorio?: string | null
+    descripcion?: string | null
+    cobertura_resumen?: string | null
+    descuento_porcentaje?: number | null
+    keywords?: string | null
+    activo: boolean
+    orden_display?: number | null
+}
+
+export interface AdminFarmacia {
+    id: number
+    nombre: string
+    direccion: string
+    localidad?: string | null
+    provincia?: string | null
+    telefono?: string | null
+    horario?: string | null
+    estado_atencion?: string | null
+    distancia_km?: number | null
+    descuento_porcentaje?: number | null
+    maps_url?: string | null
+    descripcion?: string | null
+    activo: boolean
+    orden_display?: number | null
+}
+
 export interface Empresa {
     id: number; razon_social: string; nombre_comercial: string | null; cuit: string;
     rubro: string | null; direccion?: string | null; localidad?: string | null; provincia?: string | null;

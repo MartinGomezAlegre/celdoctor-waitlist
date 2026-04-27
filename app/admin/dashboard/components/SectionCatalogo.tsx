@@ -6,10 +6,12 @@ import type { CatalogoHistorialItem, ToastType } from "../types"
 import { API, authHeaders } from "../lib"
 import { adminEndpoints } from "../admin-endpoints"
 import { CuponesTab } from "./SectionCatalogo/CuponesTab"
+import { FarmaciasTab } from "./SectionCatalogo/FarmaciasTab"
 import { HistorialCatalogoCard } from "./SectionCatalogo/HistorialCatalogoCard"
+import { MedicamentosTab } from "./SectionCatalogo/MedicamentosTab"
 import { PlanesTab } from "./SectionCatalogo/PlanesTab"
 
-type Tab = "planes" | "cupones"
+type Tab = "planes" | "medicamentos" | "farmacias" | "cupones"
 
 interface Props {
     token: string
@@ -43,7 +45,7 @@ export default function SectionCatalogo({ token, addToast }: Props) {
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-slate-900">Catalogo</h1>
                 <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
-                    {(["planes", "cupones"] as Tab[]).map((currentTab) => (
+                    {(["planes", "medicamentos", "farmacias", "cupones"] as Tab[]).map((currentTab) => (
                         <button
                             key={currentTab}
                             type="button"
@@ -52,13 +54,21 @@ export default function SectionCatalogo({ token, addToast }: Props) {
                                 tab === currentTab ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
                             }`}
                         >
-                            {currentTab === "planes" ? "Planes" : "Cupones"}
+                            {currentTab === "planes"
+                                ? "Planes"
+                                : currentTab === "medicamentos"
+                                  ? "Vademecum"
+                                  : currentTab === "farmacias"
+                                    ? "Farmacias"
+                                    : "Cupones"}
                         </button>
                     ))}
                 </div>
             </div>
 
             {tab === "planes" && <PlanesTab token={token} addToast={addToast} onCatalogChange={fetchHistorial} />}
+            {tab === "medicamentos" && <MedicamentosTab token={token} addToast={addToast} onCatalogChange={fetchHistorial} />}
+            {tab === "farmacias" && <FarmaciasTab token={token} addToast={addToast} onCatalogChange={fetchHistorial} />}
             {tab === "cupones" && <CuponesTab token={token} addToast={addToast} onCatalogChange={fetchHistorial} />}
 
             <HistorialCatalogoCard historial={historial} loading={loadingHistorial} />
