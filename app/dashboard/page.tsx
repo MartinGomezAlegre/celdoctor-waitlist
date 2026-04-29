@@ -36,6 +36,7 @@ import {
   Video,
 } from "lucide-react";
 
+import { CelDoctorLogo } from "@/components/CelDoctorLogo";
 import {
   ApiError,
   cancelarMiSuscripcion,
@@ -58,7 +59,7 @@ import { CredencialCard } from "./components/CredencialCard";
 import { DatosCuentaCard } from "./components/DatosCuentaCard";
 import { GestionCuentaCard } from "./components/GestionCuentaCard";
 import { SoporteCard } from "./components/SoporteCard";
-import { ConfirmModal, EstadoBadge, Modal, SkeletonBlock } from "./components/ui";
+import { ConfirmModal, Modal, SkeletonBlock } from "./components/ui";
 import { diasHasta, saludo } from "./utils";
 
 type DashboardTab = "inicio" | "beneficios" | "soporte" | "cuenta";
@@ -128,7 +129,7 @@ function ShellCard({
 }) {
   return (
     <section
-      className={`rounded-[28px] border border-slate-100 bg-white shadow-[0_18px_55px_rgba(15,23,42,0.08)] ${compact ? "p-4" : "p-5 sm:p-6"} ${className}`}
+      className={`rounded-3xl border border-slate-100 bg-white shadow-sm ${compact ? "p-4" : "p-5 sm:p-6"} ${className}`}
     >
       {children}
     </section>
@@ -148,9 +149,9 @@ function SectionTitle({
     <div className="mb-4 flex items-start justify-between gap-4">
       <div>
         {eyebrow ? (
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#6D28D9]">{eyebrow}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#6D28D9]">{eyebrow}</p>
         ) : null}
-        <h2 className="text-xl font-black text-slate-950">{title}</h2>
+        <h2 className="text-xl font-bold text-slate-950">{title}</h2>
       </div>
       {action}
     </div>
@@ -171,7 +172,7 @@ function EmptyState({
       <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#6D28D9] shadow-sm">
         <Icon className="h-5 w-5" />
       </span>
-      <p className="mt-3 text-sm font-black text-slate-950">{title}</p>
+      <p className="mt-3 text-sm font-bold text-slate-950">{title}</p>
       <p className="mt-1 text-sm text-slate-500">{description}</p>
     </div>
   );
@@ -214,7 +215,7 @@ function SidebarButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-12 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-black transition ${
+      className={`flex min-h-12 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-bold transition ${
         active
           ? "bg-[#5B21B6] text-white shadow-[0_16px_34px_rgba(91,33,182,0.22)]"
           : "text-slate-500 hover:bg-[#F3ECFF] hover:text-[#5B21B6]"
@@ -244,7 +245,7 @@ function BottomNavButton({
       <button
         type="button"
         onClick={onClick}
-        className="relative -mt-8 flex min-h-[72px] min-w-[78px] flex-col items-center justify-center gap-1 rounded-[30px] bg-[#5B21B6] px-4 text-xs font-black text-white shadow-[0_18px_45px_rgba(91,33,182,0.35)]"
+        className="relative -mt-8 flex min-h-[72px] min-w-[78px] flex-col items-center justify-center gap-1 rounded-[30px] bg-[#5B21B6] px-4 text-xs font-bold text-white shadow-[0_18px_45px_rgba(91,33,182,0.35)]"
       >
         <Video className="h-7 w-7" />
         {label}
@@ -256,7 +257,7 @@ function BottomNavButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-2xl text-[11px] font-black transition ${
+      className={`flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-2xl text-[11px] font-bold transition ${
         active ? "text-[#5B21B6]" : "text-slate-400"
       }`}
     >
@@ -285,14 +286,14 @@ function QuickAction({
   disabled?: boolean;
 }) {
   const className =
-    "group flex min-h-[132px] w-full items-start justify-between rounded-[26px] border border-slate-100 bg-white p-5 text-left shadow-[0_16px_42px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-[#DDD1FF] hover:shadow-[0_22px_52px_rgba(91,33,182,0.12)] disabled:cursor-not-allowed disabled:opacity-55";
+    "group flex min-h-[120px] w-full items-start justify-between rounded-3xl border border-slate-100 bg-white p-5 text-left shadow-sm transition hover:border-[#DDD1FF] hover:bg-[#FDFBFF] disabled:cursor-not-allowed disabled:opacity-55";
   const content = (
     <>
       <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-[#F3ECFF] text-[#6D28D9]">
         <Icon className="h-7 w-7" />
       </span>
       <span className="ml-4 flex-1">
-        <span className="block text-base font-black text-slate-950">{title}</span>
+        <span className="block text-base font-bold text-slate-950">{title}</span>
         <span className="mt-1 block text-sm leading-5 text-slate-500">{description}</span>
       </span>
       <ChevronRight className="mt-4 h-5 w-5 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-[#6D28D9]" />
@@ -552,7 +553,7 @@ export default function DashboardPage() {
   };
 
   const renderPlanAction = (fullWidth = false) => {
-    const className = `${fullWidth ? "w-full" : ""} inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#5B21B6] px-5 text-sm font-black text-white shadow-[0_16px_34px_rgba(91,33,182,0.24)] transition hover:bg-[#4C1D95]`;
+    const className = `${fullWidth ? "w-full" : ""} inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#5B21B6] px-5 text-sm font-bold text-white shadow-[0_16px_34px_rgba(91,33,182,0.24)] transition hover:bg-[#4C1D95]`;
     if (!suscripcion) {
       return (
         <Link href="/planes" className={className}>
@@ -593,11 +594,11 @@ export default function DashboardPage() {
         <div className="relative flex flex-col gap-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-black ${toneStyles}`}>
+              <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold ${toneStyles}`}>
                 <span className="h-2 w-2 rounded-full bg-current" />
                 {estadoCuentaLabel}
               </span>
-              <h2 className={`${compact ? "mt-3 text-xl" : "mt-4 text-3xl"} font-black text-slate-950`}>
+              <h2 className={`${compact ? "mt-3 text-xl" : "mt-4 text-3xl"} font-bold text-slate-950`}>
                 {planStatusCopy.title}
               </h2>
               <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">{planStatusCopy.description}</p>
@@ -609,19 +610,19 @@ export default function DashboardPage() {
 
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Plan</p>
-              <p className="mt-1 text-base font-black text-slate-950">{planNombre}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Plan</p>
+              <p className="mt-1 text-base font-bold text-slate-950">{planNombre}</p>
             </div>
             <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Precio</p>
-              <p className="mt-1 text-base font-black text-slate-950">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Precio</p>
+              <p className="mt-1 text-base font-bold text-slate-950">
                 {suscripcion ? formatMoney(suscripcion.precio_pagado) : "-"}
                 {suscripcion ? <span className="text-sm text-slate-500">/mes</span> : null}
               </p>
             </div>
             <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Vencimiento</p>
-              <p className="mt-1 text-base font-black text-slate-950">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Vencimiento</p>
+              <p className="mt-1 text-base font-bold text-slate-950">
                 {fechaFin ? new Date(fechaFin).toLocaleDateString("es-AR") : "-"}
               </p>
             </div>
@@ -636,34 +637,38 @@ export default function DashboardPage() {
   function ConsultPanel({ mobile = false }: { mobile?: boolean }) {
     return (
       <section
-        className={`relative overflow-hidden rounded-[30px] bg-[#5B21B6] text-white shadow-[0_24px_65px_rgba(91,33,182,0.28)] ${
+        className={`rounded-3xl border border-slate-100 bg-white shadow-sm ${
           mobile ? "p-5" : "p-7"
         }`}
       >
-        <div className="pointer-events-none absolute right-[-30px] top-[-50px] h-48 w-48 rounded-full bg-white/20 blur-3xl" />
-        <div className="relative">
-          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
-            <Video className="h-7 w-7" />
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#F3ECFF] text-[#4C1D95]">
+            <Video className="h-6 w-6" />
           </span>
-          <h2 className={`${mobile ? "mt-4 text-2xl" : "mt-5 text-3xl"} font-black`}>
-            Habla con un medico ahora
-          </h2>
-          <p className="mt-2 max-w-md text-sm leading-6 text-white/78">
-            Accede a Mediquo desde CelDoctor. Si tu plan esta activo, podes iniciar la consulta en segundos.
-          </p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#6D28D9]">
+              Consulta medica
+            </p>
+            <h2 className={`${mobile ? "mt-1 text-2xl" : "mt-1 text-3xl"} font-bold text-slate-950`}>
+              Habla con un medico
+            </h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
+              Accede a Mediquo desde CelDoctor en segundos.
+            </p>
+            {!mediquoService ? (
+              <p className="mt-3 text-xs font-semibold text-amber-700">
+                Este plan todavia no tiene Mediquo configurado.
+              </p>
+            ) : null}
+          </div>
           <button
             type="button"
             onClick={openMediquo}
             disabled={!mediquoService || !estaActiva}
-            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 text-sm font-black text-[#5B21B6] shadow-xl transition hover:bg-[#F8F5FF] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#4C1D95] px-5 text-sm font-bold text-white transition hover:bg-[#2E1065] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
-            Acceder a Mediquo <ChevronRight className="h-4 w-4" />
+            Acceder <ChevronRight className="h-4 w-4" />
           </button>
-          {!mediquoService ? (
-            <p className="mt-3 text-xs font-semibold text-white/75">
-              Este plan todavia no tiene Mediquo configurado.
-            </p>
-          ) : null}
         </div>
       </section>
     );
@@ -677,7 +682,7 @@ export default function DashboardPage() {
           eyebrow={compact ? undefined : "Incluido"}
           action={
             benefitServices.length ? (
-              <span className="rounded-full bg-[#F3ECFF] px-3 py-1 text-xs font-black text-[#6D28D9]">
+              <span className="rounded-full bg-[#F3ECFF] px-3 py-1 text-xs font-bold text-[#6D28D9]">
                 {benefitServices.length} activos
               </span>
             ) : null
@@ -706,8 +711,8 @@ export default function DashboardPage() {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-base font-black text-slate-950">{service.nombre}</span>
-                      <span className="rounded-full bg-[#F3ECFF] px-2.5 py-1 text-[11px] font-black text-[#6D28D9]">
+                      <span className="text-base font-bold text-slate-950">{service.nombre}</span>
+                      <span className="rounded-full bg-[#F3ECFF] px-2.5 py-1 text-[11px] font-bold text-[#6D28D9]">
                         {getServiceBadge(service)}
                       </span>
                     </span>
@@ -741,7 +746,7 @@ export default function DashboardPage() {
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
                 <PillBottle className="h-7 w-7" />
               </span>
-              <h2 className="mt-4 text-2xl font-black">Vademecum</h2>
+              <h2 className="mt-4 text-2xl font-bold">Vademecum</h2>
               <p className="mt-2 max-w-lg text-sm leading-6 text-white/78">
                 Busca medicamentos cargados por CelDoctor y conoce datos utiles de cobertura.
               </p>
@@ -758,7 +763,7 @@ export default function DashboardPage() {
                     type="button"
                     key={item}
                     onClick={() => setMedicineQuery(item)}
-                    className="rounded-xl border border-white/35 px-3 py-2 text-xs font-black text-white transition hover:bg-white/10"
+                    className="rounded-xl border border-white/35 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10"
                   >
                     {item}
                   </button>
@@ -780,13 +785,13 @@ export default function DashboardPage() {
                     <Pill className="h-6 w-6" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="font-black text-slate-950">{medicamento.nombre}</p>
+                    <p className="font-bold text-slate-950">{medicamento.nombre}</p>
                     <p className="mt-1 text-sm text-slate-500">
                       {medicamento.principio_activo || medicamento.laboratorio || "Medicamento disponible"}
                     </p>
                   </div>
                   {typeof medicamento.descuento_porcentaje === "number" ? (
-                    <span className="rounded-full bg-[#F3ECFF] px-3 py-1 text-xs font-black text-[#6D28D9]">
+                    <span className="rounded-full bg-[#F3ECFF] px-3 py-1 text-xs font-bold text-[#6D28D9]">
                       {medicamento.descuento_porcentaje}% OFF
                     </span>
                   ) : null}
@@ -816,7 +821,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setPharmacyQuery("")}
-                className="text-sm font-black text-[#6D28D9]"
+                className="text-sm font-bold text-[#6D28D9]"
               >
                 Ver todas
               </button>
@@ -845,14 +850,14 @@ export default function DashboardPage() {
                       <MapPin className="h-5 w-5" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-black text-slate-950">{farmacia.nombre}</p>
+                      <p className="font-bold text-slate-950">{farmacia.nombre}</p>
                       <p className="mt-1 text-sm text-slate-500">
                         {[farmacia.direccion, farmacia.localidad].filter(Boolean).join(" · ") ||
                           "Farmacia adherida"}
                       </p>
                     </div>
                     {typeof farmacia.descuento_porcentaje === "number" ? (
-                      <span className="rounded-full bg-[#F3ECFF] px-3 py-1 text-xs font-black text-[#6D28D9]">
+                      <span className="rounded-full bg-[#F3ECFF] px-3 py-1 text-xs font-bold text-[#6D28D9]">
                         {farmacia.descuento_porcentaje}% OFF
                       </span>
                     ) : null}
@@ -880,12 +885,12 @@ export default function DashboardPage() {
         <SectionTitle title="Cuenta" eyebrow="Datos personales" />
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl bg-slate-50 p-4">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Nombre</p>
-            <p className="mt-1 font-black text-slate-950">{usuarioNombre}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Nombre</p>
+            <p className="mt-1 font-bold text-slate-950">{usuarioNombre}</p>
           </div>
           <div className="rounded-2xl bg-slate-50 p-4">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Email</p>
-            <p className="mt-1 break-all font-black text-slate-950">{usuarioEmail || "-"}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Email</p>
+            <p className="mt-1 break-all font-bold text-slate-950">{usuarioEmail || "-"}</p>
           </div>
         </div>
       </ShellCard>
@@ -895,20 +900,17 @@ export default function DashboardPage() {
   function renderInicio() {
     return (
       <div className="space-y-5">
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.85fr)]">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
+          <CredencialCard showToolbar={false} />
           <div className="space-y-5">
-            <PlanStatusPanel />
             <ConsultPanel />
-          </div>
-          <div className="space-y-5">
-            <CredencialCard showToolbar={false} />
             <ShellCard compact>
               <div className="flex items-center gap-3">
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
                   <ShieldCheck className="h-6 w-6" />
                 </span>
                 <div>
-                  <p className="text-sm font-black text-slate-950">Datos protegidos</p>
+                  <p className="text-sm font-bold text-slate-950">Datos protegidos</p>
                   <p className="text-sm text-slate-500">Tu credencial se valida con QR seguro.</p>
                 </div>
               </div>
@@ -990,13 +992,13 @@ export default function DashboardPage() {
           <SectionTitle title="Ayuda rapida" eyebrow="Soporte" />
           <div className="space-y-3">
             <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="font-black text-slate-950">Problemas con tu plan</p>
+              <p className="font-bold text-slate-950">Problemas con tu plan</p>
               <p className="mt-1 text-sm text-slate-500">
                 Si tu pago fue aprobado y el plan no aparece activo, contacta soporte.
               </p>
             </div>
             <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="font-black text-slate-950">Uso de beneficios</p>
+              <p className="font-bold text-slate-950">Uso de beneficios</p>
               <p className="mt-1 text-sm text-slate-500">
                 Desde Beneficios vas a ver las condiciones y datos de acceso de cada servicio.
               </p>
@@ -1010,6 +1012,7 @@ export default function DashboardPage() {
   function renderCuenta() {
     return (
       <div className="space-y-5">
+        <PlanStatusPanel compact />
         <div className="grid gap-5 xl:grid-cols-[1fr_0.9fr]">
           <GestionCuentaCard
             suscripcion={suscripcion}
@@ -1081,13 +1084,11 @@ export default function DashboardPage() {
 
   return (
     <>
-      <main className="min-h-screen bg-[#F6F4FD] text-slate-950">
+      <main className="min-h-screen bg-slate-50 font-sans text-slate-950">
         <div className="hidden min-h-screen lg:flex">
           <aside className="sticky top-0 flex h-screen w-[280px] shrink-0 flex-col border-r border-slate-100 bg-white p-6">
             <div className="mb-8">
-              <div className="text-2xl font-black text-slate-950">
-                CEL<span className="font-light text-[#6D28D9]">DOCTOR</span>
-              </div>
+              <CelDoctorLogo size="md" />
               <p className="mt-2 text-sm font-semibold text-slate-400">Tu salud, en un solo lugar</p>
             </div>
 
@@ -1107,7 +1108,7 @@ export default function DashboardPage() {
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#6D28D9]">
                 <Stethoscope className="h-6 w-6" />
               </div>
-              <p className="mt-4 text-sm font-black text-slate-950">Atencion simple</p>
+              <p className="mt-4 text-sm font-bold text-slate-950">Atencion simple</p>
               <p className="mt-1 text-sm leading-5 text-slate-500">
                 Todo tu plan CelDoctor ordenado para usarlo sin vueltas.
               </p>
@@ -1116,7 +1117,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 text-sm font-black text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+              className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 text-sm font-bold text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
             >
               <LogOut className="h-4 w-4" />
               Cerrar sesion
@@ -1124,13 +1125,13 @@ export default function DashboardPage() {
           </aside>
 
           <section className="flex min-w-0 flex-1 flex-col">
-            <header className="sticky top-0 z-20 border-b border-slate-100 bg-[#F6F4FD]/88 px-8 py-5 backdrop-blur">
+            <header className="sticky top-0 z-20 border-b border-slate-100 bg-slate-50/90 px-8 py-5 backdrop-blur">
               <div className="flex items-center justify-between gap-6">
                 <div>
-                  <p className="text-sm font-black text-[#6D28D9]">
+                  <p className="text-sm font-bold text-[#6D28D9]">
                     {saludo(usuarioNombre.split(" ")[0])}
                   </p>
-                  <h1 className="mt-1 text-3xl font-black text-slate-950">
+                  <h1 className="mt-1 text-3xl font-bold text-slate-950">
                     {activeTab === "inicio"
                       ? "Panel de salud"
                       : activeTab === "beneficios"
@@ -1141,7 +1142,6 @@ export default function DashboardPage() {
                   </h1>
                 </div>
                 <div className="flex items-center gap-3">
-                  <EstadoBadge estado={estadoSuscripcion} />
                   <button
                     type="button"
                     className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm"
@@ -1150,7 +1150,7 @@ export default function DashboardPage() {
                     <Bell className="h-5 w-5" />
                     <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-[#6D28D9]" />
                   </button>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F3ECFF] text-sm font-black text-[#5B21B6]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F3ECFF] text-sm font-bold text-[#5B21B6]">
                     {initialsFromName(usuarioNombre)}
                   </div>
                 </div>
@@ -1179,9 +1179,7 @@ export default function DashboardPage() {
               >
                 <Menu className="h-7 w-7" />
               </button>
-              <div className="text-2xl font-black text-slate-950">
-                CEL<span className="font-light text-[#6D28D9]">DOCTOR</span>
-              </div>
+              <CelDoctorLogo size="sm" />
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -1191,7 +1189,7 @@ export default function DashboardPage() {
                   <Bell className="h-6 w-6" />
                   <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-[#6D28D9]" />
                 </button>
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F3ECFF] text-sm font-black text-[#5B21B6]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F3ECFF] text-sm font-bold text-[#5B21B6]">
                   {initialsFromName(usuarioNombre)}
                 </div>
               </div>
@@ -1212,13 +1210,12 @@ export default function DashboardPage() {
                   <p className="text-base font-semibold text-slate-500">
                     Hola, {usuarioNombre.split(" ")[0]}
                   </p>
-                  <h1 className="mt-1 text-3xl font-black text-slate-950">
+                  <h1 className="mt-1 text-3xl font-bold text-slate-950">
                     Tu salud, en un solo lugar
                   </h1>
                 </section>
-                <ConsultPanel mobile />
-                <PlanStatusPanel compact />
                 <CredencialCard showToolbar={false} />
+                <ConsultPanel mobile />
                 <div className="grid gap-3">
                   <QuickAction
                     icon={Gift}
@@ -1245,7 +1242,7 @@ export default function DashboardPage() {
             {activeTab === "beneficios" ? (
               <>
                 <section>
-                  <h1 className="text-3xl font-black text-slate-950">Beneficios</h1>
+                  <h1 className="text-3xl font-bold text-slate-950">Beneficios</h1>
                   <p className="mt-1 text-base text-slate-500">Todo lo que incluye tu plan.</p>
                 </section>
                 <SearchInput
@@ -1321,8 +1318,8 @@ export default function DashboardPage() {
               pago figure como aprobado.
             </p>
             <div className="rounded-2xl bg-[#F3ECFF] p-4">
-              <p className="font-black text-slate-950">{planSeleccionado.nombre}</p>
-              <p className="mt-1 text-2xl font-black text-[#5B21B6]">
+              <p className="font-bold text-slate-950">{planSeleccionado.nombre}</p>
+              <p className="mt-1 text-2xl font-bold text-[#5B21B6]">
                 {formatMoney(planSeleccionado.precio_mensual)}
                 <span className="text-sm text-slate-500">/mes</span>
               </p>
@@ -1330,14 +1327,14 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
                 href={`/checkout/${planSeleccionado.id}`}
-                className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-[#5B21B6] px-5 text-sm font-black text-white"
+                className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-[#5B21B6] px-5 text-sm font-bold text-white"
               >
                 Ir al checkout
               </Link>
               <button
                 type="button"
                 onClick={() => setPlanSeleccionado(null)}
-                className="min-h-12 flex-1 rounded-2xl border border-slate-200 text-sm font-black text-slate-600"
+                className="min-h-12 flex-1 rounded-2xl border border-slate-200 text-sm font-bold text-slate-600"
               >
                 Cancelar
               </button>
@@ -1361,7 +1358,7 @@ export default function DashboardPage() {
                 })()}
               </span>
               <div>
-                <p className="font-black text-slate-950">{selectedService.proveedor}</p>
+                <p className="font-bold text-slate-950">{selectedService.proveedor}</p>
                 <p className="text-sm text-slate-500">{getServiceBadge(selectedService)}</p>
               </div>
             </div>
@@ -1369,7 +1366,7 @@ export default function DashboardPage() {
               {selectedService.descripcion || "Beneficio incluido en tu plan CelDoctor."}
             </p>
             <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
                 Como acceder
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -1381,7 +1378,7 @@ export default function DashboardPage() {
                 href={selectedService.cta_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#5B21B6] px-5 text-sm font-black text-white"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#5B21B6] px-5 text-sm font-bold text-white"
               >
                 Abrir servicio <ChevronRight className="h-4 w-4" />
               </Link>

@@ -19,6 +19,7 @@ import {
     Menu,
     X,
 } from "lucide-react";
+import { CelDoctorLogo } from "@/components/CelDoctorLogo";
 import { logout } from "@/lib/api";
 import type { Section, Toast, ToastType, Alerta, MetricasEmpresas } from "./types";
 import { API, authHeaders } from "./lib";
@@ -59,7 +60,7 @@ function SidebarContent({ navGroups, section, onNavigate, onLogout }: SidebarCon
     return (
         <>
             <div className="border-b border-white/10 px-6 py-6">
-                <span className="text-xl font-black tracking-tight text-white">CELDOCTOR.</span>
+                <CelDoctorLogo tone="light" size="sm" />
                 <p className="mt-0.5 text-xs text-white/40">Panel de administracion</p>
             </div>
 
@@ -353,7 +354,7 @@ export default function AdminDashboardPage() {
                     >
                         <Menu size={22} />
                     </button>
-                    <span className="text-lg font-black tracking-tight text-white">CELDOCTOR.</span>
+                    <CelDoctorLogo tone="light" size="sm" />
                 </header>
 
                 <main className="flex-1 overflow-auto">

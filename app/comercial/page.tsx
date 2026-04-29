@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { CelDoctorLogo } from "@/components/CelDoctorLogo";
 import { login } from "@/lib/api";
 import {
     clearCommercialSession,
@@ -52,7 +53,7 @@ export default function ComercialLoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
             <div className="w-full max-w-sm">
                 <div className="mb-8 text-center">
-                    <span className="text-2xl font-black tracking-tight text-[#4C1D95]">CELDOCTOR.</span>
+                    <CelDoctorLogo tone="purple" />
                     <p className="mt-1 text-sm text-slate-500">Canal comercial</p>
                 </div>
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { CelDoctorLogo } from "@/components/CelDoctorLogo";
 import { login } from "@/lib/api";
 
 export default function AdminLoginPage() {
@@ -35,7 +36,7 @@ export default function AdminLoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-slate-50">
             <div className="w-full max-w-sm">
                 <div className="mb-8 text-center">
-                    <span className="text-2xl font-black text-[#4C1D95] tracking-tight">CELDOCTOR.</span>
+                    <CelDoctorLogo tone="purple" />
                     <p className="mt-1 text-sm text-slate-500">Panel de Administracion</p>
                 </div>
 

@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, LogOut, Menu, Play, X } from "lucide-react"
+import { CelDoctorLogo } from "./CelDoctorLogo"
 import InteractiveDemo from "./InteractiveDemo"
 import { resolveAccountRoute } from "@/lib/account-route"
 import { logout } from "@/lib/api"
@@ -214,9 +215,7 @@ export default function Navbar() {
         <nav className="sticky top-0 z-50 h-20 w-full border-b border-slate-100 bg-white/95 backdrop-blur-xl transition-all">
             <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-between px-6">
                 <Link href="/" onClick={closeMenu} className="flex cursor-pointer select-none items-center gap-2">
-                    <span className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
-                        CELDOCTOR
-                    </span>
+                    <CelDoctorLogo />
                 </Link>
 
                 <div className="hidden items-center gap-8 text-sm font-medium text-slate-600 lg:flex">

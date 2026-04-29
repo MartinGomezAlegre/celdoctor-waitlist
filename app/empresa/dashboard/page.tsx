@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUpDown, Building2, Download, LogOut, Plus, Upload, Users } from "lucide-react";
 
+import { CelDoctorLogo } from "@/components/CelDoctorLogo";
 import {
     ApiError,
     createCompanyAdminEmployee,
@@ -269,6 +270,7 @@ export default function EmpresaDashboardPage() {
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
                 <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="space-y-3">
+                        <CelDoctorLogo size="sm" />
                         <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                             <Building2 className="h-3.5 w-3.5" />
                             Panel empresa

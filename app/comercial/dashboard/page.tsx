@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Copy, Link2, LogOut, Pencil, Plus, TrendingUp, UserRound, Users } from "lucide-react";
 
+import { CelDoctorLogo } from "@/components/CelDoctorLogo";
 import { ApiError, createBrokerTeamMember, getCommercialDashboard, logout, updateBrokerTeamMember, type CommercialDashboardData } from "@/lib/api";
 import {
     clearCommercialSession,
@@ -273,6 +274,7 @@ export default function ComercialDashboardPage() {
             <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
+                        <CelDoctorLogo size="sm" className="mb-3 block" />
                         <p className="text-sm font-medium text-slate-500">Hola, {data.usuario.nombre || nombre || "equipo comercial"}</p>
                         <h1 className="mt-1 text-3xl font-bold text-slate-900">Panel comercial</h1>
                     </div>
