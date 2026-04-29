@@ -370,14 +370,17 @@ export default function DashboardPage() {
     setCargando(true);
     setError(null);
     try {
-      const [suscripcionData, perfilData, planesData, medicamentosData, farmaciasData] =
+      const [suscripcionData, perfilData, planesData] =
         await Promise.all([
           obtenerMiSuscripcion(),
           getMiPerfil(),
           obtenerPlanesUsuario(),
-          obtenerVademecum({ limit: 12 }),
-          obtenerFarmaciasAdheridas({ limit: 12 }),
         ]);
+
+      const [medicamentosData, farmaciasData] = await Promise.all([
+        obtenerVademecum({ limit: 12 }).catch(() => []),
+        obtenerFarmaciasAdheridas({ limit: 12 }).catch(() => []),
+      ]);
 
       const role = (perfilData as { rol?: string } | null)?.rol;
       if (role && (role === "comercial" || role === "broker_admin" || role === "empresa_admin")) {
@@ -413,14 +416,16 @@ export default function DashboardPage() {
   const proxAVencer =
     !vencida && diasRestantes !== null && diasRestantes >= 0 && diasRestantes <= 5;
   const estaActiva =
-    estadoSuscripcion === "activa" || (estadoSuscripcion === "baja_programada" && !vencida);
+    estadoSuscripcion === "activa" || (estadoSuscripcion === "cancelacion_programada" && !vencida);
   const usuarioNombre = perfil ? `${perfil.nombre} ${perfil.apellido}`.trim() : "Usuario";
-  const usuarioEmail = perfil?.email ?? "";
   const tipoPlan = suscripcion?.tipo_plan ?? "individual";
-  const planNombre = suscripcion?.nombre_plan ?? (tipoPlan === "familiar" ? "Familiar" : "Individual");
+  const tipoPlanNormalizado = tipoPlan.toLowerCase();
+  const esPlanFamiliar = tipoPlanNormalizado.includes("familiar");
+  const planNombre = suscripcion?.nombre_plan ?? (esPlanFamiliar ? "Familiar" : "Individual");
   const estadoCuentaLabel = estaActiva ? "Activa" : vencida ? "Vencida" : "Pendiente";
-  const maxBeneficiarios = suscripcion?.max_beneficiarios ?? (tipoPlan === "familiar" ? 4 : 0);
-  const totalIntegrantes = Math.max(1, maxBeneficiarios + 1);
+  const totalBeneficiariosPlan = suscripcion?.max_beneficiarios ?? (esPlanFamiliar ? 4 : 1);
+  const maxBeneficiariosAdicionales = esPlanFamiliar ? Math.max(0, totalBeneficiariosPlan - 1) : 0;
+  const totalIntegrantes = Math.max(1, maxBeneficiariosAdicionales + 1);
   const planParaMejorar =
     suscripcion
       ? planes.find((plan) => plan.id !== suscripcion.plan_id && plan.activo !== false) ?? null
@@ -655,7 +660,11 @@ export default function DashboardPage() {
             <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
               Accede a Mediquo desde CelDoctor en segundos.
             </p>
-            {!mediquoService ? (
+            {!estaActiva ? (
+              <p className="mt-3 text-xs font-semibold text-rose-700">
+                Renova tu plan para volver a usar consultas y beneficios.
+              </p>
+            ) : !mediquoService ? (
               <p className="mt-3 text-xs font-semibold text-amber-700">
                 Este plan todavia no tiene Mediquo configurado.
               </p>
@@ -674,7 +683,24 @@ export default function DashboardPage() {
     );
   }
 
+  function LockedServicesCard() {
+    return (
+      <ShellCard>
+        <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
+          <EmptyState
+            icon={TriangleAlert}
+            title="Servicios bloqueados"
+            description="Para usar consultas, beneficios, vademecum y farmacias, primero tenes que renovar o completar el pago del plan."
+          />
+          <div className="md:min-w-48">{renderPlanAction(true)}</div>
+        </div>
+      </ShellCard>
+    );
+  }
+
   function BenefitsList({ compact = false }: { compact?: boolean }) {
+    if (!estaActiva) return <LockedServicesCard />;
+
     return (
       <ShellCard compact={compact}>
         <SectionTitle
@@ -879,24 +905,6 @@ export default function DashboardPage() {
     );
   }
 
-  function AccountSummary() {
-    return (
-      <ShellCard>
-        <SectionTitle title="Cuenta" eyebrow="Datos personales" />
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl bg-slate-50 p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Nombre</p>
-            <p className="mt-1 font-bold text-slate-950">{usuarioNombre}</p>
-          </div>
-          <div className="rounded-2xl bg-slate-50 p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Email</p>
-            <p className="mt-1 break-all font-bold text-slate-950">{usuarioEmail || "-"}</p>
-          </div>
-        </div>
-      </ShellCard>
-    );
-  }
-
   function renderInicio() {
     return (
       <div className="space-y-5">
@@ -931,18 +939,21 @@ export default function DashboardPage() {
             title="Beneficios"
             description="Servicios incluidos y condiciones."
             onClick={irABeneficios}
+            disabled={!estaActiva}
           />
           <QuickAction
             icon={PillBottle}
             title="Vademecum"
             description="Busca medicamentos y descuentos."
             onClick={irAVademecum}
+            disabled={!estaActiva}
           />
           <QuickAction
             icon={MapPinned}
             title="Farmacias"
             description="Red adherida y descuentos."
             onClick={irAFarmacias}
+            disabled={!estaActiva}
           />
         </div>
 
@@ -955,6 +966,10 @@ export default function DashboardPage() {
   }
 
   function renderBeneficios() {
+    if (!estaActiva) {
+      return <LockedServicesCard />;
+    }
+
     return (
       <div className="space-y-5">
         <div className="grid gap-4 md:grid-cols-3">
@@ -1026,9 +1041,6 @@ export default function DashboardPage() {
               }
             }}
           />
-          <AccountSummary />
-        </div>
-        <div className="grid gap-5 xl:grid-cols-[1fr_0.9fr]">
           {perfil ? (
             <DatosCuentaCard perfil={perfil} onActualizar={setPerfil} />
           ) : (
@@ -1040,9 +1052,11 @@ export default function DashboardPage() {
               />
             </ShellCard>
           )}
-          {maxBeneficiarios > 0 ? (
+        </div>
+        <div className="grid gap-5 xl:grid-cols-[1fr_0.9fr]">
+          {maxBeneficiariosAdicionales > 0 ? (
             <BeneficiariosCard
-              maxBeneficiarios={maxBeneficiarios}
+              maxBeneficiarios={maxBeneficiariosAdicionales}
               totalIntegrantes={totalIntegrantes}
             />
           ) : (
